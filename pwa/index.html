@@ -1,1 +1,319 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>تخطيط شاغلي الوظائف التعليمية</title>
+  <meta name="viewport" content="width=1200">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#158078">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    body {background:#f5f6f7;font-family:'Cairo',Tahoma,Arial,sans-serif;}
+    header {background:#158078;color:#fff;padding:32px 0 18px 0;text-align:center;border-radius:0 0 30px 30px;}
+    h1 {font-size:2.3em;margin-bottom:8px;font-weight:700;}
+    .container {max-width:1100px;margin:0 auto;padding:10px 10px 50px 10px;}
+    .panel {background:#e7e5db;border-radius:22px;box-shadow:0 2px 16px 0 #0b595247;margin-bottom:26px;padding:30px 25px 18px 25px;}
+    h2 {color:#158078;font-weight:bold;margin-bottom:14px;font-size:1.24em;border-right:8px solid #158078;padding-right:12px;display:inline-block;border-radius:0 17px 17px 0;}
+    label {font-size:1.06em;margin-bottom:5px;color:#158078;font-weight:bold;}
+    input,select,textarea {width:100%;padding:9px 10px;border-radius:8px;border:1.5px solid #d7ccb6;background:#f5f6f7;color:#183c3b;font-size:1.01em;margin-bottom:13px;}
+    input:focus,select:focus,textarea:focus {outline:none;border:1.5px solid #158078;}
+    textarea {resize:vertical;}
+    .btn {background:linear-gradient(90deg,#158078,#1eb09b 70%);color:#fff;border:none;border-radius:9px;padding:10px 32px;font-size:1.07em;cursor:pointer;margin:4px 7px 8px 0;font-weight:bold;box-shadow:0 1px 4px #0002;}
+    .btn:hover {background:linear-gradient(90deg,#1eb09b 30%,#158078 100%);}
+    table {width:100%;border-collapse:collapse;margin-bottom:10px;background:#f5f6f7;color:#183c3b;font-size:1.01em;border-radius:14px;overflow:hidden;box-shadow:0 0.5px 6px #15807822;}
+    th,td {border:1px dashed #c6a96d;padding:8px 7px;text-align:center;}
+    th {background:#158078;color:#fff;font-weight:bold;}
+    .footer-signature {color:#9e7e45;background:#e5e1d4;border-radius:0 0 18px 18px;font-size:1.13em;text-align:center;padding:19px 0 13px 0;margin-top:38px;font-weight:bold;border-top:2px solid #c6a96d44;}
+    .main-btns {text-align:center;margin-bottom:40px;}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>تخطيط شاغلي الوظائف التعليمية - المرحلة الثانوية</h1>
+    <div class="footer-signature">الإدارة العامة لتتعليم بالطائف - ثانوية دار التوحيد </div>
+  </header>
+  <div class="container">
+    <div class="main-btns">
+      <button class="btn" id="exportHtmlBtn">تقرير شامل</button>
+      <button class="btn" id="resetAllBtn">🗑️ مسح الجميع</button>
+    </div>
+    <div class="panel">
+      <h2>الكادر التعليمي</h2>
+      <form id="eduForm">
+        <label>اسم الموظف:</label>
+        <input type="text" id="eduName" required autocomplete="off">
+        <label>الرتبة/الوصف:</label>
+        <select id="eduJob" required>
+          <option value="">-- اختر --</option>
+          <option>معلم ممارس</option>
+          <option>معلم متقدم</option>
+          <option>معلم خبير</option>
+          <option>مدير مدرسة</option>
+          <option>وكيل مدرسة</option>
+          <option>موجه طلابي</option>
+          <option>رائد نشاط</option>
+          <option>موجه صحي</option>
+          <option>محضر مختبر</option>
+        </select>
+        <div id="eduMaterialWrap">
+          <label>المادة (للمعلم فقط):</label>
+          <select id="eduMaterial"></select>
+        </div>
+        <div id="eduSpecWrap">
+          <label>التخصص الرئيسي:</label>
+          <select id="eduSpec">
+            <option value="">-- اختر --</option>
+            <option>الدراسات الإسلامية</option>
+            <option>الكفايات اللغوية</option>
+            <option>الإنجليزية</option>
+            <option>الرياضيات</option>
+            <option>التقنية الرقمية</option>
+            <option>الأحياء وعلوم البيئة والفضاء</option>
+            <option>التفكير والمهارات والحياة</option>
+            <option>المعرفة المالية/المهنية</option>
+            <option>التربية الصحية واللياقة</option>
+            <option>الدراسات الاجتماعية</option>
+            <option>الكيمياء</option>
+            <option>الفيزياء</option>
+            <option>الفنون</option>
+            <option>البحث ومصادر المعلومات</option>
+            <option>مجال اختياري</option>
+            <option>الدراسات الأدبية</option>
+          </select>
+        </div>
+        <div id="eduPeriodsWrap">
+          <label>عدد الفصول:</label>
+          <input type="number" id="eduClasses" min="0" value="0">
+          <label>عدد الحصص (يحسب تلقائيًا):</label>
+          <input type="number" id="eduPeriods" min="0" value="0" readonly>
+        </div>
+        <label>مهام أخرى:</label>
+        <textarea id="eduTasks" rows="2"></textarea>
+        <div id="eduReleaseWrap" style="display:none">
+          <label>حالة التفرغ:</label>
+          <select id="eduRelease">
+            <option value="">-- اختر --</option>
+            <option>مفرغ كليًا</option>
+            <option>مفرغ جزئيًا</option>
+          </select>
+        </div>
+        <button class="btn" type="submit">إضافة</button>
+      </form>
+      <div id="eduTableContainer"></div>
+    </div>
+    <div class="footer-signature">
+      فكرة وتصميم محمد مجممي – جميع الحقوق محفوظة © 2025
+    </div>
+  </div>
+<script>
+const materials = [
+  {name:"القرآن الكريم وتفسيره", periods:5},{name:"الكفايات اللغوية 1 (1-1)",periods:5},{name:"اللغة الإنجليزية 1 (1-1)",periods:5},
+  {name:"الرياضيات 1 (1-1)",periods:5},{name:"التقنية الرقمية 1 (1-1)",periods:3},{name:"الأحياء (1)",periods:5},{name:"التفكير الناقد",periods:4},
+  {name:"علم البيئة",periods:3},{name:"الكفايات اللغوية 1 (2-1)",periods:5},{name:"اللغة الإنجليزية 1 (2-1)",periods:5},{name:"الرياضيات 1 (2-1)",periods:5},
+  {name:"التقنية الرقمية 1 (2-1)",periods:3},{name:"الفيزياء (1)",periods:5},{name:"التربية المهنية",periods:3},{name:"التربية الصحية والبدنية 1 (1-1)",periods:3},
+  {name:"المعرفة المالية",periods:3},{name:"الحديث (1)",periods:3},{name:"اللغة الإنجليزية 1 (3-1)",periods:5},{name:"الرياضيات 1 (3-1)",periods:5},
+  {name:"التقنية الرقمية 1 (3-1)",periods:3},{name:"الكيمياء (1)",periods:5},{name:"الدراسات الاجتماعية",periods:3},{name:"التربية الصحية والبدنية 1 (2-1)",periods:3},
+  {name:"التوحيد (1)",periods:3},{name:"الفنون",periods:3},{name:"اللياقة والثقافة الصحية",periods:5},{name:"اللغة الإنجليزية 2 (1-2)",periods:5},
+  {name:"الرياضيات 2 (1-2)",periods:5},{name:"الكيمياء 2 (1-2)",periods:5},{name:"الأحياء 2 (1-2)",periods:4},{name:"الكفايات اللغوية 2 (1-2)",periods:3},
+  {name:"التقنية الرقمية 2 (1-2)",periods:3},{name:"التاريخ",periods:5},{name:"اللغة الإنجليزية 2 (2-2)",periods:5},{name:"الرياضيات 2 (2-2)",periods:5},
+  {name:"الكيمياء 2 (2-2)",periods:5},{name:"الأحياء 2 (2-2)",periods:4},{name:"الكفايات اللغوية 2 (2-2)",periods:3},{name:"التقنية الرقمية 2 (2-2)",periods:3},
+  {name:"الفيزياء (2)",periods:5},{name:"اللغة الإنجليزية 2 (3-2)",periods:5},{name:"الرياضيات 2 (3-2)",periods:5},{name:"الكيمياء 2 (3-2)",periods:5},
+  {name:"الأحياء 2 (3-2)",periods:4},{name:"البحث ومصادر المعلومات",periods:3},{name:"الجغرافيا",periods:3},{name:"التقنية الرقمية (3)",periods:3},
+  {name:"الكيمياء (3)",periods:5},{name:"اللغة الإنجليزية 3 (1-3)",periods:4},{name:"الرياضيات 3 (1-3)",periods:4},{name:"الفيزياء 3 (1-3)",periods:5},
+  {name:"مجال اختياري",periods:4},{name:"الفقه (1)",periods:3},{name:"المهارات الحياتية",periods:3},{name:"المواطنة الرقمية",periods:3},
+  {name:"علوم الأرض والفضاء (1-1)",periods:4},{name:"اللغة الإنجليزية 3 (2-3)",periods:4},{name:"الرياضيات 3 (2-3)",periods:4},
+  {name:"الفيزياء 3 (2-3)",periods:5},{name:"الدراسات الأدبية",periods:3},{name:"الدراسات النفسية والاجتماعية",periods:3},{name:"التربية الصحية والبدنية (2)",periods:4},
+  {name:"علوم الأرض والفضاء (2-1)",periods:4},{name:"اللغة الإنجليزية 3 (3-3)",periods:4},{name:"الرياضيات 3 (3-3)",periods:4},{name:"الفيزياء 3 (3-3)",periods:5}
+];
+const eduRanks = { "معلم ممارس":24, "معلم متقدم":22, "معلم خبير":18 };
+let educational = JSON.parse(localStorage.getItem('eduList')||"[]");
+function fillMaterialList(){
+  let msel=document.getElementById('eduMaterial');
+  msel.innerHTML='<option value="">-- اختر --</option>';
+  materials.forEach(m=>msel.innerHTML+=`<option value="${m.name}" data-p="${m.periods}">${m.name}</option>`);
+}
+document.getElementById('eduJob').onchange = function(){
+  let job = this.value;
+  let isTeacher = ["معلم ممارس","معلم متقدم","معلم خبير"].includes(job);
+  document.getElementById('eduMaterialWrap').style.display = isTeacher?"block":"none";
+  document.getElementById('eduSpecWrap').style.display = isTeacher?"block":"none";
+  document.getElementById('eduPeriodsWrap').style.display = isTeacher?"block":"none";
+  document.getElementById('eduReleaseWrap').style.display = (!isTeacher && job!=="")?"block":"none";
+  if(isTeacher){ fillMaterialList(); }
+  else{ document.getElementById('eduMaterial').innerHTML = ''; }
+  document.getElementById('eduClasses').value=0;
+  document.getElementById('eduPeriods').value=0;
+};
+fillMaterialList();
+document.getElementById('eduMaterial').onchange=function(){
+  let m=materials.find(x=>x.name===this.value);
+  document.getElementById('eduPeriods').value=0;
+  document.getElementById('eduClasses').value=0;
+  if(m){
+    document.getElementById('eduClasses').oninput=function(){
+      let v=parseInt(this.value)||0;
+      document.getElementById('eduPeriods').value=v*m.periods;
+    };
+  }
+};
+document.getElementById('eduForm').onsubmit=function(e){
+  e.preventDefault();
+  let name = document.getElementById('eduName').value.trim();
+  let job = document.getElementById('eduJob').value;
+  let material = document.getElementById('eduMaterial').value;
+  let spec = document.getElementById('eduSpec').value;
+  let classes = parseInt(document.getElementById('eduClasses').value)||0;
+  let periods = parseInt(document.getElementById('eduPeriods').value)||0;
+  let tasks = document.getElementById('eduTasks').value.trim();
+  let release = "";
+  if(["مدير مدرسة","وكيل مدرسة","موجه طلابي","رائد نشاط","موجه صحي","محضر مختبر"].includes(job)){
+    release = document.getElementById('eduRelease').value;
+  }
+  if(name==="")return;
+  if(["معلم ممارس","معلم متقدم","معلم خبير"].includes(job)){
+    if(material===""||spec===""||isNaN(periods)){alert("يجب اختيار مادة وتخصص تجميعي وعدد حصص للمعلم");return;}
+    educational.push({name,job,material,spec,classes,periods,tasks,release});
+  }else{
+    educational.push({name,job,material:"-",spec:"-",classes:"-",periods:"-",tasks,release});
+  }
+  this.reset();document.getElementById('eduReleaseWrap').style.display="none";
+  renderTableEdu(); saveAllData();
+};
+document.getElementById('resetAllBtn').onclick=function(){
+  if(confirm("تأكيد مسح جميع البيانات؟")){
+    educational=[];
+    saveAllData();renderTableEdu();
+  }
+};
+function saveAllData(){
+  localStorage.setItem('eduList',JSON.stringify(educational));
+}
+function renderTableEdu(){
+  let h="";
+  if(!educational.length){h='<p style="text-align:center;color:#ccc">لا يوجد موظفين.</p>';}
+  else{
+    h='<table><thead><tr><th>م</th><th>الاسم</th><th>الرتبة/الوصف</th><th>المادة</th><th>التخصص الرئيسي</th><th>فصول</th><th>الحصص</th><th>مهام أخرى</th><th>التفرغ</th><th>حذف</th></tr></thead><tbody>';
+    educational.forEach((emp,i)=>{
+      h+=`<tr>
+        <td>${i+1}</td>
+        <td>${emp.name}</td>
+        <td>${emp.job}</td>
+        <td>${emp.material||"-"}</td>
+        <td>${emp.spec||"-"}</td>
+        <td>${emp.classes||"-"}</td>
+        <td>${emp.periods||"-"}</td>
+        <td>${emp.tasks||"-"}</td>
+        <td>${emp.release||"-"}</td>
+        <td><button class="btn" style="padding:2px 14px" onclick="deleteEmp(${i})">حذف</button></td>
+      </tr>`;
+    });
+    h+='</tbody></table>';
+  }
+  document.getElementById('eduTableContainer').innerHTML = h;
+}
+window.deleteEmp = function(idx){
+  educational.splice(idx,1);renderTableEdu();saveAllData();
+};
+renderTableEdu();
+
+document.getElementById('exportHtmlBtn').onclick = function(){
+  let specs = [
+    "الدراسات الإسلامية","الكفايات اللغوية","الإنجليزية","الرياضيات","التقنية الرقمية","الأحياء وعلوم البيئة والفضاء",
+    "التفكير والمهارات والحياة","المعرفة المالية/المهنية","التربية الصحية واللياقة","الدراسات الاجتماعية","الكيمياء",
+    "الفيزياء","الفنون","البحث ومصادر المعلومات","مجال اختياري","الدراسات الأدبية"
+  ];
+  let reportRows = [];
+  specs.forEach(spec=>{
+    let teachers = educational.filter(e=>
+      ["معلم ممارس","معلم متقدم","معلم خبير"].includes(e.job) && e.spec==spec
+    );
+    let totalPeriods = teachers.reduce((s,x)=>s+(parseInt(x.periods)||0),0);
+    let khabeer = teachers.filter(x=>x.job=="معلم خبير").length;
+    let motakadem = teachers.filter(x=>x.job=="معلم متقدم").length;
+    let mmaris = teachers.filter(x=>x.job=="معلم ممارس").length;
+    let pool = [];
+    for(let i=0;i<khabeer;i++) pool.push(18);
+    for(let i=0;i<motakadem;i++) pool.push(22);
+    for(let i=0;i<mmaris;i++) pool.push(24);
+    pool.sort((a,b)=>a-b);
+    let remain = totalPeriods, used = 0;
+    for(let i=0;i<pool.length;i++){
+      if(remain<=0) break;
+      let take = Math.min(pool[i], remain);
+      remain -= take;
+      used++;
+    }
+    let surplus = 0, resultTxt = "", needed = 0;
+    if(remain>0){
+      needed = Math.ceil(remain/24);
+      resultTxt = `<b style="color:#bf4f4f">احتياج ${needed} معلم ممارس (${remain} حصة غير مغطاة)</b>`;
+    } else if(totalPeriods>0 && pool.length > 0 && used<pool.length){
+      let extra = pool.length-used;
+      let extraMmaris = Math.min(extra, mmaris);
+      resultTxt = `<b style="color:#32bf32">وفر ${extraMmaris} معلم ممارس</b>`;
+      let left = extra - extraMmaris;
+      if(left > 0) resultTxt += ` + وفر ${left} من الرتب الأعلى`;
+    } else {
+      resultTxt = `<b style="color:#158078">تغطية عادلة</b>`;
+    }
+    reportRows.push(`<tr><td>${spec}</td><td>${totalPeriods}</td><td>${teachers.length}</td><td>${resultTxt}</td></tr>`);
+  });
+  let tbl1 = document.getElementById('eduTableContainer').innerHTML;
+  let html = `
+  <!DOCTYPE html>
+  <html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8">
+    <title>تقرير تخطيط شاغلي الوظائف التعليمية</title>
+    <style>
+      body {background:#f5f6f7;font-family:'Cairo',Tahoma,Arial,sans-serif;color:#183c3b;}
+      .container {max-width:1140px;margin:0 auto;padding:0 10px 25px 10px;}
+      .panel {background:#e7e5db;border-radius:22px;box-shadow:0 2px 16px 0 #0b595247;margin-bottom:26px;padding:30px 25px 18px 25px;}
+      h2 {color:#158078;font-weight:bold;margin-bottom:14px;font-size:1.38em;border-right:8px solid #158078;padding-right:12px;background:linear-gradient(90deg,#f5f6f7 80%,#158078 100%);display:inline-block;border-radius:0 17px 17px 0;}
+      table {width:100%;border-collapse:collapse;margin-bottom:10px;background:#f5f6f7;color:#183c3b;font-size:1.01em;border-radius:14px;overflow:hidden;box-shadow:0 0.5px 6px #15807822;}
+      th,td {border:1px dashed #c6a96d;padding:8px 7px;text-align:center;}
+      th {background:#158078;color:#fff;font-weight:bold;}
+      .footer-signature {color:#9e7e45;background:#e5e1d4;border-radius:0 0 18px 18px;font-size:1.13em;text-align:center;padding:19px 0 13px 0;margin-top:38px;font-weight:bold;border-top:2px solid #c6a96d44;}
+      @media print {button#printBtn {display:none !important;}}
+    </style>
+  </head>
+  <body>
+    <button id="printBtn" onclick="window.print()" style="position:fixed;top:20px;left:30px;z-index:999;background:#158078;color:#fff;border:none;border-radius:9px;padding:10px 30px;font-size:1.05em;box-shadow:0 1px 4px #0002;font-weight:bold;cursor:pointer;">
+      🖨️ طباعة التقرير
+    </button>
+    <header>
+      <h1>تقرير شاغلي الوظائف التعليمية</h1>
+    </header>
+    <div class="container">
+      <div class="panel">
+        <h2>الكادر التعليمي</h2>
+        ${tbl1}
+      </div>
+      <div class="panel">
+        <h2>تقرير التخصصات الرئيسية</h2>
+        <table>
+          <tr><th>التخصص الرئيسي</th><th>إجمالي الحصص</th><th>عدد المعلمين</th><th>النتيجة</th></tr>
+          ${reportRows.join('')}
+        </table>
+      </div>
+      <div class="footer-signature">
+        فكرة وتصميم محمد مجممي – جميع الحقوق محفوظة © 2025
+      </div>
+    </div>
+  </body>
+  </html>`;
+  let newWin = window.open("", "", "width=1200,height=800,scrollbars=yes");
+  newWin.document.open(); newWin.document.write(html); newWin.document.close();
+};
+</script>
+<script>
+// تسجيل الخدمة لـ PWA
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js")
+    .then(reg => console.log("Service Worker Registered", reg))
+    .catch(err => console.error("Service Worker Error", err));
+}
+</script>
+</body>
+</html>
 
