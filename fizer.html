@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>متابعة تواجد المشرفين - مدرسة ثانوية دار التوحيد</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2B899B;   /* New color from poster */
+            --secondary-color: #A99B81; /* Color from poster */
+            --present-color: #34A175;   /* New color from poster */
+            --absent-color: #e74c3c;
+            --background-color: #f7fafc;
+            --card-bg-color: #ffffff;
+            --text-color: #2d3748;
+            --header-bg-color: #2c3e50;
+        }
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+        .container {
+            max-width: 1000px; /* Constrained width */
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .card {
+            background-color: var(--card-bg-color);
+            border-radius: 12px;
+            box-shadow: 0 4px
+ 12px rgba(0, 0, 0, 0.08);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        .table-header {
+            background-color: var(--header-bg-color);
+            color: #ffffff;
+        }
+        .signature-canvas {
+            border: 2px dashed #cccccc;
+            border-radius: 8px;
+            cursor: crosshair;
+            background-color: #f8f9fa;
+        }
+        .btn {
+            padding: 12px 28px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+        }
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: #ffffff;
+            border: 2px solid transparent;
+        }
+        .btn-primary:hover {
+            background-color: #ffffff;
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        .btn-secondary {
+            background-color: var(--absent-color);
+            color: #ffffff;
+        }
+        .btn-secondary:hover {
+            background-color: #c0392b;
+        }
+        .presence-toggle label {
+            cursor: pointer;
+            padding: 6px 18px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            border: 1px solid #ddd;
+        }
+        .presence-toggle input[type="radio"] {
+            display: none;
+        }
+        .presence-toggle input[type="radio"]:checked + label {
+            color: white;
+            border-color: transparent;
+        }
+        .presence-toggle input[value="present"]:checked + label {
+            background-color: var(--present-color);
+        }
+        .presence-toggle input[value="absent"]:checked + label {
+            background-color: var(--absent-color);
+        }
+        .custom-select {
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            background-color: white;
+            font-size: 16px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="card text-center">
+        <h1 class="text-3xl font-bold text-gray-800">مخطط متابعة تواجد المشرفين</h1>
+        <p class="text-gray-600 mt-2">مدرسة ثانوية دار التوحيد</p>
+    </div>
+
+    <div id="tracker-form">
+        <div class="card">
+            <h2 class="text-xl font-bold mb-4">اختر اليوم الدراسي</h2>
+            <select id="day-selector" class="custom-select"></select>
+        </div>
+
+        <div class="card">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-right text-gray-500">
+                    <thead class="text-xs uppercase table-header">
+                        <tr>
+                            <th scope="col" class="px-6 py-3">موقع الإشراف</th>
+                            <th scope="col" class="px-6 py-3">المشرف المتابع</th>
+                            <th scope="col" class="px-6 py-3">حالة التواجد</th>
+                        </tr>
+                    </thead>
+                    <tbody id="supervisors-table">
+                        <!-- Supervisor data will be injected here by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card" id="notes-section-container">
+             <!-- Notes section will be injected here by JavaScript -->
+        </div>
+
+        <div class="card">
+            <h2 class="text-xl font-bold mb-4">توقيع وكيل المدرسة</h2>
+            <p class="text-gray-600 mb-2">الأستاذ / سلطان الخديدي</p>
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <canvas id="signature-pad" class="signature-canvas w-full h-48"></canvas>
+            </div>
+            <div class="flex justify-start mt-4">
+                <button id="clear-signature" class="btn btn-secondary">مسح التوقيع</button>
+            </div>
+        </div>
+
+        <div class="card text-center">
+            <button id="export-report" class="btn btn-primary w-full md:w-auto">إعداد واعتماد تقرير اليوم وتصديره</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const supervisorsData = {
+        'الأحد': [
+            { location: 'الفناء الخارجي والبوابة الرئيسية', name: 'سلطان الخديدي' },
+            { location: 'مدخل السلم الغربي', name: 'تركي الجعيد' },
+            { location: 'المقصف', name: 'أحمد الزهراني' },
+            { location: 'الساحة الشرقية والميضأة', name: 'فيصل الشهري' },
+            { location: 'الصلاة', name: 'نايف الثبيتي' }
+        ],
+        'الإثنين': [
+            { location: 'الفناء الخارجي والبوابة الرئيسية', name: 'فايز البراق' },
+            { location: 'مدخل السلم الغربي', name: 'فواز الحصيني' },
+            { location: 'المقصف', name: 'ناصر الثبيتي' },
+            { location: 'الساحة الشرقية والميضأة', name: 'أحمد الرقيب' },
+            { location: 'الصلاة', name: 'سعود القرشي' }
+        ],
+        'الثلاثاء': [
+            { location: 'الفناء الخارجي والبوابة الرئيسية', name: 'محمد الفيفي' },
+            { location: 'مدخل السلم الغربي', name: 'محمد الوقداني' },
+            { location: 'المقصف', name: 'فيصل القرشي' },
+            { location: 'الساحة الشرقية والميضأة', name: 'احمد الثمالي' },
+            { location: 'الصلاة', name: 'عواض المنصوري' }
+        ],
+        'الأربعاء': [
+            { location: 'الفناء الخارجي والبوابة الرئيسية', name: 'عادل الحصيني' },
+            { location: 'مدخل السلم الغربي', name: 'سلطان الثبيتي' },
+            { location: 'المقصف', name: 'طلال السفياني' },
+            { location: 'الساحة الشرقية والميضأة', name: 'سعيد الزهراني' },
+            { location: 'الصلاة', name: 'هاني القرشي' }
+        ],
+        'الخميس': [
+            { location: 'الفناء الخارجي والبوابة الرئيسية', name: 'مشعل السواط' },
+            { location: 'مدخل السلم الغربي', name: 'إبراهيم الغامدي' },
+            { location: 'المقصف', name: 'يحيى القحطاني' },
+            { location: 'الساحة الشرقية والميضأة', name: 'علي الحارثي' },
+            { location: 'الصلاة', name: 'تركي القصيري' }
+        ]
+    };
+
+    const daySelector = document.getElementById('day-selector');
+    const tableBody = document.getElementById('supervisors-table');
+    const notesContainer = document.getElementById('notes-section-container');
+    const days = Object.keys(supervisorsData);
+
+    // Populate day selector
+    days.forEach(day => {
+        const option = document.createElement('option');
+        option.value = day;
+        option.textContent = day;
+        daySelector.appendChild(option);
+    });
+
+    function renderDay(day) {
+        tableBody.innerHTML = '';
+        const dayData = supervisorsData[day];
+        
+        dayData.forEach((item, index) => {
+            const uniqueId = `${day}_${index}`;
+            const row = `
+                <tr class="bg-white border-b hover:bg-gray-50">
+                    <td class="px-6 py-4">${item.location}</td>
+                    <td class="px-6 py-4 font-medium text-gray-900">${item.name}</td>
+                    <td class="px-6 py-4">
+                        <div class="presence-toggle" data-name="${item.name}" data-day="${day}">
+                            <input type="radio" id="present_${uniqueId}" name="status_${uniqueId}" value="present" required>
+                            <label for="present_${uniqueId}">✔ متواجد</label>
+                            <input type="radio" id="absent_${uniqueId}" name="status_${uniqueId}" value="absent">
+                            <label for="absent_${uniqueId}">✖ غير متواجد</label>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            tableBody.innerHTML += row;
+        });
+        
+        notesContainer.innerHTML = `
+            <h2 class="text-xl font-bold mb-2">الأحداث والملاحظات ليوم ${day}</h2>
+            <textarea id="notes_${day}" class="w-full p-2 border border-gray-300 rounded-lg" rows="4" placeholder="اكتب ملاحظاتك هنا..."></textarea>
+        `;
+    }
+
+    daySelector.addEventListener('change', (e) => {
+        renderDay(e.target.value);
+    });
+
+    // Initial render
+    renderDay(days[0]);
+
+    // Signature Pad Logic
+    const canvas = document.getElementById('signature-pad');
+    const ctx = canvas.getContext('2d');
+    let drawing = false;
+
+    function resizeCanvas() {
+        const ratio = Math.max(window.devicePixelRatio || 1, 1);
+        canvas.width = canvas.offsetWidth * ratio;
+        canvas.height = canvas.offsetHeight * ratio;
+        canvas.getContext("2d").scale(ratio, ratio);
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 2;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function getEventPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const touch = e.touches ? e.touches[0] : e;
+        return { x: touch.clientX - rect.left, y: touch.clientY - rect.top };
+    }
+    function startDrawing(e) {
+        drawing = true;
+        const pos = getEventPos(e);
+        ctx.beginPath();
+        ctx.moveTo(pos.x, pos.y);
+        e.preventDefault();
+    }
+    function draw(e) {
+        if (!drawing) return;
+        const pos = getEventPos(e);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+        e.preventDefault();
+    }
+    function stopDrawing() {
+        drawing = false;
+        ctx.beginPath();
+    }
+    
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseout', stopDrawing);
+    canvas.addEventListener('touchstart', startDrawing);
+    canvas.addEventListener('touchmove', draw);
+    canvas.addEventListener('touchend', stopDrawing);
+    document.getElementById('clear-signature').addEventListener('click', () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    });
+
+    function createDoughnutChart(percentage) {
+        const size = 120;
+        const strokeWidth = 15;
+        const radius = (size - strokeWidth) / 2;
+        const circumference = 2 * Math.PI * radius;
+        const offset = circumference - (percentage / 100 * circumference);
+        const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim();
+
+        return `
+            <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="transform: rotate(-90deg);">
+                <circle cx="${size/2}" cy="${size/2}" r="${radius}" fill="transparent" stroke="#e6e6e6" stroke-width="${strokeWidth}"></circle>
+                <circle cx="${size/2}" cy="${size/2}" r="${radius}" fill="transparent" stroke="${primaryColor}" stroke-width="${strokeWidth}" stroke-dasharray="${circumference}" stroke-dashoffset="${offset}" stroke-linecap="round"></circle>
+                <text x="50%" y="50%" text-anchor="middle" dy=".3em" style="font-size: 24px; font-weight: bold; fill: ${primaryColor}; transform: rotate(90deg) translate(0, -${size}px) scale(1, -1);" transform-origin="center">${percentage}%</text>
+            </svg>
+        `;
+    }
+
+    // Report Generation Logic
+    document.getElementById('export-report').addEventListener('click', () => {
+        const selectedDay = daySelector.value;
+        const dayData = supervisorsData[selectedDay];
+        let presentCount = 0;
+        let absentCount = 0;
+        const totalSupervisors = dayData.length;
+        let reportData = [];
+        let allFilled = true;
+
+        dayData.forEach((item, index) => {
+            const uniqueId = `${selectedDay}_${index}`;
+            const statusInput = document.querySelector(`input[name="status_${uniqueId}"]:checked`);
+            
+            if (!statusInput) {
+                allFilled = false;
+                return;
+            }
+            const status = statusInput.value;
+            if (status === 'present') presentCount++;
+            if (status === 'absent') absentCount++;
+            
+            reportData.push({
+                name: item.name,
+                location: item.location,
+                status: status === 'present' ? 'متواجد' : 'غير متواجد'
+            });
+        });
+
+        if (!allFilled) {
+            alert('الرجاء تعبئة حالة التواجد لجميع المشرفين قبل تصدير التقرير.');
+            return;
+        }
+
+        const noteText = document.getElementById(`notes_${selectedDay}`).value;
+        const signatureImage = canvas.toDataURL('image/png');
+        const isSignatureEmpty = isCanvasBlank(canvas);
+        
+        const today = new Date();
+        const gregorianDate = today.toLocaleDateString('ar-EG');
+        const hijriDate = new Intl.DateTimeFormat('ar-SA-u-ca-islamic', {day: 'numeric', month: 'long', year: 'numeric'}).format(today);
+        
+        const presencePercentage = totalSupervisors > 0 ? ((presentCount / totalSupervisors) * 100).toFixed(1) : 0;
+        const chartSVG = createDoughnutChart(presencePercentage);
+        
+        const newPrimaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim();
+        const newPresentColor = getComputedStyle(document.documentElement).getPropertyValue('--present-color').trim();
+        const newAbsentColor = getComputedStyle(document.documentElement).getPropertyValue('--absent-color').trim();
+
+        const reportHTML = `
+        <!DOCTYPE html>
+        <html lang="ar" dir="rtl">
+        <head>
+            <meta charset="UTF-8">
+            <title>تقرير الإشراف اليومي - ${selectedDay}</title>
+            <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+            <style>
+                body { font-family: 'Cairo', sans-serif; direction: rtl; color: #2d3748; background-color: #f7fafc; margin: 0; padding: 20px; }
+                .report-container { width: 100%; max-width: 800px; margin: 0 auto; padding: 20px; background-color: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+                .report-header { text-align: center; margin-bottom: 20px; }
+                .report-header h1 { font-size: 2em; margin: 0; color: ${newPrimaryColor}; }
+                .report-header p { font-size: 1.2em; margin: 5px 0; }
+                .date-bar { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 25px; border-top: 2px solid ${newPrimaryColor}; border-bottom: 2px solid ${newPrimaryColor}; padding: 10px 0; font-size: 0.9em; }
+                .summary-box { background-color: #f8f9fa; border-radius: 8px; padding: 20px; margin-bottom: 30px; }
+                .summary-table { width: 100%; }
+                .summary-table td { vertical-align: middle; }
+                .section-title { font-size: 1.3em; margin-bottom: 15px; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+                .details-table { width: 100%; border-collapse: collapse; }
+                .details-table th, .details-table td { padding: 12px; text-align: right; }
+                .details-table thead { background-color: #34495e; color: white; }
+                .details-table tbody tr { border-bottom: 1px solid #eee; }
+                .notes-box { margin-top: 30px; }
+                .notes-content { margin: 0; background-color: #f8f9fa; padding: 15px; border-radius: 5px; white-space: pre-wrap; }
+                .signature-section { margin-top: 50px; text-align: left; padding-top: 20px; border-top: 1px solid #ccc; }
+            </style>
+        </head>
+        <body>
+            <div class="report-container">
+                <div class="report-header">
+                    <h1>تقرير الإشراف اليومي</h1>
+                    <p>مدرسة ثانوية دار التوحيد</p>
+                </div>
+
+                <div class="date-bar">
+                    <p><strong>اليوم:</strong> ${selectedDay}</p>
+                    <p><strong>التاريخ:</strong> ${gregorianDate} م - الموافق ${hijriDate}</p>
+                </div>
+                
+                <div class="summary-box">
+                    <table class="summary-table">
+                        <tr>
+                            <td>
+                                <h2 style="margin-top: 0; margin-bottom: 20px; color: #2c3e50;">ملخص التواجد</h2>
+                                <div style="font-size: 1.1em; line-height: 1.8;">
+                                    <p style="margin: 0;"><strong>إجمالي المشرفين:</strong> ${totalSupervisors}</p>
+                                    <p style="margin: 0;"><strong>عدد المتواجدين:</strong> ${presentCount}</p>
+                                    <p style="margin: 0;"><strong>عدد الغير متواجدين:</strong> ${absentCount}</p>
+                                </div>
+                            </td>
+                            <td style="text-align: center; width: 150px;">
+                                <h3 style="margin: 0 0 10px 0; color: #2c3e50;">نسبة التواجد</h3>
+                                ${chartSVG}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div>
+                    <h3 class="section-title">تفاصيل تواجد المشرفين:</h3>
+                    <table class="details-table">
+                        <thead>
+                            <tr>
+                                <th>المشرف</th>
+                                <th>الموقع</th>
+                                <th>الحالة</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${reportData.map(d => `
+                                <tr>
+                                    <td>${d.name}</td>
+                                    <td>${d.location}</td>
+                                    <td style="font-weight: bold; color: ${d.status === 'متواجد' ? newPresentColor : newAbsentColor};">${d.status}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+
+                ${noteText.trim() ? `
+                <div class="notes-box">
+                    <h3 class="section-title">الأحداث والملاحظات:</h3>
+                    <p class="notes-content">${noteText}</p>
+                </div>
+                ` : ''}
+
+                <div class="signature-section">
+                    <h3 style="font-size: 1.2em;">يعــده ويعتمــده:</h3>
+                    <p>وكيل المدرسة / سلطان الخديدي</p>
+                    ${!isSignatureEmpty ? `<img src="${signatureImage}" style="width: 200px; height: auto; margin-top: 10px;"/>` : '<p style="color: #999;">(لم يتم التوقيع)</p>'}
+                </div>
+            </div>
+        </body>
+        </html>
+        `;
+
+        const reportWindow = window.open("", "_blank");
+        reportWindow.document.write(reportHTML);
+        reportWindow.document.close();
+    });
+    
+    function isCanvasBlank(canvas) {
+        const context = canvas.getContext('2d');
+        const pixelBuffer = new Uint32Array(context.getImageData(0, 0, canvas.width, canvas.height).data.buffer);
+        return !pixelBuffer.some(color => color !== 0);
+    }
+</script>
+</body>
+</html>
+
