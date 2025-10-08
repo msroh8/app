@@ -1,0 +1,1615 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الدرس التفاعلي: إدارة الملاحظات (OneNote)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #8E44AD; /* OneNote Purple */
+            --accent-color: #9B59B6;
+            --bg-color: #ecf0f1;
+            --text-color: #34495e;
+            --light-gray: #bdc3c7;
+            --card-bg: #ffffff;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --gold-medal: #ffd700;
+            --silver-medal: #c0c0c0;
+            --bronze-medal: #cd7f32;
+            --assessment-bg: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            line-height: 1.8;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        header {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.2em;
+        }
+
+        .main-content {
+            display: flex;
+        }
+
+        nav {
+            width: 220px;
+            background-color: #34495e;
+            padding: 15px;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        nav h3 {
+            margin-top: 0;
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 10px;
+        }
+
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        nav li {
+            padding: 12px 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+            font-size: 1.1em;
+        }
+
+        nav li:hover, nav li.active {
+            background-color: var(--secondary-color);
+        }
+
+        .content-area {
+            flex-grow: 1;
+            padding: 25px;
+            overflow-y: auto;
+            max-height: 80vh;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        h2 {
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--secondary-color);
+            padding-bottom: 10px;
+            margin-top: 0;
+            font-size: 1.8em;
+        }
+        
+        h3 {
+            color: var(--primary-color);
+            font-size: 1.5em;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .section-header h2 {
+            margin: 0;
+        }
+
+        .question-icon {
+            font-size: 1.5em;
+            color: var(--secondary-color);
+            cursor: pointer;
+            background: #f1f1f1;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            flex-shrink: 0;
+        }
+        .question-icon:hover {
+            transform: scale(1.1);
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .illustration {
+            width: 100%;
+            max-width: 600px;
+            margin: 20px auto;
+            display: block;
+        }
+        
+        table.styled-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            font-size: 0.9em;
+            border-radius: 5px 5px 0 0;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .styled-table thead tr {
+            background-color: var(--primary-color);
+            color: #ffffff;
+            text-align: right;
+        }
+        
+        .styled-table th,
+        .styled-table td {
+            padding: 12px 15px;
+            border: 1px solid #dddddd;
+        }
+
+        .styled-table tbody tr {
+            border-bottom: 1px solid #dddddd;
+        }
+
+        .styled-table tbody tr:nth-of-type(even) {
+            background-color: #f3f3f3;
+        }
+
+        .styled-table tbody tr:last-of-type {
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        /* --- KWL Chart --- */
+        .kwl-chart {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .kwl-column {
+            background-color: var(--assessment-bg);
+            padding: 15px;
+            border-radius: 8px;
+            border-top: 5px solid;
+        }
+        .kwl-column h4 {
+            margin-top: 0;
+            text-align: center;
+        }
+        .kwl-column textarea {
+            width: 100%;
+            height: 150px;
+            border: 1px solid var(--light-gray);
+            border-radius: 5px;
+            padding: 10px;
+            box-sizing: border-box;
+            resize: vertical;
+        }
+        #kwl-k { border-color: var(--secondary-color); }
+        #kwl-w { border-color: var(--warning-color); }
+        #kwl-l { border-color: var(--success-color); }
+
+        /* --- Learning Plan --- */
+        .learning-plan {
+            background-color: #fdfaf4;
+            border: 1px solid #f39c12;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .learning-plan h3 {
+            margin-top: 0;
+            color: #d35400;
+        }
+
+        /* --- Management Box --- */
+        .management-box {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 250px;
+            background: var(--card-bg);
+            border: 1px solid var(--light-gray);
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            padding: 15px;
+            z-index: 1000;
+        }
+        
+        .management-box h4 {
+            margin: 0 0 10px 0;
+            text-align: center;
+            color: var(--primary-color);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .management-box h4::after {
+            content: '−';
+            font-weight: bold;
+            padding: 0 5px;
+        }
+        .management-box.collapsed h4::after {
+            content: '+';
+        }
+        .management-box.collapsed .management-box-content {
+            display: none;
+        }
+        .management-box-content {
+            animation: fadeIn 0.5s;
+        }
+
+        .timer {
+            font-size: 2em;
+            text-align: center;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        .timer-controls button {
+            margin: 0 5px;
+        }
+        
+        .management-box button, .btn {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-family: 'Tajawal', sans-serif;
+        }
+        .management-box button:hover, .btn:hover {
+            background-color: var(--accent-color);
+        }
+        .btn-danger { background-color: #e74c3c; }
+        .btn-danger:hover { background-color: #c0392b; }
+        .btn-success { background-color: var(--success-color); }
+        .btn-success:hover { background-color: #27ae60; }
+        .btn-warning { background-color: var(--warning-color); }
+        .btn-warning:hover { background-color: #e67e22; }
+
+        select, input[type="text"], input[type="date"], textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border: 1px solid var(--light-gray);
+            box-sizing: border-box;
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        #student-list {
+            list-style: none;
+            padding: 0;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        #student-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px;
+            border-bottom: 1px solid #eee;
+        }
+        #student-list input {
+            border: none;
+            background: transparent;
+            width: 60%;
+        }
+        #student-list button {
+            font-size: 0.8em;
+            padding: 2px 5px;
+        }
+        
+        .add-student-form {
+            display: flex;
+            margin-top: 10px;
+        }
+        .add-student-form input {
+            flex-grow: 1;
+            margin-bottom: 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .add-student-form button {
+            border-radius: 5px 0 0 5px;
+            padding: 8px;
+        }
+
+        /* --- Modal --- */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 25px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 700px;
+            border-radius: 10px;
+            position: relative;
+            animation: slideIn 0.4s;
+        }
+        @keyframes slideIn {
+            from { top: -100px; opacity: 0; }
+            to { top: 0; opacity: 1; }
+        }
+        .close-btn {
+            color: #aaa;
+            position: absolute;
+            left: 15px;
+            top: 10px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close-btn:hover, .close-btn:focus {
+            color: black;
+        }
+
+        /* --- Story & Quizzes --- */
+        .story-box {
+            background-color: #fdfaf4;
+            border-right: 5px solid #f39c12;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .story-box h3 {
+            color: #d35400;
+        }
+        
+        .quiz-container {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 8px;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        .quiz-options label {
+            display: block;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #e9e9e9;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .quiz-options label:hover {
+            background: #dcdcdc;
+        }
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            display: none;
+        }
+        .quiz-feedback.correct {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .quiz-feedback.incorrect {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        /* --- Interactive Activities --- */
+        .knowledge-bulletin {
+            background-color: #f3e5f5; /* Light Purple */
+            border-right: 5px solid var(--secondary-color);
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .click-track-activity {
+            margin: 20px 0;
+        }
+        .track-item {
+            background-color: #f1f1f1;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .track-item:hover {
+            background-color: #e0e0e0;
+        }
+        .track-item .content {
+            display: none;
+            margin-top: 10px;
+            border-top: 1px solid #ccc;
+            padding-top: 10px;
+        }
+        .track-item.active {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        .track-item.active .content {
+            display: block;
+        }
+
+        .classroom-activity {
+            background-color: #fef5e7;
+            border-right: 5px solid #f39c12;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .classroom-activity ul {
+            padding-right: 20px;
+        }
+        
+        /* --- Formative Assessment Style --- */
+        .formative-assessment {
+            background-color: var(--assessment-bg);
+            border-right: 5px solid var(--primary-color);
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .formative-assessment h4 {
+            margin-top: 0;
+            color: var(--primary-color);
+            font-size: 1.3em;
+        }
+        .formative-assessment p {
+            margin-bottom: 15px;
+        }
+        .formative-assessment .controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        .formative-assessment .controls select {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        .formative-assessment .controls button {
+            flex-shrink: 0;
+        }
+        
+        /* --- Drag and Drop Game --- */
+        #game-container {
+            padding: 20px;
+            background-color: #f0f0f0;
+            border-radius: 8px;
+        }
+        #game-slots {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: white;
+            border-radius: 8px;
+        }
+        .game-slot {
+            width: 120px;
+            height: 50px;
+            border: 2px dashed var(--light-gray);
+            border-radius: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+        }
+        #game-items {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .game-item {
+            padding: 10px 15px;
+            background-color: var(--secondary-color);
+            color: white;
+            border-radius: 5px;
+            cursor: grab;
+            text-align: center;
+        }
+        .game-item:active {
+            cursor: grabbing;
+        }
+        .game-feedback {
+            text-align: center;
+            margin-top: 15px;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        
+        /* --- Report --- */
+        #report-page table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        #report-page th, #report-page td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: right;
+        }
+        #report-page th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        #report-page h3 {
+             color: var(--primary-color);
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 20px;
+            background-color: var(--primary-color);
+            color: white;
+            font-size: 0.9em;
+        }
+        
+        /* --- Notification --- */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s, visibility 0.5s, bottom 0.5s;
+        }
+        .notification.show {
+            opacity: 1;
+            visibility: visible;
+            bottom: 40px;
+        }
+        
+        /* --- Follow-up Modal (IMPROVED) --- */
+        #followup-modal .modal-header {
+            text-align: center;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+        #followup-modal .modal-header h3, #followup-modal .modal-header p {
+            margin: 5px 0;
+        }
+        #followup-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        #followup-table th, #followup-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+            vertical-align: middle;
+        }
+        #followup-table th {
+            background-color: #f2f2f2;
+        }
+        #followup-table td:first-child {
+            text-align: right;
+            width: 35%;
+        }
+        .status-cell {
+            cursor: pointer;
+            font-size: 1.5em;
+            font-weight: bold;
+            width: 15%;
+        }
+        .status-cell.checked { color: var(--success-color); }
+        .status-cell.crossed { color: var(--accent-color); }
+        
+        .participation-cell {
+            cursor: pointer;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        
+        .behavior-cell input {
+            width: 90%;
+            padding: 4px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        
+        #followup-modal .modal-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+            font-size: 0.9em;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Management Box -->
+    <div class="management-box" id="management-box">
+        <h4 id="management-box-header">إدارة الحصة</h4>
+        <div class="management-box-content">
+            <div class="timer" id="timer-display">00:00</div>
+            <div class="timer-controls" style="text-align: center; margin-bottom: 15px;">
+                <button id="start-timer">بدء</button>
+                <button id="pause-timer">إيقاف</button>
+                <button id="reset-timer">إعادة</button>
+            </div>
+            <button id="open-followup-btn" style="width: 100%; margin-bottom: 10px;">متابعة الحصة</button>
+            
+            <hr>
+
+            <label for="class-select">الفصل:</label>
+            <select id="class-select">
+                 <optgroup label="الفصول">
+                    <option value="302" selected>فصل 302</option>
+                </optgroup>
+            </select>
+            
+            <ul id="student-list">
+                <!-- Student list will be populated by JS -->
+            </ul>
+            <div class="add-student-form">
+                <input type="text" id="new-student-name" placeholder="اسم الطالبة الجديدة">
+                <button id="add-student-btn">إضافة</button>
+            </div>
+
+            <label for="strategy-select" style="margin-top: 10px;">استراتيجية التدريس:</label>
+            <select id="strategy-select">
+                <option>العصف الذهني</option>
+                <option>التطبيق العملي المباشر</option>
+                <option>التعلم التعاوني</option>
+                <option>المناقشة والحوار</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1 id="lesson-title">إدارة الملاحظات (OneNote)</h1>
+        </header>
+
+        <div class="main-content">
+            <nav>
+                <h3>قائمة الدرس</h3>
+                <ul id="nav-menu">
+                    <li data-page="intro" class="active">المقدمة وخطة التعلم</li>
+                    <li data-page="game">لعبة تفاعلية</li>
+                    <li data-page="kwl">استراتيجية جدول التعلم</li>
+                    <li data-page="diagnostic-quiz">تقويم تشخيصي</li>
+                    <li data-page="section1">تنظيم دفتر الملاحظات</li>
+                    <li data-page="section2">إدارة الأقسام والصفحات</li>
+                    <li data-page="section3">العمل عبر الإنترنت</li>
+                    <li data-page="section4">المشاركة والتعاون</li>
+                    <li data-page="report">تقرير الدرس</li>
+                </ul>
+            </nav>
+
+            <main class="content-area">
+                <!-- Page 1: Introduction & Learning Plan -->
+                <div id="intro-page" class="page active">
+                    <div class="section-header">
+                        <h2>تمهيد: قصة ليوناردو دافنشي</h2>
+                    </div>
+                     <div class="story-box">
+                        <h3>قصة دفاتر ملاحظات دافنشي: العقل المنظم</h3>
+                        <p>ليوناردو دافنشي، الفنان والعالم العظيم، لم يكن يمتلك حاسبًا أو تطبيق OneNote، لكنه كان يمتلك نظامًا مذهلاً لجمع أفكاره وملاحظاته. كان يحمل معه دائمًا دفاتر صغيرة يسجل فيها كل شيء: رسومات تشريحية، تصاميم لآلات طائرة، ملاحظات حول حركة المياه، وحتى قوائم مشترياته. هذه الدفاتر لم تكن مجرد أوراق مبعثرة، بل كانت منظمة بطريقته الخاصة، حيث يجمع الأفكار المتشابهة معًا.</p>
+                        <p>كانت هذه الدفاتر بمثابة "عقله الخارجي"، مكان واحد يجمع فيه كل معرفته وإبداعاته. اليوم، يقوم برنامج مثل Microsoft OneNote بنفس الدور ولكن بشكل رقمي وأكثر قوة. يسمح لنا بإنشاء دفاتر ملاحظات لكل جانب من جوانب حياتنا، وتقسيمها إلى أقسام وصفحات، تمامًا كما كان يفعل دافنشي، ولكن مع ميزة إضافية هائلة: القدرة على البحث الفوري والوصول إلى معلوماتنا من أي مكان في العالم.</p>
+                    </div>
+
+                    <div id="learning-plan-section" class="learning-plan">
+                        <h3>خطة التعلم للطالبة وولي الأمر</h3>
+                        <h4>أهداف التعلم:</h4>
+                        <ul>
+                            <li>أن تميز الطالبة بين مفاهيم دفتر الملاحظات، القسم، والصفحة.</li>
+                            <li>أن تنشئ الطالبة دفتر ملاحظات جديد وتضيف إليه أقسامًا وصفحات.</li>
+                            <li>أن تشرح الطالبة فائدة استخدام OneDrive لحفظ ومشاركة دفاتر الملاحظات.</li>
+                            <li>أن تطبق الطالبة عملياً كيفية مشاركة دفتر ملاحظات مع زميلاتها للسماح بالتحرير.</li>
+                        </ul>
+                        <h4>محتوى الدرس:</h4>
+                        <ol>
+                            <li><strong>تنظيم دفتر الملاحظات:</strong> فهم الهيكلية الأساسية لبرنامج OneNote.</li>
+                            <li><strong>إدارة الأقسام والصفحات:</strong> تعلم المهارات العملية لإضافة وتسمية وتنظيم المحتوى.</li>
+                            <li><strong>العمل عبر الإنترنت:</strong> استكشاف كيفية الوصول للملاحظات من أي مكان باستخدام OneDrive.</li>
+                            <li><strong>المشاركة والتعاون:</strong> تعلم كيفية العمل بشكل جماعي على نفس دفتر الملاحظات.</li>
+                        </ol>
+                        <button class="btn" onclick="exportLearningPlan()">تصدير الخطة</button>
+                    </div>
+                </div>
+                
+                <!-- Game Page -->
+                <div id="game-page" class="page">
+                    <h2>لعبة تفاعلية: رتب خطوات التنظيم</h2>
+                    <p>اسحب وأفلت الصناديق بالترتيب الصحيح لتنظيم ملاحظاتك لمادة الرياضيات.</p>
+                    <div id="game-container">
+                        <div id="game-slots">
+                            <div class="game-slot" data-order="1">الخطوة 1</div>
+                            <div class="game-slot" data-order="2">الخطوة 2</div>
+                            <div class="game-slot" data-order="3">الخطوة 3</div>
+                        </div>
+                        <div id="game-items">
+                            <div class="game-item" draggable="true" data-item="3">أضف صفحة "درس المعادلات"</div>
+                            <div class="game-item" draggable="true" data-item="1">أنشئ دفتر ملاحظات "المدرسة"</div>
+                            <div class="game-item" draggable="true" data-item="2">أنشئ قسم "الرياضيات"</div>
+                        </div>
+                        <p class="game-feedback" id="game-feedback-text"></p>
+                    </div>
+                </div>
+
+                <!-- KWL Page -->
+                <div id="kwl-page" class="page">
+                    <h2>استراتيجية جدول التعلم (KWL)</h2>
+                    <p>قبل أن نبدأ، شاركينا ما تعرفينه بالفعل وماذا تريدين أن تتعلمي عن إدارة الملاحظات الرقمية.</p>
+                    <div class="kwl-chart">
+                        <div class="kwl-column" id="kwl-k">
+                            <h4>ماذا أعرف؟ (Know)</h4>
+                            <textarea id="kwl-k-input" placeholder="اكتبي هنا ما تعرفينه مسبقًا عن برامج تدوين الملاحظات..."></textarea>
+                        </div>
+                        <div class="kwl-column" id="kwl-w">
+                            <h4>ماذا أريد أن أتعلم؟ (Want)</h4>
+                            <textarea id="kwl-w-input" placeholder="اكتبي هنا الأسئلة التي لديك حول OneNote أو تنظيم الملاحظات..."></textarea>
+                        </div>
+                        <div class="kwl-column" id="kwl-l">
+                            <h4>ماذا تعلمت؟ (Learned)</h4>
+                            <textarea id="kwl-l-input" placeholder="في نهاية الدرس، عودي إلى هنا واكتبي أهم الأشياء التي تعلمتيها..."></textarea>
+                        </div>
+                    </div>
+                     <div class="formative-assessment">
+                        <h4>مشاركة الأفكار</h4>
+                        <p>بعد تعبئة الحقلين الأول والثاني، اختري طالبة لمشاركة أفكارها مع الفصل.</p>
+                        <div class="controls">
+                            <select id="fa-kwl-student"></select>
+                            <button class="btn" onclick="submitFA('fa-kwl', 'مشاركة جدول التعلم', true)">تسجيل المشاركة</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Page 2: Diagnostic Quiz -->
+                <div id="diagnostic-quiz-page" class="page">
+                    <h2>تقويم تشخيصي</h2>
+                    <p>أجيبي عن الأسئلة التالية لقياس معرفتك المبدئية بالموضوع.</p>
+                    <div class="quiz-container" id="diag-quiz1">
+                        <p class="quiz-question" data-question-text="1. ما هو الترتيب الهرمي الصحيح للتنظيم في OneNote؟">1. ما هو الترتيب الهرمي الصحيح للتنظيم في OneNote؟</p>
+                        <div class="quiz-options">
+                            <label><input type="radio" name="q1" value="a"> صفحات > أقسام > دفاتر ملاحظات</label>
+                            <label><input type="radio" name="q1" value="b"> دفاتر ملاحظات > أقسام > صفحات</label>
+                            <label><input type="radio" name="q1" value="c"> أقسام > دفاتر ملاحظات > صفحات</label>
+                        </div>
+                        <button class="btn" onclick="checkAnswer('diag-quiz1', 'b', 'q1')">تحقق من الإجابة</button>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-container" id="diag-quiz2">
+                        <p class="quiz-question" data-question-text="2. هل تحتاج إلى الضغط على زر 'حفظ' بشكل مستمر أثناء العمل في OneNote؟">2. هل تحتاج إلى الضغط على زر "حفظ" بشكل مستمر أثناء العمل في OneNote؟</p>
+                        <div class="quiz-options">
+                            <label><input type="radio" name="q2" value="a"> نعم، يجب الحفظ يدويًا.</label>
+                            <label><input type="radio" name="q2" value="b"> لا، يقوم OneNote بالحفظ التلقائي والمستمر.</label>
+                        </div>
+                        <button class="btn" onclick="checkAnswer('diag-quiz2', 'b', 'q2')">تحقق من الإجابة</button>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                    <div class="quiz-container" id="diag-quiz3">
+                        <p class="quiz-question" data-question-text="3. ما هي الفائدة الرئيسية من حفظ دفاتر ملاحظاتك على OneDrive؟">3. ما هي الفائدة الرئيسية من حفظ دفاتر ملاحظاتك على OneDrive؟</p>
+                        <div class="quiz-options">
+                            <label><input type="radio" name="q3" value="a"> جعل الملفات أكبر حجمًا.</label>
+                            <label><input type="radio" name="q3" value="b"> الوصول إليها من أي جهاز ومشاركتها مع الآخرين.</label>
+                            <label><input type="radio" name="q3" value="c"> تغيير لون دفتر الملاحظات.</label>
+                        </div>
+                        <button class="btn" onclick="checkAnswer('diag-quiz3', 'b', 'q3')">تحقق من الإجابة</button>
+                        <div class="quiz-feedback"></div>
+                    </div>
+                </div>
+
+                <!-- Page 3: Section 1 -->
+                <div id="section1-page" class="page">
+                    <div class="section-header">
+                        <div class="question-icon" onclick="openQuestionModal('لماذا من المفيد فصل المواد الدراسية المختلفة في دفاتر ملاحظات منفصلة بدلاً من وضعها جميعًا في دفتر واحد كبير؟', 'section1')">؟</div>
+                        <h2>تنظيم دفتر الملاحظات</h2>
+                    </div>
+                    <p>برنامج مايكروسوفت ون نوت (Microsoft OneNote) هو بمثابة دفتر ملاحظات رقمي يوفر لك مكانًا واحدًا يمكنك فيه جمع كل ملاحظاتك ومعلوماتك.</p>
+                    
+                    <h3>هيكلية التنظيم</h3>
+                    <p>من السهل جدًا تنظيم ملاحظاتك إذا تعاملت مع هذا الدفتر الإلكتروني كأنه مجموعة من دفاترك المدرسية:</p>
+                    
+                    <svg class="illustration" viewBox="0 0 500 200" xmlns="http://www.w3.org/2000/svg">
+                        <style>.label-onenote { font-family: 'Tajawal', sans-serif; font-size: 14px; text-anchor: middle; }</style>
+                        <!-- Notebooks -->
+                        <rect x="20" y="50" width="120" height="100" fill="#f3e5f5" stroke="#8E44AD" rx="5"/>
+                        <text x="80" y="105" class="label-onenote">دفاتر الملاحظات</text>
+                        <!-- Sections -->
+                        <rect x="190" y="20" width="120" height="40" fill="#e8def0" stroke="#8E44AD" rx="5"/>
+                        <text x="250" y="45" class="label-onenote">الأقسام</text>
+                        <!-- Pages -->
+                        <rect x="360" y="50" width="120" height="100" fill="#f9f6fb" stroke="#8E44AD" rx="5"/>
+                        <text x="420" y="105" class="label-onenote">الصفحات</text>
+
+                        <path d="M145 100 H 185" stroke="#8E44AD" stroke-width="2" marker-end="url(#arrowhead-cycle)"/>
+                        <path d="M315 40 Q 340 70, 355 90" stroke="#8E44AD" stroke-width="2" marker-end="url(#arrowhead-cycle)" fill="none"/>
+                    </svg>
+
+                    <div class="formative-assessment" id="fa1">
+                        <h4>أسلوب التقويم: السؤال المفتوح</h4>
+                        <p>تخيلي أنك طالبة جامعية تدرسين تخصصين مختلفين (مثل الهندسة والأدب). كيف ستقومين بتنظيم ملاحظاتك ودراستك باستخدام هيكلية OneNote (دفاتر، أقسام، صفحات)؟</p>
+                        <textarea id="fa1-response" rows="4" placeholder="سأقوم بإنشاء دفتر ملاحظات... ثم أقسام... ثم صفحات..."></textarea>
+                        <div class="controls">
+                            <select id="fa1-student"></select>
+                            <button class="btn" onclick="submitFA('fa1', 'السؤال المفتوح')">تسليم الإجابة</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Page 4: Section 2 -->
+                <div id="section2-page" class="page">
+                    <div class="section-header">
+                         <div class="question-icon" onclick="openQuestionModal('ما هي فائدة استخدام الصفحات الفرعية لتنظيم الملاحظات داخل قسم واحد؟ أعطي مثالاً من مادة دراسية.', 'section2')">؟</div>
+                        <h2>إدارة الأقسام والصفحات</h2>
+                    </div>
+                    <p>بعد إنشاء دفتر الملاحظات، يمكنك تقسيمه إلى أقسام (مثل الفصول في الكتاب)، وكل قسم يحتوي على صفحات متعددة (مثل الدروس).</p>
+                    
+                    <h3>الأقسام (Sections) والصفحات (Pages)</h3>
+                    <p>لإضافة قسم جديد، اضغطي على زر "+ إضافة مقطع". لإعادة تسميته، اضغطي عليه بزر الفأرة الأيمن. وبالمثل، لإضافة صفحة جديدة داخل القسم المحدد، اضغطي على زر "+ إضافة صفحة".</p>
+
+                    <div class="classroom-activity">
+                        <h4>نشاط صفي بسيط: تنظيم مادة دراسية</h4>
+                        <p>اطلبي من كل طالبة (أو كل مجموعة) اختيار مادة دراسية. على ورقة، اطلبي منهن كتابة اسم دفتر الملاحظات (مثال: "العام الدراسي"). ثم، كتابة 3 أقسام (مثال: الرياضيات، العلوم، اللغة العربية). وأخيرًا، كتابة صفحتين تحت كل قسم (مثال: تحت "الرياضيات"، يمكن وضع صفحة "الجبر" وصفحة "الهندسة").</p>
+                    </div>
+                </div>
+                
+                <!-- Page 5: Section 3 -->
+                <div id="section3-page" class="page">
+                    <div class="section-header">
+                         <div class="question-icon" onclick="openQuestionModal('ما الفرق بين إنشاء دفتر ملاحظات جديد مباشرة على OneDrive وبين تحميل دفتر ملاحظات موجود من جهازك؟', 'section3')">؟</div>
+                        <h2>العمل عبر الإنترنت</h2>
+                    </div>
+                    <p>للوصول إلى ملاحظاتك من أي مكان، يمكنك استخدام OneDrive، وهي خدمة التخزين السحابي من مايكروسوفت. يتم حفظ دفاتر الملاحظات تلقائيًا هناك، مما يتيح لك فتحها من أي متصفح ويب أو من تطبيق OneNote على أي جهاز.</p>
+                    
+                    <div class="formative-assessment" id="fa2">
+                        <h4>أسلوب التقويم: الخطأ المقصود</h4>
+                        <p>اقرأي العبارة التالية: "بما أن OneNote يحفظ تلقائيًا، فلا داعي للقلق بشأن حفظ عملي على OneDrive، حيث ستتم مزامنته دائمًا حتى لو لم يكن جهازي متصلاً بالإنترنت". حددي الخطأ في هذه العبارة وصححيه.</p>
+                        <textarea id="fa2-response" rows="3" placeholder="الخطأ هو... والتصحيح هو..."></textarea>
+                        <div class="controls">
+                            <select id="fa2-student"></select>
+                            <button class="btn" onclick="submitFA('fa2', 'الخطأ المقصود')">تسليم الإجابة</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Page 6: Section 4 -->
+                <div id="section4-page" class="page">
+                    <div class="section-header">
+                         <div class="question-icon" onclick="openQuestionModal('ماذا يعني خيار "السماح بالتحرير" (Allow editing) عند مشاركة دفتر ملاحظات؟ وما هي المخاطر المحتملة إذا قمت بتمكين هذا الخيار مع شخص لا تثقين به؟', 'section4')">؟</div>
+                        <h2>المشاركة والتعاون</h2>
+                    </div>
+                    <p>إحدى أقوى ميزات OneNote هي القدرة على مشاركة دفاتر الملاحظات مع الآخرين والتعاون عليها في نفس الوقت. هذا يجعلها أداة مثالية للمشاريع الجماعية والدراسة المشتركة.</p>
+                    <p>يمكن للعديد من الأشخاص تحرير نفس دفتر الملاحظات في نفس الوقت، وستظهر التغييرات التي يجريها كل شخص للآخرين بشكل فوري تقريبًا.</p>
+
+                    <div class="formative-assessment" id="fa3">
+                        <h4>أسلوب التقويم: تذكرة الخروج</h4>
+                        <p>اكتبي شيئاً واحداً مهماً تعلمتيه عن مشاركة دفاتر الملاحظات، وسؤالاً واحداً لا يزال لديك حول التعاون مع الآخرين في OneNote.</p>
+                        <textarea id="fa3-response" rows="4" placeholder="تعلمت أن... &#10;سؤالي هو..."></textarea>
+                        <div class="controls">
+                            <select id="fa3-student"></select>
+                            <button class="btn" onclick="submitFA('fa3', 'تذكرة الخروج')">تسليم الإجابة</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Page 7: Report -->
+                <div id="report-page" class="page">
+                    <h2>تقرير الدرس المفصل</h2>
+                    <div id="report-content">
+                        <!-- Report content will be dynamically generated by JS -->
+                    </div>
+                    <button class="btn" onclick="exportReport()">تصدير التقرير كملف HTML</button>
+                </div>
+            </main>
+        </div>
+        
+        <footer>
+            تصميم معلمة المقرر: أمل الزهراني
+        </footer>
+    </div>
+
+    <!-- Modals -->
+    <div id="question-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('question-modal')">&times;</span>
+            <h3 id="modal-question-text"></h3>
+            <label for="modal-student-select">اختري الطالبة:</label>
+            <select id="modal-student-select"></select>
+            <p>امنحي الطالبة ميدالية:</p>
+            <div>
+                <button class="btn" style="background-color: var(--gold-medal);" onclick="awardMedal('gold')">🥇 ذهبية</button>
+                <button class="btn" style="background-color: var(--silver-medal);" onclick="awardMedal('silver')">🥈 فضية</button>
+                <button class="btn" style="background-color: var(--bronze-medal);" onclick="awardMedal('bronze')">🥉 برونزية</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="followup-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('followup-modal')">&times;</span>
+            <div class="modal-header">
+                <h3>كشف متابعة الحصة</h3>
+                <p><strong>الدرس:</strong> <span id="followup-lesson-title"></span></p>
+                <p><strong>الصف:</strong> <span id="followup-class-name"></span> | <strong>التاريخ:</strong> <span id="followup-date"></span></p>
+            </div>
+            <div class="modal-body">
+                <table id="followup-table">
+                    <thead>
+                        <tr>
+                            <th>اسم الطالبة</th>
+                            <th>الحضور</th>
+                            <th>المشاركة</th>
+                            <th>السلوك (ملاحظات)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="followup-table-body"></tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+               
+                <button class="btn" id="export-followup-btn">تصدير كشف المتابعة</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="notification" class="notification"></div>
+
+
+    <script>
+        // --- STATE MANAGEMENT ---
+        const appState = {
+            currentPage: 'intro',
+            currentClass: '302', // Default class
+            students: {},
+            medals: [],
+            followup: {},
+            formativeAssessments: {},
+            diagnosticQuizResults: {},
+            interactions: [],
+            kwl: { k: '', w: '', l: '' },
+            classActivity: {
+                organizationMethod: 'مجموعات',
+                groups: []
+            },
+            timer: {
+                interval: null,
+                seconds: 0,
+                isRunning: false
+            },
+            draggedItem: null
+        };
+
+        const masterStudentLists = {
+            "302": [
+                "ابرار معيض عيضه الثقفي", "أرياف رداد بن عبدالهادي بن محمود الساعدي الشمالي", "أسماء عبدالرحيم عبدالمحسن الريحاني", "البتول عادل بخيت العتيبي",
+                "ايلاف بنت ابراهيم بن حسن عواجي", "بيان محمد بن حمدي السواط", "جمانه ابراهيم سالم باجبير", "حنان حضرت میر محمد اكبر", "دارين فهد بن عطيه عبدالملك",
+                "رغد فيضالرحمن عبد الغفار مظهر", "رفا بنت متعب بن تركي العوفي", "رفيف محمد يحيى زعطان", "رنيم بنت محمد بن مسلم الثمالي",
+                "رؤى احمد بن محمد بن صالح المغربي", "ريتاج عبدالحكيم مظفر انور",
+                "ريناد طارق عوضه الزهراني", "شادن فهد بن خضر النفيعي", "فاطمه حسين على احمد", "لانا محمد بن رزق الله الطلحي", "ليان بنت هاني ابن عبدالرحمن السليماني",
+                "مستوره شعيل بن علي الهذلي", "مها بنت فهد ابن حسن المالكي", "همس فيصل بن عصبي الحارثي", "وتين عبدالكريم بن جابر الثبيتي", "وسن خالد عيضه المالكي", "يارا عمر هارون"
+            ]
+        };
+        
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const navLinks = document.querySelectorAll('#nav-menu li');
+            navLinks.forEach(link => link.addEventListener('click', () => navigateTo(link.dataset.page)));
+
+            const classSelect = document.getElementById('class-select');
+            classSelect.addEventListener('change', (e) => {
+                appState.currentClass = e.target.value;
+                initializeStudentsForClass(appState.currentClass);
+            });
+            
+            for (const classId in masterStudentLists) {
+                masterStudentLists[classId] = masterStudentLists[classId]
+                    .map(name => name.replace(/\s*/g, '').trim())
+                    .filter((value, index, self) => self.indexOf(value) === index && value.length > 1);
+            }
+
+            initializeStudentsForClass(appState.currentClass);
+            
+            document.getElementById('start-timer').addEventListener('click', startTimer);
+            document.getElementById('pause-timer').addEventListener('click', pauseTimer);
+            document.getElementById('reset-timer').addEventListener('click', resetTimer);
+            document.getElementById('open-followup-btn').addEventListener('click', openFollowupModal);
+            document.getElementById('export-followup-btn').addEventListener('click', exportFollowupReport);
+            document.getElementById('add-student-btn').addEventListener('click', addStudent);
+            document.getElementById('management-box-header').addEventListener('click', () => {
+                document.getElementById('management-box').classList.toggle('collapsed');
+            });
+            
+            // KWL listeners
+            document.getElementById('kwl-k-input').addEventListener('change', (e) => appState.kwl.k = e.target.value);
+            document.getElementById('kwl-w-input').addEventListener('change', (e) => appState.kwl.w = e.target.value);
+            document.getElementById('kwl-l-input').addEventListener('change', (e) => appState.kwl.l = e.target.value);
+            
+            // Game Listeners
+            const gameItems = document.querySelectorAll('.game-item');
+            const gameSlots = document.querySelectorAll('.game-slot');
+            gameItems.forEach(item => {
+                item.addEventListener('dragstart', (e) => { appState.draggedItem = e.target; });
+            });
+            gameSlots.forEach(slot => {
+                slot.addEventListener('dragover', (e) => e.preventDefault());
+                slot.addEventListener('drop', handleGameDrop);
+            });
+
+            populateAllFAStudentDropdowns();
+        });
+
+        function navigateTo(pageId) {
+            appState.currentPage = pageId;
+            document.querySelectorAll('.page').forEach(page => page.classList.toggle('active', page.id === `${pageId}-page`));
+            document.querySelectorAll('#nav-menu li').forEach(link => link.classList.toggle('active', link.dataset.page === pageId));
+            if (pageId === 'report') generateReport();
+        }
+
+        function initializeStudentsForClass(classId) {
+            if (!appState.students[classId]) {
+                const studentNames = masterStudentLists[classId] || [];
+                appState.students[classId] = studentNames.map((name, index) => ({ id: Date.now() + index, name }));
+            }
+            if (!appState.followup[classId]) {
+                appState.followup[classId] = {};
+                appState.students[classId].forEach(s => {
+                    appState.followup[classId][s.id] = { attendance: 'unchecked', participation: 0, behavior: '' };
+                });
+            }
+            if (!appState.formativeAssessments[classId]) appState.formativeAssessments[classId] = {};
+            if (!appState.diagnosticQuizResults[classId]) appState.diagnosticQuizResults[classId] = {};
+            if (!appState.interactions[classId]) appState.interactions[classId] = [];
+
+            renderStudentList();
+            populateAllFAStudentDropdowns();
+        }
+
+        function renderStudentList() {
+            const studentList = document.getElementById('student-list');
+            studentList.innerHTML = '';
+            const currentStudents = appState.students[appState.currentClass] || [];
+            currentStudents.forEach(student => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <input type="text" value="${student.name}" onchange="updateStudentName(${student.id}, this.value)">
+                    <button class="btn-danger" onclick="deleteStudent(${student.id})">حذف</button>
+                `;
+                studentList.appendChild(li);
+            });
+        }
+
+        function updateStudentName(studentId, newName) {
+            const student = appState.students[appState.currentClass].find(s => s.id == studentId);
+            if (student) {
+                student.name = newName.trim();
+                populateAllFAStudentDropdowns();
+            }
+        }
+        
+        function addStudent() {
+            const nameInput = document.getElementById('new-student-name');
+            const newName = nameInput.value.trim();
+            if (newName === '') return showNotification('الرجاء إدخال اسم الطالبة.', 'warning');
+            const newId = Date.now();
+            const newStudent = { id: newId, name: newName };
+            const currentClass = appState.currentClass;
+            appState.students[currentClass].push(newStudent);
+            appState.followup[currentClass][newId] = { attendance: 'unchecked', participation: 0, behavior: '' };
+            nameInput.value = '';
+            renderStudentList();
+            populateAllFAStudentDropdowns();
+            showNotification('تمت إضافة الطالبة بنجاح.');
+        }
+
+        function deleteStudent(studentId) {
+            const currentClass = appState.currentClass;
+            appState.students[currentClass] = appState.students[currentClass].filter(s => s.id != studentId);
+            delete appState.followup[currentClass][studentId];
+            renderStudentList();
+            populateAllFAStudentDropdowns();
+        }
+        
+        function populateStudentDropdown(selectElementId) {
+            const select = document.getElementById(selectElementId);
+            if (!select) return;
+            select.innerHTML = '<option value="">اختري طالبة...</option>';
+            const currentStudents = appState.students[appState.currentClass] || [];
+            currentStudents.forEach(student => {
+                const option = document.createElement('option');
+                option.value = student.id;
+                option.textContent = student.name;
+                select.appendChild(option);
+            });
+        }
+
+        function populateAllFAStudentDropdowns() {
+            ['fa1-student', 'fa-kwl-student', 'fa2-student', 'fa3-student'].forEach(populateStudentDropdown);
+        }
+
+        function submitFA(assessmentId, assessmentTitle, isParticipationOnly = false) {
+            const studentSelect = document.getElementById(`${assessmentId}-student`);
+            const responseTextarea = document.getElementById(`${assessmentId}-response`);
+            const studentId = studentSelect.value;
+            
+            if (!studentId) return showNotification('الرجاء اختيار طالبة.', 'warning');
+            
+            let response = 'تم تسجيل المشاركة.';
+            if (!isParticipationOnly) {
+                response = responseTextarea.value.trim();
+                if (response === '') return showNotification('الرجاء كتابة الإجابة.', 'warning');
+            }
+            
+            const studentName = appState.students[appState.currentClass].find(s => s.id == studentId).name;
+            if (!appState.formativeAssessments[appState.currentClass]) appState.formativeAssessments[appState.currentClass] = {};
+            
+            appState.formativeAssessments[appState.currentClass][assessmentId] = { studentId, studentName, response, title: assessmentTitle };
+            showNotification(`تم تسجيل إجابة الطالبة ${studentName} بنجاح.`);
+            studentSelect.value = '';
+            if (responseTextarea) responseTextarea.value = '';
+        }
+
+        function startTimer() {
+            if (appState.timer.isRunning) return;
+            appState.timer.isRunning = true;
+            appState.timer.interval = setInterval(() => {
+                appState.timer.seconds++;
+                updateTimerDisplay();
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            appState.timer.isRunning = false;
+            clearInterval(appState.timer.interval);
+        }
+
+        function resetTimer() {
+            pauseTimer();
+            appState.timer.seconds = 0;
+            updateTimerDisplay();
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(appState.timer.seconds / 60);
+            const seconds = appState.timer.seconds % 60;
+            document.getElementById('timer-display').textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            if (!notification) return;
+            notification.textContent = message;
+            notification.style.backgroundColor = type === 'success' ? 'var(--primary-color)' : 'var(--warning-color)';
+            notification.classList.add('show');
+            setTimeout(() => notification.classList.remove('show'), 3000);
+        }
+
+        function openModal(modalId) { document.getElementById(modalId).style.display = 'flex'; }
+        function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
+
+        function openQuestionModal(question, section) {
+            if (!question || !section) return;
+            appState.currentQuestion = { section, question };
+            document.getElementById('modal-question-text').textContent = question;
+            const studentSelect = document.getElementById('modal-student-select');
+            studentSelect.innerHTML = '';
+            const currentStudents = appState.students[appState.currentClass] || [];
+            currentStudents.forEach(student => {
+                const option = document.createElement('option');
+                option.value = student.id;
+                option.textContent = student.name;
+                studentSelect.appendChild(option);
+            });
+            openModal('question-modal');
+        }
+
+        function awardMedal(type) {
+            const studentId = document.getElementById('modal-student-select').value;
+            const student = appState.students[appState.currentClass].find(s => s.id == studentId);
+            if (student) {
+                appState.medals.push({ studentId: student.id, studentName: student.name, classId: appState.currentClass, section: appState.currentQuestion.section, medal: type });
+                const medalType = type === 'gold' ? 'ذهبية' : type === 'silver' ? 'فضية' : 'برونزية';
+                showNotification(`تم منح ${student.name} ميدالية ${medalType}.`);
+            }
+            closeModal('question-modal');
+        }
+
+        // --- FOLLOW-UP MODAL (IMPROVED) ---
+        function openFollowupModal() {
+            document.getElementById('followup-lesson-title').textContent = document.getElementById('lesson-title').textContent;
+            document.getElementById('followup-class-name').textContent = document.querySelector(`#class-select option[value="${appState.currentClass}"]`).textContent;
+            document.getElementById('followup-date').textContent = new Date().toLocaleDateString('ar-SA');
+            
+            const tableBody = document.getElementById('followup-table-body');
+            tableBody.innerHTML = '';
+            const currentStudents = appState.students[appState.currentClass];
+            const currentFollowup = appState.followup[appState.currentClass];
+
+            currentStudents.forEach(student => {
+                const studentFollowup = currentFollowup[student.id];
+                const row = document.createElement('tr');
+                
+                let attendanceContent = '';
+                let attendanceClassName = 'status-cell';
+                if (studentFollowup.attendance === 'checked') {
+                    attendanceContent = '✓';
+                    attendanceClassName += ' checked';
+                } else if (studentFollowup.attendance === 'crossed') {
+                    attendanceContent = '✗';
+                    attendanceClassName += ' crossed';
+                }
+
+                row.innerHTML = `
+                    <td>${student.name}</td>
+                    <td class="${attendanceClassName}" data-student-id="${student.id}" data-category="attendance">${attendanceContent}</td>
+                    <td class="participation-cell" data-student-id="${student.id}" data-category="participation">${studentFollowup.participation}</td>
+                    <td class="behavior-cell"><input type="text" value="${studentFollowup.behavior || ''}" data-student-id="${student.id}" data-category="behavior"></td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            tableBody.querySelectorAll('.status-cell, .participation-cell, .behavior-cell input').forEach(cell => {
+                if (cell.tagName === 'INPUT') {
+                    cell.addEventListener('change', handleFollowupChange);
+                } else {
+                    cell.addEventListener('click', handleFollowupChange);
+                }
+            });
+
+            openModal('followup-modal');
+        }
+        
+        function handleFollowupChange(event) {
+            const element = event.target;
+            const studentId = element.dataset.studentId;
+            const category = element.dataset.category;
+            const classId = appState.currentClass;
+            
+            if (category === 'attendance') {
+                const currentState = appState.followup[classId][studentId].attendance;
+                let newState = (currentState === 'unchecked') ? 'checked' : (currentState === 'checked') ? 'crossed' : 'unchecked';
+                appState.followup[classId][studentId].attendance = newState;
+                
+                element.classList.remove('checked', 'crossed');
+                if (newState === 'checked') {
+                    element.textContent = '✓';
+                    element.classList.add('checked');
+                } else if (newState === 'crossed') {
+                    element.textContent = '✗';
+                    element.classList.add('crossed');
+                } else {
+                    element.textContent = '';
+                }
+            } else if (category === 'participation') {
+                appState.followup[classId][studentId].participation++;
+                element.textContent = appState.followup[classId][studentId].participation;
+            } else if (category === 'behavior') {
+                appState.followup[classId][studentId].behavior = element.value;
+            }
+        }
+
+        function exportFollowupReport() {
+            const classId = appState.currentClass;
+            const students = appState.students[classId];
+            const followupData = appState.followup[classId];
+            const lessonTitle = document.getElementById('lesson-title').textContent;
+            
+            let tableRows = '';
+            students.forEach(student => {
+                const data = followupData[student.id];
+                const attendanceSymbol = (status) => (status === 'checked' ? '✓' : status === 'crossed' ? '✗' : '-');
+                tableRows += `<tr><td>${student.name}</td><td style="text-align: center;">${attendanceSymbol(data.attendance)}</td><td style="text-align: center;">${data.participation}</td><td>${data.behavior}</td></tr>`;
+            });
+            const reportHtml = `<html><head><title>كشف متابعة: ${lessonTitle}</title><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet"><style>body{font-family:'Tajawal',sans-serif;direction:rtl;padding:20px;}.report-container{border:2px solid #333;padding:20px;border-radius:10px;max-width:800px;margin:auto;}.header,.footer{text-align:center;margin-bottom:20px;}table{width:100%;border-collapse:collapse;margin-bottom:20px;}th,td{border:1px solid #ddd;padding:12px;text-align:right;}th{background-color:#f2f2f2;text-align:center;}.footer p{margin:5px 0;}</style></head><body><div class="report-container"><div class="header"><h2>كشف متابعة الحصة</h2><h3>${lessonTitle}</h3><p><strong>الصف:</strong> ${document.querySelector(`#class-select option[value="${classId}"]`).textContent} | <strong>التاريخ:</strong> ${new Date().toLocaleDateString('ar-SA')}</p><p><strong>المعلمة:</strong> أمل الزهراني</p></div><table><thead><tr><th>اسم الطالبة</th><th>الحضور</th><th>المشاركة (عدد)</th><th>السلوك (ملاحظات)</th></tr></thead><tbody>${tableRows}</tbody></table><div class="footer"><p><strong>مديرة المدرسة</strong></p><p>(اسم مديرة المدرسة)</p></div></div></body></html>`;
+            const blob = new Blob([reportHtml], { type: 'text/html;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `كشف_متابعة_${lessonTitle}_${document.querySelector(`#class-select option[value="${classId}"]`).textContent}.html`;
+            link.click();
+            URL.revokeObjectURL(link.href);
+        }
+
+        function checkAnswer(quizId, correctAnswer, radioName) {
+            const quizContainer = document.getElementById(quizId);
+            const selectedOption = quizContainer.querySelector(`input[name="${radioName}"]:checked`);
+            const feedbackEl = quizContainer.querySelector('.quiz-feedback');
+            
+            if (!selectedOption) {
+                showNotification('الرجاء اختيار إجابة أولاً.', 'warning');
+                return;
+            }
+            
+            const isCorrect = selectedOption.value === correctAnswer;
+            if (isCorrect) {
+                feedbackEl.textContent = 'إجابة صحيحة! أحسنت.';
+                feedbackEl.className = 'quiz-feedback correct';
+            } else {
+                feedbackEl.textContent = 'إجابة خاطئة. حاولي مرة أخرى.';
+                feedbackEl.className = 'quiz-feedback incorrect';
+            }
+            feedbackEl.style.display = 'block';
+
+            const questionText = quizContainer.querySelector('.quiz-question').dataset.questionText;
+            appState.diagnosticQuizResults[appState.currentClass][quizId] = {
+                question: questionText,
+                answer: selectedOption.parentElement.textContent.trim(),
+                isCorrect: isCorrect
+            };
+        }
+
+        function toggleTrackItem(element) {
+            element.classList.toggle('active');
+            const interactionText = element.querySelector('strong').textContent;
+            appState.interactions[appState.currentClass].push({
+                type: 'نقر على عنصر تفاعلي',
+                description: `"${interactionText}"`,
+                timestamp: new Date()
+            });
+        }
+        
+        function handleGameDrop(e) {
+            e.preventDefault();
+            if (!appState.draggedItem) return;
+            
+            const slot = e.target.closest('.game-slot');
+            if (slot.innerHTML.includes('الخطوة')) { // Check if slot is empty
+                slot.innerHTML = ''; // Clear 'الخطوة X' text
+                slot.appendChild(appState.draggedItem);
+            }
+            checkGameOrder();
+        }
+
+        function checkGameOrder() {
+            const slots = document.querySelectorAll('.game-slot');
+            let correctCount = 0;
+            let allFilled = true;
+            slots.forEach(slot => {
+                const item = slot.querySelector('.game-item');
+                if (item) {
+                    if (item.dataset.item === slot.dataset.order) {
+                        slot.style.borderColor = 'var(--success-color)';
+                        correctCount++;
+                    } else {
+                        slot.style.borderColor = 'var(--accent-color)';
+                    }
+                } else {
+                    allFilled = false;
+                }
+            });
+
+            const feedback = document.getElementById('game-feedback-text');
+            if (allFilled) {
+                if (correctCount === slots.length) {
+                    feedback.textContent = 'ممتاز! الترتيب صحيح.';
+                    feedback.style.color = 'var(--success-color)';
+                } else {
+                    feedback.textContent = 'هناك خطأ في الترتيب، حاولي مرة أخرى.';
+                    feedback.style.color = 'var(--accent-color)';
+                }
+            }
+        }
+        
+        function exportLearningPlan() {
+            const lessonTitle = document.getElementById('lesson-title').textContent;
+            const planContent = document.getElementById('learning-plan-section').innerHTML;
+            
+            const planHtml = `
+                <html>
+                <head>
+                    <title>خطة تعلم: ${lessonTitle}</title>
+                    <meta charset="UTF-8">
+                    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+                    <style>
+                        body { font-family: 'Tajawal', sans-serif; direction: rtl; padding: 30px; line-height: 1.8; color: #34495e; }
+                        .plan-container { border: 2px solid #2c3e50; padding: 20px; border-radius: 10px; max-width: 800px; margin: auto; }
+                        h1, h3, h4 { color: #2c3e50; }
+                        h1 { text-align: center; border-bottom: 2px solid #8E44AD; padding-bottom: 10px; }
+                        h3 { color: #d35400; }
+                        ul, ol { padding-right: 20px; }
+                        button { display: none; } /* Hide button in exported file */
+                    </style>
+                </head>
+                <body>
+                    <div class="plan-container">
+                        <h1>خطة تعلم درس: ${lessonTitle}</h1>
+                        ${planContent}
+                    </div>
+                </body>
+                </html>
+            `;
+            const blob = new Blob([planHtml], { type: 'text/html;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `خطة_تعلم_${lessonTitle}.html`;
+            link.click();
+            URL.revokeObjectURL(link.href);
+        }
+
+        function generateReport() {
+            const reportContent = document.getElementById('report-content');
+            const classId = appState.currentClass;
+            const lessonTitle = document.getElementById('lesson-title').textContent;
+            
+            // Organize class activity data
+            const activityGroups = appState.classActivity.groups;
+            let activityHtml = `<h4>تنظيم الطالبات: ${appState.classActivity.organizationMethod}</h4>`;
+            if(activityGroups && activityGroups.length > 0){
+                activityHtml += '<ul>';
+                activityGroups.forEach((group, index) => {
+                    activityHtml += `<li><strong>المجموعة ${index + 1}:</strong> ${group.join(', ')}</li>`;
+                });
+                activityHtml += '</ul>';
+            } else {
+                 activityHtml += '<p>لم يتم تسجيل تنظيم للنشاط الصفي.</p>';
+            }
+
+
+            let html = `<h3>تفاصيل الحصة</h3>`;
+            html += `<table class="styled-table">
+                        <tr><th>البند</th><th>التفاصيل</th></tr>
+                        <tr><td>عنوان الدرس</td><td>${lessonTitle}</td></tr>
+                        <tr><td>تاريخ اليوم</td><td>${new Date().toLocaleDateString('ar-SA')}</td></tr>
+                        <tr><td>الفصل</td><td>${document.querySelector(`#class-select option[value="${classId}"]`).textContent}</td></tr>
+                        <tr><td>الاستراتيجية المستخدمة</td><td>${document.getElementById('strategy-select').value}</td></tr>
+                     </table>`;
+
+            const diagResults = appState.diagnosticQuizResults[classId] || {};
+            html += `<h3>نتائج التقويم التشخيصي</h3>`;
+            html += `<table class="styled-table">
+                        <thead><tr><th>السؤال</th><th>الإجابة</th><th>النتيجة</th></tr></thead><tbody>`;
+            if (Object.keys(diagResults).length > 0) {
+                for (const key in diagResults) {
+                    const result = diagResults[key];
+                    html += `<tr>
+                                <td>${result.question}</td>
+                                <td>${result.answer}</td>
+                                <td style="color:${result.isCorrect ? 'var(--success-color)' : 'var(--accent-color)'}; font-weight:bold;">${result.isCorrect ? '✓ صحيح' : '✗ خطأ'}</td>
+                             </tr>`;
+                }
+            } else {
+                html += `<tr><td colspan="3">لم يتم الإجابة على أسئلة التقويم التشخيصي.</td></tr>`;
+            }
+            html += `</tbody></table>`;
+
+            const faResults = appState.formativeAssessments[classId] || {};
+            html += `<h3>إجابات التقويم التكويني</h3>`;
+            html += `<table class="styled-table">
+                        <thead><tr><th>أسلوب التقويم</th><th>الطالبة</th><th>الإجابة</th></tr></thead><tbody>`;
+            if (Object.keys(faResults).length > 0) {
+                for (const key in faResults) {
+                    const assessment = faResults[key];
+                    html += `<tr>
+                                <td>${assessment.title}</td>
+                                <td>${assessment.studentName}</td>
+                                <td>${assessment.response.replace(/\n/g, '<br>')}</td>
+                             </tr>`;
+                }
+            } else {
+                html += `<tr><td colspan="3">لم يتم تسجيل إجابات للتقويم التكويني.</td></tr>`;
+            }
+            html += `</tbody></table>`;
+            
+            const interactions = appState.interactions[classId] || [];
+            html += `<h3>التفاعلات الرئيسية خلال الحصة</h3>`;
+            html += `<table class="styled-table">
+                        <thead><tr><th>نوع التفاعل</th><th>الوصف</th></tr></thead><tbody>`;
+            if (interactions.length > 0) {
+                 interactions.forEach(interaction => {
+                    html += `<tr><td>${interaction.type}</td><td>${interaction.description}</td></tr>`;
+                });
+            } else {
+                 html += `<tr><td colspan="2">لم يتم تسجيل أي تفاعلات.</td></tr>`;
+            }
+            html += `</tbody></table>`;
+
+            const medals = appState.medals.filter(m => m.classId === classId);
+            html += `<h3>مشاركة الطالبات (الأسئلة والميداليات)</h3>`;
+            html += `<table class="styled-table">
+                        <thead><tr><th>الطالبة</th><th>الميدالية</th><th>القسم</th></tr></thead><tbody>`;
+            if (medals.length > 0) {
+                medals.forEach(medal => {
+                    const medalIcon = medal.medal === 'gold' ? '🥇' : medal.medal === 'silver' ? '🥈' : '🥉';
+                    html += `<tr>
+                                <td>${medal.studentName}</td>
+                                <td>${medalIcon}</td>
+                                <td>${document.querySelector(`li[data-page="${medal.section}"]`).textContent}</td>
+                             </tr>`;
+                });
+            } else {
+                html += `<tr><td colspan="3">لم يتم منح أي ميداليات.</td></tr>`;
+            }
+            html += `</tbody></table>`;
+            
+            html += `<h3>مخرجات استراتيجية جدول التعلم (KWL)</h3>`;
+            html += `<table class="styled-table">
+                        <thead><tr><th>ماذا أعرف؟</th><th>ماذا أريد أن أتعلم؟</th><th>ماذا تعلمت؟</th></tr></thead>
+                        <tbody>
+                            <tr>
+                                <td>${appState.kwl.k.replace(/\n/g, '<br>')}</td>
+                                <td>${appState.kwl.w.replace(/\n/g, '<br>')}</td>
+                                <td>${appState.kwl.l.replace(/\n/g, '<br>')}</td>
+                            </tr>
+                        </tbody>
+                     </table>`;
+                     
+            html += `<h3>تنظيم النشاط الصفي</h3>${activityHtml}`;
+
+            reportContent.innerHTML = html;
+        }
+        
+        function exportReport() {
+            const reportContent = document.getElementById('report-content').innerHTML;
+            const lessonTitle = document.getElementById('lesson-title').textContent;
+            const reportWindow = window.open('', '', 'width=800,height=600');
+            reportWindow.document.write(`<html><head><title>تقرير درس: ${lessonTitle}</title><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet"><style>body{font-family:'Tajawal',sans-serif;direction:rtl;padding:20px;}h1,h3{color:#2c3e50;}h3{border-bottom:2px solid #8E44AD;padding-bottom:5px;margin-top:30px;}table{width:100%;border-collapse:collapse;margin-bottom:20px;}th,td{border:1px solid #ddd;padding:12px;text-align:right;}th{background-color:#2c3e50;color:white;} ul { padding-right: 20px; }</style></head><body><h1>تقرير درس: ${lessonTitle}</h1>${reportContent}</body></html>`);
+            reportWindow.document.close();
+            reportWindow.print();
+        }
+    </script>
+</body>
+</html>
+
