@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏆 مسابقة OneNote التفاعلية</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #8E44AD; /* OneNote Purple */
+            --secondary-color: #9B59B6;
+            --bg-color: #f4f0f7;
+            --card-bg: #ffffff;
+            --text-color: #34495e;
+            --correct-color: #2ecc71;
+            --incorrect-color: #e74c3c;
+            --light-gray: #ecf0f1;
+            --dark-purple: #2c3e50;
+            --info-box-bg: #fdfaf4;
+            --info-box-border: #f39c12;
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .quiz-container {
+            background-color: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .quiz-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px 30px;
+        }
+
+        .quiz-header h1 {
+            margin: 0;
+            font-size: 2em;
+        }
+
+        .score-tracker {
+            font-size: 1.2em;
+            margin-top: 10px;
+            opacity: 0.9;
+        }
+
+        #score {
+            font-weight: 700;
+        }
+
+        .quiz-body {
+            padding: 30px;
+        }
+        
+        .question-card {
+            background-color: var(--light-gray);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-right: 5px solid var(--secondary-color);
+            text-align: right;
+            transition: transform 0.3s;
+        }
+
+        .question-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .question-text {
+            font-size: 1.4em;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .options-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .options-list li {
+            background-color: var(--card-bg);
+            border: 2px solid #eee;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+        }
+        
+        .options-list li:hover {
+            border-color: var(--primary-color);
+            background-color: #fafafa;
+        }
+        
+        .options-list li.selected {
+            border-color: var(--primary-color);
+            background-color: #e8dff5;
+            font-weight: bold;
+        }
+
+        .options-list input[type="radio"] {
+            margin-left: 15px;
+            transform: scale(1.2);
+            accent-color: var(--primary-color);
+        }
+
+        .feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 10px;
+            font-weight: 500;
+            font-size: 1.1em;
+            display: none; /* Hidden by default */
+        }
+
+        .feedback.correct {
+            background-color: #d4edda;
+            color: #155724;
+            display: block;
+        }
+
+        .feedback.incorrect {
+            background-color: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.2em;
+            font-weight: 700;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(142, 68, 173, 0.4);
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(142, 68, 173, 0.6);
+        }
+        
+        .btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        #final-result {
+            padding: 40px;
+            display: none; /* Hidden until the end */
+        }
+        
+        #final-result h2 {
+             color: var(--dark-purple);
+             font-size: 2.2em;
+        }
+        
+        #final-score {
+            font-size: 3em;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        
+        #result-message {
+            font-size: 1.3em;
+            margin: 20px 0;
+        }
+
+        #restart-btn {
+             background: linear-gradient(45deg, var(--correct-color), #27ae60);
+             box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
+        }
+        
+         #restart-btn:hover {
+            box-shadow: 0 6px 20px rgba(46, 204, 113, 0.6);
+        }
+
+        /* Info Box Styles */
+        .info-box-container {
+            padding: 0 30px 30px 30px;
+        }
+        .info-box {
+            background-color: var(--info-box-bg);
+            border: 2px solid var(--info-box-border);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+        }
+        .info-box h3 {
+            margin-top: 0;
+            color: #d35400;
+        }
+        .info-box p {
+            font-size: 1.1em;
+            line-height: 1.7;
+            min-height: 60px; /* To prevent layout shift */
+        }
+        .info-box .btn {
+            background: linear-gradient(45deg, #f39c12, #e67e22);
+            box-shadow: 0 4px 15px rgba(243, 156, 18, 0.4);
+            font-size: 1em;
+            padding: 10px 20px;
+        }
+         .info-box .btn:hover {
+            box-shadow: 0 6px 20px rgba(243, 156, 18, 0.6);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="quiz-container">
+        <div class="quiz-header">
+            <h1>🏆 مسابقة OneNote التفاعلية</h1>
+            <div class="score-tracker">
+                نقاطك ⭐: <span id="score">0</span>
+            </div>
+        </div>
+
+        <div class="quiz-body" id="quiz-body">
+            <!-- Questions will be dynamically inserted here by JavaScript -->
+        </div>
+
+        <div class="info-box-container">
+             <div class="info-box">
+                <h3>صندوق المعلومات 💡</h3>
+                <p id="info-text">اضغط على الزر لاكتشاف معلومة جديدة ومفيدة عن OneNote!</p>
+                <button class="btn" id="new-info-btn">أرني معلومة جديدة!</button>
+            </div>
+        </div>
+
+        <div id="final-result">
+            <h2>🎉 انتهت المسابقة!</h2>
+            <p>مجموع نقاطك هو:</p>
+            <p id="final-score">0</p>
+            <p id="result-message">رسالة التشجيع</p>
+            <button id="restart-btn" class="btn">إعادة اللعب 🔁</button>
+        </div>
+    </div>
+
+    <script>
+        const quizData = [
+            {
+                question: "ما هو الترتيب الهرمي الصحيح للتنظيم في OneNote؟",
+                options: [
+                    "صفحات ⬅️ أقسام ⬅️ دفاتر ملاحظات",
+                    "دفاتر ملاحظات ⬅️ أقسام ⬅️ صفحات",
+                    "أقسام ⬅️ دفاتر ملاحظات ⬅️ صفحات"
+                ],
+                answer: "دفاتر ملاحظات ⬅️ أقسام ⬅️ صفحات",
+                emoji: "📚"
+            },
+            {
+                question: "ما هي الفائدة الرئيسية من حفظ دفاتر الملاحظات على OneDrive؟",
+                options: [
+                    "تغيير لون دفتر الملاحظات",
+                    "جعل الملفات أكبر حجمًا",
+                    "الوصول إليها من أي جهاز ومشاركتها مع الآخرين"
+                ],
+                answer: "الوصول إليها من أي جهاز ومشاركتها مع الآخرين",
+                emoji: "☁️"
+            },
+            {
+                question: "هل تحتاج إلى الضغط على زر 'حفظ' باستمرار في OneNote؟",
+                options: [
+                    "نعم، يجب الحفظ يدويًا لحماية العمل",
+                    "لا، يقوم OneNote بالحفظ التلقائي والمستمر"
+                ],
+                answer: "لا، يقوم OneNote بالحفظ التلقائي والمستمر",
+                emoji: "💾"
+            },
+            {
+                question: "ماذا يعني خيار 'السماح بالتحرير' عند مشاركة دفتر ملاحظات؟",
+                options: [
+                    "يمكن للآخرين قراءة الملاحظات فقط",
+                    "يمكن للآخرين تغيير محتوى دفتر الملاحظات",
+                    "يمكن للآخرين حذف دفتر الملاحظات بالكامل"
+                ],
+                answer: "يمكن للآخرين تغيير محتوى دفتر الملاحظات",
+                emoji: "✏️"
+            },
+            {
+                question: "بماذا تشبه دفاتر ملاحظات ليوناردو دافنشي برنامج OneNote؟",
+                options: [
+                    "كلاهما يستخدم لتصميم الآلات الطائرة.",
+                    "كلاهما كانا بمثابة 'عقل خارجي' لتنظيم الأفكار والمعرفة.",
+                    "كلاهما مصنوع من الجلد."
+                ],
+                answer: "كلاهما كانا بمثابة 'عقل خارجي' لتنظيم الأفكار والمعرفة.",
+                emoji: "🧠"
+            },
+            {
+                question: "ما هو أفضل وصف لـ 'القسم' (Section) في OneNote؟",
+                options: [
+                    "مثل درس واحد في كتاب.",
+                    "مثل فصل كامل في كتاب.",
+                    "مثل مكتبة كاملة من الكتب."
+                ],
+                answer: "مثل فصل كامل في كتاب.",
+                emoji: "📂"
+            },
+            {
+                question: "لإضافة درس جديد عن 'الجبر' داخل قسم 'الرياضيات'، ماذا يجب أن تنشئ؟",
+                options: [
+                    "دفتر ملاحظات جديد.",
+                    "قسم جديد.",
+                    "صفحة جديدة."
+                ],
+                answer: "صفحة جديدة.",
+                emoji: "📄"
+            },
+            {
+                question: "عندما يعمل عدة أشخاص على نفس دفتر الملاحظات، هل تظهر التغييرات للآخرين؟",
+                options: [
+                    "نعم، تظهر التغييرات بشكل فوري تقريبًا.",
+                    "لا، يجب على كل شخص حفظ نسخته الخاصة.",
+                    "فقط بعد 24 ساعة."
+                ],
+                answer: "نعم، تظهر التغييرات بشكل فوري تقريبًا.",
+                emoji: "👥"
+            },
+            {
+                question: "ماذا يحدث لملاحظاتك التي تكتبها في OneNote وأنت غير متصل بالإنترنت؟",
+                options: [
+                    "تُحذف تلقائيًا.",
+                    "تتم مزامنتها وحفظها عند الاتصال بالإنترنت مرة أخرى.",
+                    "تبقى على جهازك فقط ولا يمكن مزامنتها."
+                ],
+                answer: "تتم مزامنتها وحفظها عند الاتصال بالإنترنت مرة أخرى.",
+                emoji: "🔄"
+            },
+            {
+                question: "ما هو الخطأ في عبارة: 'يجب أن أحفظ عملي في OneNote كل 5 دقائق حتى لا يضيع'؟",
+                options: [
+                    "يجب الحفظ كل دقيقة وليس كل 5 دقائق.",
+                    "العبارة صحيحة تمامًا.",
+                    "الخطأ هو أن OneNote يحفظ تلقائيًا ولا حاجة للحفظ اليدوي."
+                ],
+                answer: "الخطأ هو أن OneNote يحفظ تلقائيًا ولا حاجة للحفظ اليدوي.",
+                emoji: "🚫"
+            }
+        ];
+
+        const infoData = [
+            "هل تعلم؟ يمكنك تسجيل الصوت مباشرة في OneNote. رائع لتوثيق المحاضرات والاجتماعات!",
+            "هل تعلم؟ OneNote يستطيع تحويل خط اليد إلى نص مطبوع، وحتى حل المعادلات الرياضية المكتوبة بخط اليد!",
+            "هل تعلم؟ يمكنك إدراج أي ملف (PDF, Word) داخل صفحة OneNote كـ 'مطبوعة' للتعليق عليها مباشرة.",
+            "هل تعلم؟ باستخدام 'OneNote Web Clipper'، يمكنك قص أي مقال أو صفحة ويب وحفظها مباشرة في دفتر ملاحظاتك.",
+            "هل تعلم؟ OneNote متوفر على جميع الأجهزة تقريبًا: ويندوز، ماك، آيفون، أندرويد، وحتى على الويب مباشرة.",
+            "هل تعلم؟ ميزة 'الحبر إلى نص' تسمح لك بالبحث داخل ملاحظاتك المكتوبة بخط اليد، وكأنها نص مطبوع.",
+            "هل تعلم؟ يمكنك حماية 'قسم' كامل في OneNote بكلمة مرور للحفاظ على خصوصية ملاحظاتك.",
+            "هل تعلم؟ OneNote يتكامل بشكل ممتاز مع برامج Office الأخرى، مثل إرسال رسائل بريد إلكتروني من Outlook إلى OneNote مباشرة.",
+            "هل تعلم؟ يمكنك إنشاء قوالب صفحات خاصة بك لاستخدامها بشكل متكرر، مثل قالب لتنظيم الاجتماعات أو خطة الدروس.",
+            "هل تعلم؟ ميزة 'البحث' في OneNote قوية جدًا، حيث يمكنها البحث عن الكلمات حتى داخل الصور التي قمت بإدراجها!"
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+
+        const quizBody = document.getElementById('quiz-body');
+        const scoreDisplay = document.getElementById('score');
+        const finalResultContainer = document.getElementById('final-result');
+        const finalScoreDisplay = document.getElementById('final-score');
+        const resultMessageDisplay = document.getElementById('result-message');
+        const restartBtn = document.getElementById('restart-btn');
+        const newInfoBtn = document.getElementById('new-info-btn');
+        const infoText = document.getElementById('info-text');
+
+        function loadQuiz() {
+            quizBody.innerHTML = ''; // Clear previous question
+            if (currentQuestionIndex < quizData.length) {
+                const currentQuestion = quizData[currentQuestionIndex];
+                const questionCard = document.createElement('div');
+                questionCard.className = 'question-card';
+                questionCard.id = `question-${currentQuestionIndex}`;
+
+                let optionsHTML = '';
+                currentQuestion.options.forEach((option, index) => {
+                    optionsHTML += `
+                        <li onclick="selectOption(this)">
+                            <input type="radio" id="option${index}" name="question${currentQuestionIndex}" value="${option}">
+                            <label for="option${index}">${option}</label>
+                        </li>
+                    `;
+                });
+
+                questionCard.innerHTML = `
+                    <p class="question-text">❓ ${currentQuestion.question}</p>
+                    <ul class="options-list">
+                        ${optionsHTML}
+                    </ul>
+                    <div class="feedback" id="feedback-${currentQuestionIndex}"></div>
+                    <button class="btn" onclick="checkAnswer()">تحقق من إجابتي</button>
+                `;
+                quizBody.appendChild(questionCard);
+            } else {
+                showFinalResults();
+            }
+        }
+        
+        function selectOption(liElement) {
+            // Remove 'selected' class from all options in the current question
+            const parentList = liElement.parentElement;
+            parentList.querySelectorAll('li').forEach(li => li.classList.remove('selected'));
+            
+            // Add 'selected' class to the clicked option
+            liElement.classList.add('selected');
+            
+            // Also check the radio button inside
+            const radio = liElement.querySelector('input[type="radio"]');
+            if (radio) {
+                radio.checked = true;
+            }
+        }
+
+
+        function checkAnswer() {
+            const currentQuestionData = quizData[currentQuestionIndex];
+            const selectedOption = document.querySelector(`input[name="question${currentQuestionIndex}"]:checked`);
+            const feedbackEl = document.getElementById(`feedback-${currentQuestionIndex}`);
+            const questionCard = document.getElementById(`question-${currentQuestionIndex}`);
+            const checkButton = questionCard.querySelector('.btn');
+
+            if (!selectedOption) {
+                alert("الرجاء اختيار إجابة أولاً!");
+                return;
+            }
+
+            if (selectedOption.value === currentQuestionData.answer) {
+                score += 10;
+                scoreDisplay.innerText = score;
+                feedbackEl.innerHTML = `✅ أحسنت! إجابة صحيحة. +10 نقاط`;
+                feedbackEl.className = 'feedback correct';
+            } else {
+                feedbackEl.innerHTML = `❌ إجابة خاطئة. الإجابة الصحيحة هي: <br><strong>"${currentQuestionData.answer}"</strong>`;
+                feedbackEl.className = 'feedback incorrect';
+            }
+            
+            checkButton.innerText = "التالي ⬅️";
+            checkButton.onclick = nextQuestion;
+        }
+        
+        function nextQuestion() {
+            currentQuestionIndex++;
+            loadQuiz();
+        }
+
+        function showFinalResults() {
+            quizBody.style.display = 'none';
+            finalResultContainer.style.display = 'block';
+            finalScoreDisplay.innerText = score;
+
+            let message = '';
+            const percentage = (score / (quizData.length * 10)) * 100;
+            if (percentage === 100) {
+                message = "👑 رائع! لديك معرفة ممتازة بـ OneNote!";
+            } else if (percentage >= 70) {
+                message = "👍 عمل جيد! أنت تفهم الأساسيات بشكل جيد جدًا.";
+            } else if (percentage >= 50) {
+                message = "🙂 لا بأس! يمكنك مراجعة الدرس مرة أخرى لتعزيز معلوماتك.";
+            } else {
+                message = "💡 استمر في المحاولة! الممارسة هي مفتاح الإتقان.";
+            }
+            resultMessageDisplay.innerText = message;
+        }
+
+        function showNewInfo() {
+            const randomIndex = Math.floor(Math.random() * infoData.length);
+            infoText.innerText = infoData[randomIndex];
+        }
+
+        restartBtn.addEventListener('click', () => {
+            currentQuestionIndex = 0;
+            score = 0;
+            scoreDisplay.innerText = '0';
+            quizBody.style.display = 'block';
+            finalResultContainer.style.display = 'none';
+            loadQuiz();
+            showNewInfo(); // Show a new fact on restart
+        });
+
+        newInfoBtn.addEventListener('click', showNewInfo);
+
+
+        // Initial load
+        loadQuiz();
+        showNewInfo(); // Show a fact on first load
+    </script>
+
+</body>
+</html>
+
