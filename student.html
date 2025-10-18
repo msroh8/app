@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة معلومات تحليل رضا الطلاب - ثانوية دار التوحيد</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: #f8fafc;
+        }
+        .chart-card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .chart-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .suggestion-item {
+            background-color: #f1f5f9;
+            border-right: 4px solid #64748b;
+        }
+        th {
+            background-color: #e2e8f0;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <div class="container mx-auto p-4 md:p-8">
+        <header class="text-center mb-10">
+            <h1 class="text-3xl md:text-4xl font-bold text-slate-900">تحليل استبيان رضا الطلاب للعام 1447هـ - ثانوية دار التوحيد</h1>
+            <p class="text-slate-600 mt-2">لوحة معلومات تفاعلية تعرض النتائج والأنماط السائدة</p>
+        </header>
+
+        <!-- قسم تحليل الأنماط والمقترحات -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold mb-2 border-r-4 border-teal-500 pr-4">1. التوجه العام والأنماط السائدة في المقترحات</h2>
+            <p class="text-slate-500 mb-6 pr-4 italic">ملخص لأبرز النقاط التي تكررت في إجابات الطلاب على سؤال الاقتراح المفتوح.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- بطاقة المرافق -->
+                <div class="bg-white p-6 rounded-xl shadow-md border-t-4 border-red-500">
+                    <div class="flex items-center mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-red-500 ml-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <h3 class="text-xl font-bold text-slate-800">تحسينات عاجلة في المرافق</h3>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-slate-700">
+                        <li>شكاوى متكررة حول سوء نظافة وحالة دورات المياه.</li>
+                        <li>الصالة الرياضية بحاجة إلى صيانة وتجهيز.</li>
+                        <li>أعطال متكررة في أجهزة العرض (البروجكتر) بالفصول.</li>
+                        <li>الحاجة لزيادة عدد الكراسي والمقاعد في أماكن الاستراحة.</li>
+                    </ul>
+                </div>
+                <!-- بطاقة الكادر التعليمي والإداري -->
+                <div class="bg-white p-6 rounded-xl shadow-md border-t-4 border-amber-500">
+                     <div class="flex items-center mb-3">
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-amber-500 ml-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                           <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                         </svg>
+                        <h3 class="text-xl font-bold text-slate-800">ملاحظات على الكادر</h3>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-slate-700">
+                        <li>ملاحظات محددة حول أسلوب التدريس لدى أحد المعلمين (أ. رايد الطويرقي).</li>
+                        <li>شكوى من أسلوب التواصل لدى أحد الإداريين (أ. مروان الحيرازي).</li>
+                        <li>مطالبة عامة بزيادة مراعاة الفروق الفردية بين الطلاب.</li>
+                    </ul>
+                </div>
+                <!-- بطاقة السلوك والأنشطة -->
+                <div class="bg-white p-6 rounded-xl shadow-md border-t-4 border-sky-500">
+                     <div class="flex items-center mb-3">
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-sky-500 ml-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        <h3 class="text-xl font-bold text-slate-800">السلوك والبيئة المدرسية</h3>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-slate-700">
+                        <li>قلق بعض الطلاب من وجود "سلوكيات غير لائقة" من زملائهم.</li>
+                        <li>إشادة وتقدير للأنشطة والفعاليات التي تقيمها المدرسة.</li>
+                        <li>ثقة عالية في التوجه لإدارة المدرسة لحل المشكلات.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- قسم تفاصيل الملاحظات -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold mb-6 border-r-4 border-teal-500 pr-4">2. تفاصيل المقترحات والملاحظات الواردة من الطلاب</h2>
+            <div class="space-y-8">
+                <div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-3">أ) ملاحظات حول المرافق والبيئة المدرسية:</h3>
+                    <div class="space-y-3">
+                        <p class="p-4 rounded-lg suggestion-item">"الصاله الرياضيه سيئه جداا والحمامات قذره وخرببانه تحتاج تصليح."</p>
+                        <p class="p-4 rounded-lg suggestion-item">"البروجكتر يحتاج تغيير او تصليحه كل فتره."</p>
+                        <p class="p-4 rounded-lg suggestion-item">"اضافة كراسي."</p>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-3">ب) ملاحظات حول الكادر التعليمي والإداري:</h3>
+                     <div class="space-y-3">
+                        <p class="p-4 rounded-lg suggestion-item">"الاداري مروان الحيرازي يتجاوز حدود الادب ف الكلام."</p>
+                        <p class="p-4 rounded-lg suggestion-item">"استاذ رايد الطويرقي لا يليق بمدرستنا المرموقه من حيث التدريس واحترام الطالب والتعامل معنا."</p>
+                        <p class="p-4 rounded-lg suggestion-item">"ارجو من مسؤلي المدرسه اخذ كلامي بعين الاعتبار وخصوصاً مشكله (استاذ رايد الطويرقي)."</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- قسم الرسوم البيانية -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold mb-6 border-r-4 border-teal-500 pr-4">3. النتائج الإحصائية للاستبيان (عينة: 43 طالب)</h2>
+            <div id="charts-container" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- الرسوم البيانية سيتم إضافتها هنا عبر JavaScript -->
+            </div>
+        </section>
+
+        <!-- قسم خطة العمل -->
+        <section>
+            <h2 class="text-2xl font-bold mb-6 border-r-4 border-teal-500 pr-4">4. خطة العمل والتوصيات</h2>
+            <div class="overflow-x-auto bg-white rounded-lg shadow-md">
+                <table class="w-full text-sm text-right text-slate-700">
+                    <thead class="text-xs text-slate-800 uppercase">
+                        <tr>
+                            <th scope="col" class="px-6 py-3">المحور</th>
+                            <th scope="col" class="px-6 py-3">الملاحظة / التحدي</th>
+                            <th scope="col" class="px-6 py-3">التوصية / الإجراء المقترح</th>
+                            <th scope="col" class="px-6 py-3">القسم المسؤول</th>
+                            <th scope="col" class="px-6 py-3">إطار زمني مقترح</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="bg-white border-b">
+                            <th scope="row" class="px-6 py-4 font-bold whitespace-nowrap">المرافق</th>
+                            <td class="px-6 py-4">شكاوى متكررة حول نظافة وحالة دورات المياه.</td>
+                            <td class="px-6 py-4">إجراء صيانة عاجلة وشاملة ووضع جدول نظافة دوري ومراقبته.</td>
+                            <td class="px-6 py-4">خدمات الصيانة والنظافة</td>
+                            <td class="px-6 py-4">أسبوع واحد</td>
+                        </tr>
+                        <tr class="bg-slate-50 border-b">
+                            <th scope="row" class="px-6 py-4 font-bold whitespace-nowrap"></th>
+                            <td class="px-6 py-4">الصالة الرياضية بحاجة إلى صيانة وتجهيز.</td>
+                            <td class="px-6 py-4">تقييم حالة الصالة وتوفير المعدات الناقصة وصيانة الحالية.</td>
+                            <td class="px-6 py-4">النشاط الطلابي / الصيانة</td>
+                            <td class="px-6 py-4">شهر واحد</td>
+                        </tr>
+                         <tr class="bg-white border-b">
+                            <th scope="row" class="px-6 py-4 font-bold whitespace-nowrap"></th>
+                            <td class="px-6 py-4">أعطال متكررة في أجهزة العرض (البروجكتر).</td>
+                            <td class="px-6 py-4">فحص جميع أجهزة العرض بالفصول وصيانتها أو استبدالها.</td>
+                            <td class="px-6 py-4">قسم تقنية المعلومات</td>
+                            <td class="px-6 py-4">أسبوعان</td>
+                        </tr>
+                        <tr class="bg-slate-50 border-b">
+                            <th scope="row" class="px-6 py-4 font-bold whitespace-nowrap">الكادر</th>
+                            <td class="px-6 py-4">ملاحظات سلوكية وتدريسية محددة (أ. مروان، أ. رايد).</td>
+                            <td class="px-6 py-4">عقد اجتماع فردي مع المعنيين لمناقشة الملاحظات وتقديم الدعم والتوجيه.</td>
+                            <td class="px-6 py-4">إدارة المدرسة / الإشراف التربوي</td>
+                            <td class="px-6 py-4">فوراً</td>
+                        </tr>
+                        <tr class="bg-white border-b">
+                            <th scope="row" class="px-6 py-4 font-bold whitespace-nowrap"></th>
+                            <td class="px-6 py-4">ضعف مراعاة الفروق الفردية من بعض المعلمين.</td>
+                            <td class="px-6 py-4">تنظيم ورشة عمل تدريبية للمعلمين حول استراتيجيات التدريس المتمايز.</td>
+                            <td class="px-6 py-4">الإشراف التربوي</td>
+                            <td class="px-6 py-4">خلال الفصل الدراسي</td>
+                        </tr>
+                         <tr class="bg-slate-50 border-b">
+                            <th scope="row" class="px-6 py-4 font-bold whitespace-nowrap">البيئة</th>
+                            <td class="px-6 py-4">وجود سلوكيات غير لائقة بين بعض الطلاب.</td>
+                            <td class="px-6 py-4">تكثيف الإشراف أثناء الفسح وتفعيل برامج التوجيه والإرشاد.</td>
+                            <td class="px-6 py-4">التوجيه الطلابي / الإدارة</td>
+                            <td class="px-6 py-4">مستمر</td>
+                        </tr>
+                        <tr class="bg-white">
+                           <th scope="row" class="px-6 py-4 font-bold whitespace-nowrap">الأنشطة</th>
+                           <td class="px-6 py-4">رضا عالٍ عن الأنشطة والفعاليات.</td>
+                           <td class="px-6 py-4">الاستمرار في تقديم الأنشطة النوعية واستطلاع آراء الطلاب حول أنشطة جديدة.</td>
+                           <td class="px-6 py-4">النشاط الطلابي</td>
+                           <td class="px-6 py-4">مستمر</td>
+                       </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        
+        <footer class="text-center mt-12 pt-8 border-t border-slate-200 text-sm text-slate-500">
+            <p><strong>تنفيذ:</strong> وكيل المدرسة أ. سلطان الخديدي &nbsp;&nbsp;|&nbsp;&nbsp; <strong>إشراف:</strong> مدير المدرسة أ فهد القحطاني</p>
+        </footer>
+
+    </div>
+
+    <script>
+        const surveyData = [
+            { id: 'chart1', question: '1. القرارات التي تتخذها المدرسة عادلة بين الطلاب.', labels: ['أوافق تماماً', 'أوافق إلى حد ما', 'لا أوافق إطلاقاً'], data: [25, 15, 3] },
+            { id: 'chart2', question: '2. أتواصل مع المدرسة بسهولة عند الحاجة.', labels: ['أوافق تماماً', 'أوافق إلى حد ما', 'لا أوافق إطلاقاً'], data: [30, 11, 2] },
+            { id: 'chart3', question: '3. تستطلع المدرسة آراء الطلاب حول خدماتها.', labels: ['أوافق تماماً', 'أوافق إلى حد ما', 'لا أوافق إطلاقاً'], data: [22, 17, 4] },
+            { id: 'chart4', question: '4. المعلمون يراعون اختلاف القدرات بين الطلاب.', labels: ['أوافق تماماً', 'أوافق إلى حد ما', 'لا أوافق إطلاقاً'], data: [10, 23, 10] },
+            { id: 'chart5', question: '5. يحرص المعلمون على استثمار زمن الحصة.', labels: ['أوافق تماماً', 'أوافق إلى حد ما', 'لا أوافق إطلاقاً'], data: [28, 13, 2] },
+            { id: 'chart6', question: '6. يحصل الطالب المجد على تقدير كاف من المدرسة.', labels: ['أوافق تماماً', 'أوافق إلى حد ما', 'لا أوافق إطلاقاً'], data: [32, 9, 2] },
+            { id: 'chart7', question: '7. اتوجه إلى الإدارة عندما اتعرض لمشكلة.', labels: ['أوافق تماماً', 'أوافق إلى حد ما', 'لا أوافق إطلاقاً'], data: [35, 6, 2] },
+            { id: 'chart8', question: '8. الانضباط المدرسي ساعدني على تحسن مستواي.', labels: ['أوافق تماماً', 'أوافق إلى حد ما', 'لا أوافق إطلاقاً'], data: [27, 14, 2] },
+            { id: 'chart9', question: '9. أرى من بعض الطلاب سلوكيات غير لائقة.', labels: ['أوافق تماماً', 'أوافق إلى حد ما', 'لا أوافق إطلاقاً'], data: [12, 15, 16] },
+            { id: 'chart10', question: '10. أرغب في الانتقال إلى مدرسة أخرى.', labels: ['أوافق تماماً', 'أوافق إلى حد ما', 'لا أوافق إطلاقاً'], data: [4, 7, 32] },
+            { id: 'chart11', question: '11. تقام في المدرسة أنشطة وفعاليات طلابية.', labels: ['أوافق تماماً', 'أوافق إلى حد ما', 'لا أوافق إطلاقاً'], data: [31, 10, 2] },
+            { id: 'chart12', question: '12. رضا الطالب عن المدرسة.', labels: ['ممتاز', 'جيد جداً', 'جيد', 'ضعيف'], data: [18, 15, 8, 2] }
+        ];
+
+        const chartsContainer = document.getElementById('charts-container');
+        surveyData.forEach(item => {
+            const chartCard = document.createElement('div');
+            chartCard.className = 'bg-white p-4 md:p-6 rounded-xl shadow-md chart-card';
+            const chartTitle = document.createElement('h3');
+            chartTitle.className = 'text-md md:text-lg font-bold mb-4 text-center text-slate-800';
+            chartTitle.textContent = item.question;
+            const canvasContainer = document.createElement('div');
+            canvasContainer.className = 'relative h-64';
+            const canvas = document.createElement('canvas');
+            canvas.id = item.id;
+            canvasContainer.appendChild(canvas);
+            chartCard.appendChild(chartTitle);
+            chartCard.appendChild(canvasContainer);
+            chartsContainer.appendChild(chartCard);
+            const ctx = document.getElementById(item.id).getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: item.labels,
+                    datasets: [{
+                        label: 'عدد الطلاب',
+                        data: item.data,
+                        backgroundColor: ['rgba(34, 197, 94, 0.6)', 'rgba(59, 130, 246, 0.6)', 'rgba(239, 68, 68, 0.6)', 'rgba(245, 158, 11, 0.6)'],
+                        borderColor: ['rgba(34, 197, 94, 1)', 'rgba(59, 130, 246, 1)', 'rgba(239, 68, 68, 1)', 'rgba(245, 158, 11, 1)'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) { label += ': '; }
+                                    if (context.parsed.y !== null) {
+                                        const total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                        const percentage = ((context.parsed.y / total) * 100).toFixed(1) + '%';
+                                        label += `${context.parsed.y} (${percentage})`;
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+
