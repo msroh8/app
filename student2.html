@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة معلومات تحليل رضا أولياء الأمور - ثانوية دار التوحيد</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: #f8fafc;
+        }
+        .chart-card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .chart-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .suggestion-item {
+            background-color: #f1f5f9;
+            border-right: 4px solid #64748b;
+        }
+        th {
+            background-color: #e2e8f0;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <div class="container mx-auto p-4 md:p-8">
+        <header class="text-center mb-10">
+            <h1 class="text-3xl md:text-4xl font-bold text-slate-900">تحليل استبيان رضا أولياء الأمور للعام 1447هـ - ثانوية دار التوحيد</h1>
+            <p class="text-slate-600 mt-2">لوحة معلومات تفاعلية تعرض النتائج والأنماط السائدة</p>
+        </header>
+
+        <!-- قسم تحليل الأنماط والمقترحات -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold mb-2 border-r-4 border-teal-500 pr-4">1. التوجه العام والأنماط السائدة في مقترحات أولياء الأمور</h2>
+            <p class="text-slate-500 mb-6 pr-4 italic">ملخص لأبرز النقاط التي تكررت في إجابات أولياء الأمور.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- بطاقة التقدير -->
+                <div class="bg-white p-6 rounded-xl shadow-md border-t-4 border-green-500">
+                    <div class="flex items-center mb-3">
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-500 ml-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.085a2 2 0 00-1.736.97l-2.7 5.4M7 20H2a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
+                        </svg>
+                        <h3 class="text-xl font-bold text-slate-800">تقدير وشكر من أولياء الأمور</h3>
+                    </div>
+                    <p class="text-slate-700">غالبية المقترحات المكتوبة حملت رسائل شكر وتقدير لجهود المدرسة، مما يعكس رضا عامًا مرتفعًا.</p>
+                </div>
+                <!-- بطاقة المتابعة -->
+                <div class="bg-white p-6 rounded-xl shadow-md border-t-4 border-amber-500">
+                     <div class="flex items-center mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-amber-500 ml-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        <h3 class="text-xl font-bold text-slate-800">التركيز على المتابعة السلوكية</h3>
+                    </div>
+                     <p class="text-slate-700">ظهر طلب متكرر بالحرص والاهتمام بالطلاب من الناحية السلوكية والتعليمية والمتابعة المستمرة.</p>
+                </div>
+                <!-- بطاقة المرافق -->
+                <div class="bg-white p-6 rounded-xl shadow-md border-t-4 border-sky-500">
+                     <div class="flex items-center mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-sky-500 ml-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                        <h3 class="text-xl font-bold text-slate-800">ملاحظات على المرافق</h3>
+                    </div>
+                    <p class="text-slate-700">وردت ملاحظة محددة حول ضرورة الحرص على نظافة دورات المياه بشكل مستمر.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- قسم تفاصيل الملاحظات -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold mb-6 border-r-4 border-teal-500 pr-4">2. تفاصيل المقترحات والملاحظات الواردة من أولياء الأمور</h2>
+            <div class="space-y-3">
+                <p class="p-4 rounded-lg suggestion-item">"الاهتمام بالطالب من الناحية السلوكية و التعليمية."</p>
+                <p class="p-4 rounded-lg suggestion-item">"الاهتمام اكثر بالطلاب من حيث السلوك والمتابعة المستمرة."</p>
+                <p class="p-4 rounded-lg suggestion-item">"الحرص على نظافة دورات المياه اعزكم الله."</p>
+                <p class="p-4 rounded-lg suggestion-item">"شكرا لكم."</p>
+                <p class="p-4 rounded-lg suggestion-item">"نتمنى لكم التوفيق والنجاح الدائم."</p>
+            </div>
+        </section>
+
+        <!-- قسم الرسوم البيانية -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold mb-6 border-r-4 border-teal-500 pr-4">3. النتائج الإحصائية للاستبيان (عينة: 34 ولي أمر)</h2>
+            <div id="charts-container" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- الرسوم البيانية سيتم إضافتها هنا عبر JavaScript -->
+            </div>
+        </section>
+
+        <!-- قسم خطة العمل -->
+        <section>
+            <h2 class="text-2xl font-bold mb-6 border-r-4 border-teal-500 pr-4">4. خطة العمل والتوصيات</h2>
+            <div class="overflow-x-auto bg-white rounded-lg shadow-md">
+                <table class="w-full text-sm text-right text-slate-700">
+                    <thead class="text-xs text-slate-800 uppercase">
+                        <tr>
+                            <th scope="col" class="px-6 py-3">المحور</th>
+                            <th scope="col" class="px-6 py-3">الملاحظة / التحدي</th>
+                            <th scope="col" class="px-6 py-3">التوصية / الإجراء المقترح</th>
+                            <th scope="col" class="px-6 py-3">القسم المسؤول</th>
+                            <th scope="col" class="px-6 py-3">إطار زمني مقترح</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                         <tr class="bg-slate-50 border-b">
+                            <th scope="row" class="px-6 py-4 font-bold whitespace-nowrap">المتابعة الطلابية</th>
+                            <td class="px-6 py-4">طلب زيادة الاهتمام بسلوك الطلاب ومتابعتهم.</td>
+                            <td class="px-6 py-4">تفعيل التواصل الدوري مع أولياء الأمور بشأن الجانبين السلوكي والأكاديمي.</td>
+                            <td class="px-6 py-4">التوجيه الطلابي / وكيل شؤون الطلاب</td>
+                            <td class="px-6 py-4">مستمر</td>
+                        </tr>
+                        <tr class="bg-white border-b">
+                            <th scope="row" class="px-6 py-4 font-bold whitespace-nowrap">المرافق</th>
+                            <td class="px-6 py-4">ملاحظة حول نظافة دورات المياه.</td>
+                            <td class="px-6 py-4">تأكيد جدول النظافة والمتابعة اليومية الدقيقة.</td>
+                            <td class="px-6 py-4">خدمات الصيانة والنظافة</td>
+                            <td class="px-6 py-4">فوراً</td>
+                        </tr>
+                         <tr class="bg-slate-50">
+                           <th scope="row" class="px-6 py-4 font-bold whitespace-nowrap">التواصل</th>
+                           <td class="px-6 py-4">رضا عالٍ عن التواصل والتقدير العام لجهود المدرسة.</td>
+                           <td class="px-6 py-4">المحافظة على قنوات التواصل الفعالة وتقديم الشكر لأولياء الأمور على تفاعلهم.</td>
+                           <td class="px-6 py-4">إدارة المدرسة</td>
+                           <td class="px-6 py-4">مستمر</td>
+                       </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        
+        <footer class="text-center mt-12 pt-8 border-t border-slate-200 text-sm text-slate-500">
+            <p><strong>تنفيذ:</strong> وكيل المدرسة أ. سلطان الخديدي &nbsp;&nbsp;|&nbsp;&nbsp; <strong>إشراف:</strong> مدير المدرسة أ. فهد القحطاني</p>
+        </footer>
+
+    </div>
+
+    <script>
+        const surveyData = [
+            { question: '1. توضح إدارة المدرسة رؤيتها ورسالتها في كافة المناسبات.', data: [30, 4, 0] },
+            { question: '2. تتابع إدارة المدرسة تعلم الطلاب وتشجع التفوق باستمرار.', data: [31, 3, 0] },
+            { question: '3. تحرص إدارة المدرسة على تعزيز قيم الانتماء للوطن لدى الطلاب.', data: [31, 3, 0] },
+            { question: '4. تحرص المدرسة على الاحتفاء بالمناسبات الوطنية.', data: [32, 2, 0] },
+            { question: '5. تقدم المدرسة تغذية راجعة بالتواصل مع أولياء الأمور.', data: [24, 9, 1] },
+            { question: '6. يمارس الطلاب سلوكيات تدل على انتمائهم للمدرسة.', data: [29, 5, 0] },
+            { question: '7. توظف المدرسة آليات وقنوات تواصل للمجتمع المحلي.', data: [27, 7, 0] },
+            { question: '8. يحرص المعلمون على تحقيق فرص تعلم متكافئة للطلاب.', data: [26, 8, 0] },
+            { question: '9. يكتسب الطلاب المهارات والمعارف المناسبة.', data: [27, 7, 0] },
+            { question: '10. تفعل المدرسة إجراءات الأمن والسلامة في كافة مرافقها.', data: [32, 2, 0] },
+            { question: '11. يحصل الطالب المُجد على تقدير كاف من المدرسة.', data: [30, 4, 0] },
+            { question: '12. تعمل المدرسة على توعية اولياء الامور ببرامج الإرشاد.', data: [30, 4, 0] },
+            { question: '13. تقدم المدرسة برامج علاجيه للطلاب المتعثرين دراسيا.', data: [29, 5, 0] },
+            { question: '14. تقدم المدرسة برامج لتلبية حاجات الطلاب ذوي صعوبات التعلم.', data: [28, 6, 0] },
+            { question: '15. تتيح المدرسة للطلاب فرصة المشاركة في الأنشطة.', data: [32, 2, 0] },
+            { question: '16. تتابع المدرسة احتياجات الطلاب من خدمات الرعاية والإرشاد.', data: [31, 3, 0] },
+            { question: '17. مدى رضاك عن المدرسة بوجه عام.', data: [29, 5, 0], labels: ['ممتاز', 'جيد جداً', 'جيد'] }
+        ];
+
+        const defaultLabels = ['أوافق تماماً', 'أوافق إلى حد ما', 'لا أوافق إطلاقاً'];
+        const chartsContainer = document.getElementById('charts-container');
+        
+        surveyData.forEach((item, index) => {
+            const chartId = `chart${index}`;
+            const chartLabels = item.labels || defaultLabels;
+            
+            const chartCard = document.createElement('div');
+            chartCard.className = 'bg-white p-4 md:p-6 rounded-xl shadow-md chart-card';
+            const chartTitle = document.createElement('h3');
+            chartTitle.className = 'text-md md:text-lg font-bold mb-4 text-center text-slate-800';
+            chartTitle.textContent = item.question;
+            const canvasContainer = document.createElement('div');
+            canvasContainer.className = 'relative h-64';
+            const canvas = document.createElement('canvas');
+            canvas.id = chartId;
+            canvasContainer.appendChild(canvas);
+            chartCard.appendChild(chartTitle);
+            chartCard.appendChild(canvasContainer);
+            chartsContainer.appendChild(chartCard);
+            
+            const ctx = document.getElementById(chartId).getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: chartLabels,
+                    datasets: [{
+                        label: 'عدد أولياء الأمور',
+                        data: item.data,
+                        backgroundColor: ['rgba(34, 197, 94, 0.6)', 'rgba(59, 130, 246, 0.6)', 'rgba(239, 68, 68, 0.6)'],
+                        borderColor: ['rgba(34, 197, 94, 1)', 'rgba(59, 130, 246, 1)', 'rgba(239, 68, 68, 1)'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) { label += ': '; }
+                                    if (context.parsed.y !== null) {
+                                        const total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                        const percentage = ((context.parsed.y / total) * 100).toFixed(1) + '%';
+                                        label += `${context.parsed.y} (${percentage})`;
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
