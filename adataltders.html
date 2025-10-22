@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>أداة متابعة ممارسات التدريس</title>
+    <!-- تحميل Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- خط Noto Kufi Arabic -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Noto Kufi Arabic', 'Inter', sans-serif;
+        }
+        
+        /* إخفاء المحتوى القابل للطي */
+        .collapsible-content {
+            display: none;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        .collapsible-content.active {
+            display: block;
+        }
+
+        /* أسهم الأكورديون */
+        .chevron-icon {
+            transition: transform 0.3s ease;
+        }
+        .active .chevron-icon {
+            transform: rotate(180deg);
+        }
+
+        /* أيقونات الحالة */
+        .status-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+        .status-icon.selected {
+            border-color: #3b82f6; /* A blue border when selected */
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+
+        /* النافذة المنبثقة (Modal) */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s ease;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 24px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 12px;
+            animation: slideIn 0.3s ease;
+        }
+        .modal-close {
+            color: #aaa;
+            float: left;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .modal-close:hover,
+        .modal-close:focus {
+            color: black;
+            text-decoration: none;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-4 md:p-8">
+
+    <!-- الحاوية الرئيسية -->
+    <div class="">
+        <!-- الهيدر -->
+        <header class="mb-8 flex flex-col md:flex-row justify-between items-center bg-white p-6 rounded-xl shadow-md">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-bold text-gray-800">أداة متابعة ممارسات التدريس</h1>
+                <p class="text-gray-600 mt-1">صفحة تفاعلية لتتبع الشواهد ورفع المرفقات بناءً على الإطار المعتمد.</p>
+            </div>
+            <button onclick="exportReport()" class="mt-4 md:mt-0 w-full md:w-auto bg-green-600 text-white font-semibold py-2 px-6 rounded-lg shadow-md hover:bg-green-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">
+                تصدير التقرير
+            </button>
+        </header>
+
+        <!-- حاوية المخطط -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+
+            <!-- العمود 1: المجال الإشرافي -->
+            <div class="flex flex-col gap-6">
+                <div class="bg-white p-5 rounded-xl shadow-lg h-full">
+                    <h2 class="text-xl font-bold text-white bg-teal-600 p-3 rounded-lg -mt-8 mx-4 text-center shadow-lg">المجال الإشرافي</h2>
+                    <div class="mt-6 p-4 bg-teal-50 text-teal-800 rounded-lg text-center">
+                        <span class="text-lg font-semibold">التدريس</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- العمود 2: الإطار -->
+            <div class="flex flex-col gap-6">
+                <div class="bg-white p-5 rounded-xl shadow-lg h-full">
+                    <h2 class="text-xl font-bold text-white bg-blue-600 p-3 rounded-lg -mt-8 mx-4 text-center shadow-lg">الإطار</h2>
+                    <div class="mt-6 space-y-3">
+                        <div class="p-3 bg-blue-50 text-blue-800 rounded-lg text-center font-medium">تخطيط التدريس</div>
+                        <div class="p-3 bg-blue-50 text-blue-800 rounded-lg text-center font-medium">تنفيذ التدريس</div>
+                        <div class="p-3 bg-blue-50 text-blue-800 rounded-lg text-center font-medium">تقويم التعلم</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- العمود 3: موجهات -->
+            <div class="flex flex-col gap-6">
+                <div class="bg-white p-5 rounded-xl shadow-lg h-full">
+                    <h2 class="text-xl font-bold text-white bg-green-500 p-3 rounded-lg -mt-8 mx-4 text-center shadow-lg">موجهات</h2>
+                    <ul class="mt-6 space-y-3 list-disc list-inside pr-2 text-green-800">
+                        <li class="p-2 bg-green-50 rounded-md">تخطيط الوحدات والفصول والدروس.</li>
+                        <li class="p-2 bg-green-50 rounded-md">طرائق التدريس وأساليبه.</li>
+                        <li class="p-2 bg-green-50 rounded-md">التقنيات والوسائل التعليمية.</li>
+                        <li class="p-2 bg-green-50 rounded-md">التخطيط للتقويم وإعداد أدواته.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- العمود 4: الأدوات والطرق والأساليب (تفاعلي) -->
+            <div class="md:col-span-4 lg:col-span-1 flex flex-col gap-6">
+                <div class="bg-white p-5 rounded-xl shadow-lg h-full">
+                    <!-- العنوان مع أيقونة المعلومات -->
+                    <div class="flex justify-center items-center -mt-8 mx-4">
+                        <h2 class="text-xl font-bold text-white bg-amber-600 p-3 rounded-lg text-center shadow-lg flex-grow">الأدوات والطرق والأساليب</h2>
+                    </div>
+                    
+                    <div class="mt-6 space-y-3 max-h-[80vh] overflow-y-auto pr-2" id="practices-list">
+                        <!-- سيتم إدراج العناصر هنا باستخدام جافاسكربت -->
+                    </div>
+                </div>
+            </div>
+
+        </div> <!-- نهاية حاوية المخطط -->
+    </div> <!-- نهاية الحاوية الرئيسية -->
+
+    <!-- النافذة المنبثقة (Modal) للشواهد -->
+    <div id="info-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" id="modal-close-button">&times;</span>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4" id="modal-title">شواهد مقترحة</h2>
+            <div class="space-y-3 text-gray-700" id="modal-body">
+                <!-- سيتم حقن المحتوى هنا بواسطة جافاسكربت -->
+            </div>
+        </div>
+    </div>
+
+    <!-- الفوتر -->
+    <footer class="text-center mt-8 mb-4">
+        <p class="text-xs text-gray-500">فكرة وتنفيذ محمد مجممي</p>
+    </footer>
+
+
+    <script>
+        // قائمة الممارسات المحدثة من الصورة
+        const practices = [
+            "تأسيس توقعات أداء عالية للمتعلمين.",
+            "إعداد خطط الدروس وتصميم أنشطة التعلم.",
+            "تصميم برامج تعلم وفق خطة الدرس.",
+            "التنويع في استخدام طرائق التدريس وأساليبه واستراتيجياته.",
+            "دمج الوسائل التقنية ضمن خطة الدرس.",
+            "قيادة الأنشطة الصفية بفاعلية.",
+            "تهيئة بيئات تعلم آمنة وجاذبة للتعلم.",
+            "استثمار وقت التدريس بفاعلية.",
+            "تطبيق أساليب التقويم وأدواته المناسبة.",
+            "توظيف نتائج التقويم الصفي والتقويم واسع النطاق في تحسين التدريس والتعلم.",
+            "تعزيز ثقافة التدريس الفعال في المجتمع المدرسي."
+        ];
+
+        // شواهد مقترحة لكل ممارسة
+        const evidenceExamples = {
+            "practice-0": "<strong>شواهد مقترحة:</strong><ul class='list-disc pr-6'><li>صورة من لائحة توقعات الأداء معلقة في الصف.</li><li>مقطع فيديو قصير لنقاش التوقعات مع الطلاب.</li><li>نموذج من ورقة عمل توضح التوقعات.</li></ul>",
+            "practice-1": "<strong>شواهد مقترحة:</strong><ul class='list-disc pr-6'><li>نسخة من خطة درس.</li><li>نماذج من أنشطة تعلم مصممة (ورقية أو رقمية).</li><li>صورة من دفتر التحضير.</li></ul>",
+            "practice-2": "<strong>شواهد مقترحة:</strong><ul class='list-disc pr-6'><li>ملف برنامج التعلم.</li><li>خطة الدرس المعبأة التي توضح البرنامج.</li></ul>",
+            "practice-3": "<strong>شواهد مقترحة:</strong><ul class='list-disc pr-6'><li>فيديو قصير (أقل من دقيقة) يوضح استخدام استراتيجية معينة.</li><li>صور لأنشطة متنوعة (عمل فردي، جماعي، ...).</li><li>خطة درس تذكر الاستراتيجيات المنوعة.</li></ul>",
+            "practice-4": "<strong>شواهد مقترحة:</strong><ul class='list-disc pr-6'><li>رابط لنشاط رقمي تم استخدامه.</li><li>صورة من الحصة تظهر استخدام الطلاب للتقنية.</li><li>خطة الدرس التي تشير إلى دمج التقنية.</li></ul>",
+            "practice-5": "<strong>شواهد مقترحة:</strong><ul class='list-disc pr-6'><li>فيديو قصير يوضح إدارة المعلم لنشاط صفي.</li><li>صور من مخرجات عمل الطلاب في النشاط.</li></ul>",
+            "practice-6": "<strong>شواهد مقترحة:</strong><ul class='list-disc pr-6'><li>صور للبيئة الصفية (تنظيم المقاعد، لوحات العرض).</li><li>مقطع صوتي لمناقشة صفية يسودها الاحترام.</li></ul>",
+            "practice-7": "<strong>شواهد مقترحة:</strong><ul class='list-disc pr-6'><li>جدول الحصة موضحاً استغلال الوقت.</li><li>فيديو يظهر انتقال سلس بين الأنشطة.</li></ul>",
+            "practice-8": "<strong>شواهد مقترحة:</strong><ul class='list-disc pr-6'><li>نماذج من أدوات التقويم (اختبار قصير، سلم تقدير، ...).</li><li>صورة لسؤال تقويمي على السبورة.</li></ul>",
+            "practice-9": "<strong>شواهد مقترحة:</strong><ul class='list-disc pr-6'><li>نماذج من تغذية راجعة مصححة للطلاب.</li><li>خطة لتحسين التدريس بناء على نتائج التقويم.</li><li>ملف خطط علاجية.</li></ul>",
+            "practice-10": "<strong>شواهد مقترحة:</strong><ul class='list-disc pr-6'><li>محضر اجتماع مع الزملاء لمناقشة الممارسات.</li><li>صورة من ورشة عمل داخلية.</li><li>رابط لمورد تعليمي تمت مشاركته.</li></ul>"
+        };
+
+        // دالة مساعدة لجلب لون الحالة
+        function getStatusColorClass(status) {
+            if (status === 'مكتمل') return 'text-green-600';
+            if (status === 'قيد التنفيذ') return 'text-yellow-600';
+            return 'text-gray-600';
+        }
+
+        // تحميل البيانات من LocalStorage أو استخدام كائن فارغ
+        let practicesData = JSON.parse(localStorage.getItem('practicesData')) || {};
+
+        const practicesListContainer = document.getElementById('practices-list');
+
+        // إنشاء البطاقات التفاعلية
+        practices.forEach((practice, index) => {
+            const id = `practice-${index}`;
+            
+            // تهيئة البيانات الافتراضية إذا لم تكن موجودة في LocalStorage
+            if (!practicesData[id]) {
+                practicesData[id] = {
+                    title: practice,
+                    status: "لم يبدأ", // "لم يبدأ", "قيد التنفيذ", "مكتمل"
+                    evidence: "",
+                    files: [] // ستخزن أسماء الملفات كـ base64 URLs
+                };
+            }
+
+            const item = practicesData[id];
+            const initialStatusColor = getStatusColorClass(item.status); // Get initial color
+
+            const itemHtml = `
+                <div class="bg-gray-50 border border-gray-200 p-4 rounded-lg shadow-sm mb-3">
+                    <!-- رأس البطاقة القابل للضغط -->
+                    <div class="flex justify-between items-center">
+                        <!-- Clickable Title Area (Toggle) -->
+                        <div class="flex-1 flex justify-between items-center cursor-pointer accordion-toggle" data-target="${id}">
+                            <h4 class="font-semibold text-gray-800 flex-1">${item.title}</h4>
+                            <svg class="chevron-icon w-5 h-5 text-gray-500 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                        <!-- Info button -->
+                        <button class="practice-info-button text-blue-500 hover:text-blue-700 mr-2 p-1" data-id="${id}" title="عرض الشواهد المقترحة">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <!-- المحتوى القابل للطي -->
+                    <div id="${id}" class="collapsible-content mt-4 border-t border-gray-200 pt-4">
+                        <!-- أيقونات الحالة -->
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <label class="block text-sm font-medium text-gray-700">حالة التنفيذ:</label>
+                                <span id="status-text-${id}" class="text-sm font-semibold ${initialStatusColor}">${item.status}</span>
+                            </div>
+                            <div class="flex space-x-2" dir="ltr">
+                                <!-- لم يبدأ -->
+                                <span class="status-icon bg-gray-300 hover:bg-gray-400 ${item.status === 'لم يبدأ' ? 'selected' : ''}" data-status="لم يبدأ" data-id="${id}" title="لم يبدأ">
+                                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                </span>
+                                <!-- قيد التنفيذ -->
+                                <span class="status-icon bg-yellow-300 hover:bg-yellow-400 ${item.status === 'قيد التنفيذ' ? 'selected' : ''}" data-status="قيد التنفيذ" data-id="${id}" title="قيد التنفيذ">
+                                    <svg class="w-5 h-5 text-yellow-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                </span>
+                                <!-- مكتمل -->
+                                <span class="status-icon bg-green-400 hover:bg-green-500 ${item.status === 'مكتمل' ? 'selected' : ''}" data-status="مكتمل" data-id="${id}" title="مكتمل">
+                                    <svg class="w-5 h-5 text-green-800" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <!-- الشواهد والملاحظات -->
+                        <div class="mt-4">
+                            <label for="evidence-${id}" class="block text-sm font-medium text-gray-700 mb-1">الشواهد والملاحظات</label>
+                            <textarea id="evidence-${id}" rows="3" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="اكتب ملاحظاتك هنا..." oninput="updateData('${id}', 'evidence', this.value)">${item.evidence}</textarea>
+                        </div>
+                        
+                        <!-- رفع المرفقات (مع خيار الكاميرا) -->
+                        <div class="mt-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">إضافة مرفقات (صور أو ملفات)</label>
+                            <input type="file" class="block w-full text-sm text-gray-500
+                                file:mr-4 file:py-2 file:px-4
+                                file:rounded-full file:border-0 file:text-sm file:font-semibold
+                                file:bg-blue-50 file:text-blue-700
+                                hover:file:bg-blue-100" 
+                                accept="image/*,video/*,.pdf,.doc,.docx" 
+                                capture="environment" 
+                                multiple 
+                                onchange="handleFiles(this, '${id}')">
+                            <ul id="file-list-${id}" class="mt-2 text-sm text-gray-600 list-disc pl-5 space-y-1">
+                                <!-- أسماء الملفات ستضاف هنا -->
+                                ${item.files.map(file => `<li>${file.name}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            `;
+            practicesListContainer.innerHTML += itemHtml;
+        });
+
+        // --- دوال حفظ وتحديث البيانات ---
+
+        // دالة لحفظ جميع البيانات في LocalStorage
+        function saveToLocalStorage() {
+            localStorage.setItem('practicesData', JSON.stringify(practicesData));
+        }
+
+        // دالة لتحديث قيمة معينة في البيانات
+        function updateData(id, key, value) {
+            if (practicesData[id]) {
+                practicesData[id][key] = value;
+                saveToLocalStorage();
+            }
+        }
+
+        // --- دالة معالجة الملفات ---
+        function handleFiles(input, id) {
+            const fileListEl = document.getElementById(`file-list-${id}`);
+            const files = input.files;
+
+            // مسح القائمة الحالية (بيانات وواجهة)
+            practicesData[id].files = [];
+            fileListEl.innerHTML = '';
+
+            if (files.length > 0) {
+                Array.from(files).forEach(file => {
+                    // تخزين اسم الملف
+                    practicesData[id].files.push({ name: file.name });
+                    
+                    // عرض اسم الملف في القائمة
+                    const li = document.createElement('li');
+                    li.textContent = file.name;
+                    fileListEl.appendChild(li);
+                });
+                
+                // حفظ التغييرات
+                saveToLocalStorage();
+            }
+        }
+
+
+        // --- مستمعو الأحداث ---
+
+        // فتح وإغلاق الأكورديون
+        document.querySelectorAll('.accordion-toggle').forEach(button => {
+            button.addEventListener('click', () => {
+                const targetId = button.dataset.target;
+                const content = document.getElementById(targetId);
+                button.classList.toggle('active');
+                content.classList.toggle('active');
+                
+                if (content.classList.contains('active')) {
+                    content.style.maxHeight = content.scrollHeight + "px";
+                } else {
+                    content.style.maxHeight = null;
+                }
+            });
+        });
+
+        // تغيير الحالة عبر الأيقونات
+        document.querySelectorAll('.status-icon').forEach(icon => {
+            icon.addEventListener('click', () => {
+                const id = icon.dataset.id;
+                const newStatus = icon.dataset.status;
+                
+                // تحديث البيانات
+                updateData(id, 'status', newStatus);
+                
+                // تحديث الواجهة (إزالة 'selected' من الكل وإضافتها للمضغوط)
+                document.querySelectorAll(`.status-icon[data-id="${id}"]`).forEach(i => i.classList.remove('selected'));
+                icon.classList.add('selected');
+
+                // تحديث النص اللوني للحالة
+                const statusTextElement = document.getElementById(`status-text-${id}`);
+                statusTextElement.textContent = newStatus;
+                statusTextElement.className = `text-sm font-semibold ${getStatusColorClass(newStatus)}`;
+            });
+        });
+ 
+        /* تم إصلاح خطأ برمجي هنا: 
+           كانت هناك دوال مفقودة (updateData, saveToLocalStorage, handleFiles)
+           وجزء من كود مكسور. تم إعادة كتابة الدوال في الأعلى وإزالة الجزء المكسور من هنا.
+        */
+                    
+        // --- دوال النافذة المنبثقة (Modal) ---
+        const modal = document.getElementById('info-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalBody = document.getElementById('modal-body');
+        const modalClose = document.getElementById('modal-close-button');
+
+        // فتح النافذة عند الضغط على أيقونة المعلومات
+        document.querySelectorAll('.practice-info-button').forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.stopPropagation(); // منع فتح الأكورديون
+                const id = button.dataset.id;
+                const practiceTitle = practicesData[id].title;
+                const evidenceHtml = evidenceExamples[id] || "<p>لا توجد شواهد مقترحة حالياً لهذه الممارسة.</p>";
+                
+                modalTitle.textContent = practiceTitle;
+                modalBody.innerHTML = evidenceHtml;
+                modal.style.display = "block";
+            });
+        });
+
+        // إغلاق النافذة
+        modalClose.onclick = () => { modal.style.display = "none"; }
+        window.onclick = (event) => {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+
+        // --- دالة تصدير التقرير ---
+        function exportReport() {
+            let reportContent = `
+                <html>
+                <head>
+                    <title>تقرير ممارسات التدريس</title>
+                    <meta charset="UTF-8">
+                    <style>
+                        @import url('https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@400;500;600;700&display=swap');
+                        body { 
+                            font-family: 'Noto Kufi Arabic', sans-serif; 
+                            direction: rtl; 
+                            margin: 20px auto; /* توسيط وتحديد الهامش */
+                            max-width: 900px; /* تحديد العرض الأقصى للتقرير */
+                            line-height: 1.6;
+                        }
+                        h1 { 
+                            color: #333; 
+                            border-bottom: 2px solid #eee; 
+                            padding-bottom: 10px;
+                        }
+                        .practice-item {
+                            border: 1px solid #ddd;
+                            border-radius: 8px;
+                            padding: 15px;
+                            margin-bottom: 15px;
+                            background-color: #f9f9f9;
+                            page-break-inside: avoid; /* منع تقسيم العنصر بين الصفحات */
+                        }
+                        h2 {
+                            color: #0056b3;
+                            margin-top: 0;
+                        }
+                        p { margin: 5px 0; }
+                        strong { color: #333; }
+                        ul { padding-right: 20px; margin-top: 5px; }
+                        li { color: #555; }
+                        .status-لم-يبدأ { color: #888; font-weight: bold; }
+                        .status-قيد-التنفيذ { color: #e67e22; font-weight: bold; }
+                        .status-مكتمل { color: #27ae60; font-weight: bold; }
+                    </style>
+                </head>
+                <body>
+                    <h1>ملخص تقرير ممارسات التدريس</h1>
+            `;
+
+            // استخدام البيانات المحملة (practicesData)
+            for (const id in practicesData) {
+                const item = practicesData[id];
+                const statusClass = `status-${item.status.replace(' ', '-')}`;
+                
+                reportContent += `
+                    <div class="practice-item">
+                        <h2>${item.title}</h2>
+                        <p><strong>حالة التنفيذ:</strong> <span class="${statusClass}">${item.status}</span></p>
+                        <p><strong>الشواهد والملاحظات:</strong></p>
+                        <p>${item.evidence.replace(/\n/g, '<br>') || "لا توجد ملاحظات."}</p>
+                `;
+
+                if (item.files.length > 0) {
+                    reportContent += `<p><strong>المرفقات:</strong></p><ul>`;
+                    item.files.forEach(file => {
+                        reportContent += `<li>${file.name}</li>`;
+                    });
+                    reportContent += `</ul>`;
+                }
+                reportContent += `</div>`;
+            }
+
+            reportContent += `</body></html>`;
+
+            const reportWindow = window.open('', '_blank');
+            reportWindow.document.write(reportContent);
+            reportWindow.document.close();
+            reportWindow.focus();
+            
+            setTimeout(() => {
+                reportWindow.print();
+            }, 500);
+        }
+
+    </script>
+
+</body>
+</html>
+
+
+
+
+
+
