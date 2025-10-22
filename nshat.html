@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>أداة متابعة الأنشطة المدرسية</title>
+    <!-- تحميل Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- خط Noto Kufi Arabic -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Noto Kufi Arabic', 'Inter', sans-serif;
+        }
+        
+        /* إخفاء المحتوى القابل للطي */
+        .collapsible-content {
+            display: none;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        .collapsible-content.active {
+            display: block;
+        }
+
+        /* أسهم الأكورديون */
+        .chevron-icon {
+            transition: transform 0.3s ease;
+        }
+        .active .chevron-icon {
+            transform: rotate(180deg);
+        }
+
+        /* أيقونات الحالة */
+        .status-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+        .status-icon.selected {
+            border-color: #3b82f6; /* A blue border when selected */
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+
+        /* النافذة المنبثقة (Modal) */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s ease;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 24px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 12px;
+            animation: slideIn 0.3s ease;
+            position: relative;
+        }
+        
+        .modal-close {
+            color: #aaa;
+            float: left;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            position: absolute;
+            left: 20px;
+            top: 10px;
+        }
+        .modal-close:hover,
+        .modal-close:focus {
+            color: black;
+            text-decoration: none;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* زر حذف المرفق */
+        .delete-attachment {
+            color: #ef4444; /* red-500 */
+            cursor: pointer;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .delete-attachment:hover {
+            color: #dc2626; /* red-600 */
+        }
+        
+    </style>
+</head>
+<body class="bg-gray-100 p-4 md:p-8">
+
+    <!-- الحاوية الرئيسية -->
+    <div class="">
+        <!-- الهيدر -->
+        <header class="mb-8 flex flex-col md:flex-row justify-between items-center bg-white p-6 rounded-xl shadow-md">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-bold text-gray-800">أداة متابعة الأنشطة المدرسية</h1>
+                <p class="text-gray-600 mt-1">صفحة تفاعلية لتتبع الشواهد الخاصة بالأنشطة المدرسية.</p>
+            </div>
+            <!-- *** مجموعة الأزرار *** -->
+            <div class="flex flex-col md:flex-row gap-2 mt-4 md:mt-0">
+                <button onclick="exportReport()" class="w-full md:w-auto bg-green-600 text-white font-semibold py-2 px-6 rounded-lg shadow-md hover:bg-green-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">
+                    تصدير التقرير
+                </button>
+                <button onclick="exportData()" class="w-full md:w-auto bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-blue-700 transition duration-300">
+                    تصدير البيانات
+                </button>
+                <!-- زر الاستيراد المخفي -->
+                <input type="file" id="import-file-input" accept=".json" class="hidden" onchange="importData(event)">
+                <button onclick="document.getElementById('import-file-input').click()" class="w-full md:w-auto bg-yellow-500 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-yellow-600 transition duration-300">
+                    استيراد البيانات
+                </button>
+                <button onclick="clearData()" class="w-full md:w-auto bg-red-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-red-700 transition duration-300">
+                    مسح كل البيانات
+                </button>
+            </div>
+        </header>
+
+        <!-- حاوية المخطط -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+
+            <!-- العمود 1: المجال الإشرافي (جديد) -->
+            <div class="flex flex-col gap-6">
+                <div class="bg-white p-5 rounded-xl shadow-lg h-full">
+                    <h2 class="text-xl font-bold text-white bg-purple-600 p-3 rounded-lg -mt-8 mx-4 text-center shadow-lg">المجال الإشرافي</h2>
+                    <div class="mt-6 p-4 bg-purple-50 text-purple-800 rounded-lg text-center">
+                        <span class="text-lg font-semibold">الأنشطة المدرسية</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- العمود 2: الإطار (جديد) -->
+            <div class="flex flex-col gap-6">
+                <div class="bg-white p-5 rounded-xl shadow-lg h-full">
+                    <h2 class="text-xl font-bold text-white bg-indigo-600 p-3 rounded-lg -mt-8 mx-4 text-center shadow-lg">الإطار</h2>
+                    <div class="mt-6 space-y-3">
+                        <div class="p-3 bg-indigo-50 text-indigo-800 rounded-lg text-center font-medium">البرامج والأنشطة المدرسية الصفية وغير الصفية</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- العمود 3: موجهات (جديد) -->
+            <div class="flex flex-col gap-6">
+                <div class="bg-white p-5 rounded-xl shadow-lg h-full">
+                    <h2 class="text-xl font-bold text-white bg-green-500 p-3 rounded-lg -mt-8 mx-4 text-center shadow-lg">موجهات</h2>
+                    <ul class="mt-6 space-y-3 list-disc list-inside pr-2 text-green-800">
+                        <li class="p-2 bg-green-50 rounded-md">ارتباط الأنشطة بالأهداف التعليمية.</li>
+                        <li class="p-2 bg-green-50 rounded-md">فاعلية الأنشطة في تحسين مهارات وقدرات الطالب ونواتج التعلم.</li>
+                        <li class="p-2 bg-green-50 rounded-md">الشراكة مع الأسرة والمجتمع.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- العمود 4: الأدوات والطرق والأساليب (تفاعلي - جديد) -->
+            <div class="md:col-span-4 lg:col-span-1 flex flex-col gap-6">
+                <div class="bg-white p-5 rounded-xl shadow-lg h-full">
+                    <!-- العنوان مع أيقونة المعلومات -->
+                    <div class="flex justify-center items-center -mt-8 mx-4">
+                        <h2 class="text-xl font-bold text-white bg-amber-600 p-3 rounded-lg text-center shadow-lg flex-grow">الأدوات والطرق والأساليب</h2>
+                    </div>
+                    
+                    <div class="mt-6 space-y-3 max-h-[80vh] overflow-y-auto pr-2" id="practices-list">
+                        <!-- سيتم إدراج العناصر هنا باستخدام جافاسكربت -->
+                    </div>
+                </div>
+            </div>
+
+        </div> <!-- نهاية حاوية المخطط -->
+    </div> <!-- نهاية الحاوية الرئيسية -->
+
+    <!-- النافذة المنبثقة (Modal) للشواهد -->
+    <div id="info-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" id="modal-close-button">&times;</span>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4" id="modal-title">شواهد مقترحة</h2>
+            <div class="space-y-3 text-gray-700" id="modal-body">
+                <!-- سيتم حقن المحتوى هنا بواسطة جافاسكربت -->
+            </div>
+        </div>
+    </div>
+
+    <!-- الفوتر -->
+    <footer class="text-center mt-8 mb-4">
+        <p class="text-xs text-gray-500">فكرة وتنفيذ محمد مجممي</p>
+    </footer>
+
+
+    <script>
+        // *** قائمة الممارسات الجديدة ***
+        const practices = [
+            "برامج وأنشطة صفية تدعم تعلم الطالب.",
+            "أنشطة غير صفية تعزز التعليم الصفي.",
+            "أنشطة غير صفية تنمي حاجات الطالب.",
+            "تكامل وانسجام واتساق البرامج ضمن السياق."
+        ];
+
+        // *** شواهد مقترحة جديدة ***
+        const evidenceExamples = {
+            "practice-0": "<strong>شواهد مقترحة:</strong><ul class='list-disc pr-6'><li>رابط لخطة نشاط صفي مرتبط بالمنهج.</li><li>رابط لمسابقة تعليمية (مثل Kahoot أو Form).</li><li>رابط لصور من أعمال الطلاب الناتجة عن النشاط.</li></ul>",
+            "practice-1": "<strong>شواهد مقترحة:</strong><ul class='list-disc pr-6'><li>رابط لخطة زيارة ميدانية (متحف، معرض كتاب).</li><li>رابط لصور من معرض علمي أو فني أقيم في المدرسة.</li><li>رابط لبرنامج نادي القراءة أو نادي العلوم.</li></ul>",
+            "practice-2": "<strong>شواهد مقترحة:</strong><ul class='list-disc pr-6'><li>رابط لخطة برنامج رياضي، فني، أو ثقافي.</li><li>رابط لبرنامج رعاية الموهوبين أو برامج دعم المهارات.</li><li>رابط لصور من ورش عمل مهارية (مثل الخطابة، الحاسب).</li></ul>",
+            "practice-3": "<strong>شواهد مقترحة:</strong><ul class='list-disc pr-6'><li>رابط للخطة العامة للأنشطة المدرسية.</li><li>رابط لمحضر اجتماع لجنة الأنشطة يوضح التكامل.</li><li>رابط لاستبيان رضا الطلاب أو أولياء الأمور عن الأنشطة.</li></ul>"
+        };
+
+        // دالة مساعدة لجلب لون الحالة
+        function getStatusColorClass(status) {
+            if (status === 'مكتمل') return 'text-green-600';
+            if (status === 'قيد التنفيذ') return 'text-yellow-600';
+            return 'text-gray-600';
+        }
+
+        // *** مفتاح تخزين جديد ومنفصل ***
+        const localStorageKey = 'schoolActivitiesData';
+        let practicesData = JSON.parse(localStorage.getItem(localStorageKey)) || {};
+
+        const practicesListContainer = document.getElementById('practices-list');
+
+        // --- دالة لعرض قائمة الروابط ---
+        function renderFileList(id) {
+            const fileListEl = document.getElementById(`file-list-${id}`);
+            fileListEl.innerHTML = ''; // مسح القائمة الحالية
+
+            if (!practicesData[id] || !practicesData[id].files) {
+                return;
+            }
+
+            practicesData[id].files.forEach((file, index) => {
+                const li = document.createElement('li');
+                li.className = 'flex justify-between items-center text-sm bg-gray-100 p-2 rounded-md';
+                
+                let content = '';
+                if (file.type === 'link') {
+                    content = `
+                        <a href="${file.data}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline overflow-hidden whitespace-nowrap text-ellipsis" title="${file.data}">
+                            🔗 ${file.name}
+                        </a>
+                    `;
+                }
+                
+                li.innerHTML = `
+                    <span class="flex-1 overflow-hidden">${content}</span>
+                    <button type="button" class="delete-attachment" data-id="${id}" data-index="${index}" title="حذف الرابط">&times;</button>
+                `;
+                fileListEl.appendChild(li);
+            });
+
+            // إضافة مستمعي الأحداث لأزرار الحذف
+            fileListEl.querySelectorAll('.delete-attachment').forEach(button => {
+                button.addEventListener('click', () => {
+                    const dataId = button.dataset.id;
+                    const dataIndex = parseInt(button.dataset.index, 10);
+                    deleteAttachment(dataId, dataIndex);
+                });
+            });
+
+            // إلغاء الحد الأقصى للروابط
+            const addButton = document.querySelector(`#${id} button[onclick="addLink('${id}')"]`);
+            if (addButton) {
+                addButton.disabled = false;
+                addButton.classList.remove("opacity-50", "cursor-not-allowed");
+            }
+        }
+        
+        // --- دالة لحذف مرفق (رابط) ---
+        function deleteAttachment(id, index) {
+            if (practicesData[id] && practicesData[id].files) {
+                practicesData[id].files.splice(index, 1); // حذف العنصر من المصفوفة
+                saveToLocalStorage(); // حفظ التغييرات
+                renderFileList(id); // إعادة عرض القائمة
+            }
+        }
+
+        // إنشاء البطاقات التفاعلية
+        practices.forEach((practice, index) => {
+            const id = `practice-${index}`;
+            
+            // تهيئة البيانات الافتراضية إذا لم تكن موجودة في LocalStorage
+            if (!practicesData[id]) {
+                practicesData[id] = {
+                    title: practice,
+                    status: "لم يبدأ", // "لم يبدأ", "قيد التنفيذ", "مكتمل"
+                    evidence: "",
+                    executor: "", // إضافة حقل مسؤول التنفيذ
+                    files: [] // ستخزن الروابط { type: 'link', name: '...', data: '...' }
+                };
+            }
+            
+            // التأكد من وجود الحقل الجديد في البيانات القديمة
+            if (typeof practicesData[id].executor === 'undefined') {
+                practicesData[id].executor = "";
+            }
+
+
+            const item = practicesData[id];
+            const initialStatusColor = getStatusColorClass(item.status); // Get initial color
+
+            const itemHtml = `
+                <div class="bg-gray-50 border border-gray-200 p-4 rounded-lg shadow-sm mb-3">
+                    <!-- رأس البطاقة القابل للضغط -->
+                    <div class="flex justify-between items-center">
+                        <!-- Clickable Title Area (Toggle) -->
+                        <div class="flex-1 flex justify-between items-center cursor-pointer accordion-toggle" data-target="${id}">
+                            <h4 class="font-semibold text-gray-800 flex-1">${item.title}</h4>
+                            <svg class="chevron-icon w-5 h-5 text-gray-500 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                        <!-- Info button -->
+                        <button class="practice-info-button text-blue-500 hover:text-blue-700 mr-2 p-1" data-id="${id}" title="عرض الشواهد المقترحة">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <!-- المحتوى القابل للطي -->
+                    <div id="${id}" class="collapsible-content mt-4 border-t border-gray-200 pt-4">
+                        <!-- أيقونات الحالة -->
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <label class="block text-sm font-medium text-gray-700">حالة التنفيذ:</label>
+                                <span id="status-text-${id}" class="text-sm font-semibold ${initialStatusColor}">${item.status}</span>
+                            </div>
+                            <div class="flex space-x-2" dir="ltr">
+                                <!-- لم يبدأ -->
+                                <span class="status-icon bg-gray-300 hover:bg-gray-400 ${item.status === 'لم يبدأ' ? 'selected' : ''}" data-status="لم يبدأ" data-id="${id}" title="لم يبدأ">
+                                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                </span>
+                                <!-- قيد التنفيذ -->
+                                <span class="status-icon bg-yellow-300 hover:bg-yellow-400 ${item.status === 'قيد التنفيذ' ? 'selected' : ''}" data-status="قيد التنفيذ" data-id="${id}" title="قيد التنفيذ">
+                                    <svg class="w-5 h-5 text-yellow-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                </span>
+                                <!-- مكتمل -->
+                                <span class="status-icon bg-green-400 hover:bg-green-500 ${item.status === 'مكتمل' ? 'selected' : ''}" data-status="مكتمل" data-id="${id}" title="مكتمل">
+                                    <svg class="w-5 h-5 text-green-800" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <!-- الشواهد والملاحظات -->
+                        <div class="mt-4">
+                            <label for="evidence-${id}" class="block text-sm font-medium text-gray-700 mb-1">الشواهد والملاحظات</label>
+                            <textarea id="evidence-${id}" rows="3" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="اكتب ملاحظاتك هنا..." oninput="updateData('${id}', 'evidence', this.value)">${item.evidence || ''}</textarea>
+                        </div>
+
+                        <!-- إضافة حقل مسؤول التنفيذ -->
+                        <div class="mt-4">
+                            <label for="executor-${id}" class="block text-sm font-medium text-gray-700 mb-1">مسؤول التنفيذ</label>
+                            <input type="text" id="executor-${id}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="اكتب اسم المسؤول هنا..." value="${item.executor || ''}" oninput="updateData('${id}', 'executor', this.value)">
+                        </div>
+                        
+                        <!-- إضافة رابط -->
+                        <div class="mt-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">إضافة رابط كشاهد</label>
+                            <div class="flex gap-2">
+                                <button type="button" class="w-full bg-blue-50 text-blue-700 font-semibold py-2 px-4 rounded-lg shadow-sm hover:bg-blue-100 transition duration-300" onclick="addLink('${id}')">
+                                    🔗 إضافة رابط...
+                                </button>
+                            </div>
+                            <ul id="file-list-${id}" class="mt-3 space-y-2">
+                                <!-- الروابط ستضاف هنا -->
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            `;
+            practicesListContainer.innerHTML += itemHtml;
+            // عرض الروابط المحفوظة عند التحميل
+            renderFileList(id);
+        });
+
+        // --- دوال حفظ وتحديث البيانات ---
+
+        // دالة لحفظ جميع البيانات في LocalStorage
+        function saveToLocalStorage() {
+            localStorage.setItem(localStorageKey, JSON.stringify(practicesData));
+        }
+
+        // دالة لتحديث قيمة معينة في البيانات
+        function updateData(id, key, value) {
+            if (practicesData[id]) {
+                practicesData[id][key] = value;
+                saveToLocalStorage();
+            }
+        }
+        
+        // --- دالة إضافة رابط ---
+        function addLink(id) {
+            const url = prompt("الرجاء إدخال الرابط (مثال: https://www.example.com):");
+            if (url) {
+                let name = prompt("الرجاء إدخال اسم وصفي للرابط (اختياري):");
+                name = name || url; // إذا لم يدخل اسم، استخدم الرابط نفسه كاسم
+
+                if (!practicesData[id].files) {
+                    practicesData[id].files = [];
+                }
+                
+                practicesData[id].files.push({
+                    type: 'link',
+                    name: name,
+                    data: url
+                });
+                
+                saveToLocalStorage();
+                renderFileList(id); // إعادة عرض القائمة
+            }
+        }
+
+
+        // --- مستمعو الأحداث ---
+
+        // فتح وإغلاق الأكورديون
+        document.querySelectorAll('.accordion-toggle').forEach(button => {
+            button.addEventListener('click', () => {
+                const targetId = button.dataset.target;
+                const content = document.getElementById(targetId);
+                button.classList.toggle('active');
+                content.classList.toggle('active');
+                
+                if (content.classList.contains('active')) {
+                    content.style.maxHeight = content.scrollHeight + "px";
+                } else {
+                    content.style.maxHeight = null;
+                }
+            });
+        });
+
+        // تغيير الحالة عبر الأيقونات
+        document.querySelectorAll('.status-icon').forEach(icon => {
+            icon.addEventListener('click', () => {
+                const id = icon.dataset.id;
+                const newStatus = icon.dataset.status;
+                
+                // تحديث البيانات
+                updateData(id, 'status', newStatus);
+                
+                // تحديث الواجهة (إزالة 'selected' من الكل وإضافتها للمضغوط)
+                document.querySelectorAll(`.status-icon[data-id="${id}"]`).forEach(i => i.classList.remove('selected'));
+                icon.classList.add('selected');
+
+                // تحديث النص اللوني للحالة
+                const statusTextElement = document.getElementById(`status-text-${id}`);
+                statusTextElement.textContent = newStatus;
+                statusTextElement.className = `text-sm font-semibold ${getStatusColorClass(newStatus)}`;
+            });
+        });
+        
+        // --- دوال النافذة المنبثقة (Modal) ---
+        const modal = document.getElementById('info-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalBody = document.getElementById('modal-body');
+        const modalClose = document.getElementById('modal-close-button');
+
+        // دالة لعرض رسالة في النافذة المنبثقة
+        function showModalMessage(title, message) {
+            modalTitle.textContent = title;
+            modalBody.innerHTML = message;
+            modal.style.display = "block";
+        }
+
+        // فتح النافذة عند الضغط على أيقونة المعلومات
+        document.querySelectorAll('.practice-info-button').forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.stopPropagation(); // منع فتح الأكورديون
+                const id = button.dataset.id;
+                const practiceTitle = practicesData[id].title;
+                const evidenceHtml = evidenceExamples[id] || "<p>لا توجد شواهد مقترحة حالياً لهذه الممارسة.</p>";
+                
+                showModalMessage(practiceTitle, evidenceHtml);
+            });
+        });
+
+        // إغلاق النافذة
+        modalClose.onclick = () => { modal.style.display = "none"; }
+        window.onclick = (event) => {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+        
+        // --- *** دوال إدارة البيانات (تصدير، استيراد، مسح) *** ---
+
+        // 1. تصدير البيانات (JSON)
+        function exportData() {
+            try {
+                const dataStr = JSON.stringify(practicesData, null, 2); // تنسيق JSON لسهولة القراءة
+                const blob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                // *** اسم ملف تصدير جديد ***
+                a.download = `school_activities_backup_${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showModalMessage("نجاح", "<p>تم تصدير بياناتك بنجاح في ملف JSON.</p>");
+            } catch (err) {
+                console.error("Error exporting data:", err);
+                showModalMessage("خطأ", "<p>حدث خطأ أثناء تصدير البيانات.</p>");
+            }
+        }
+
+        // 2. استيراد البيانات (JSON)
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    // تحقق بسيط للتأكد أنه كائن وليس مصفوفة أو نص عادي
+                    if (typeof importedData === 'object' && importedData !== null && !Array.isArray(importedData)) {
+                        practicesData = importedData;
+                        saveToLocalStorage();
+                        showModalMessage("نجاح", "<p>تم استيراد البيانات بنجاح. سيتم إعادة تحميل الصفحة الآن.</p>");
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 2000);
+                    } else {
+                        throw new Error("الملف غير صالح أو لا يحتوي على كائن JSON.");
+                    }
+                } catch (err) {
+                    console.error("Error importing data:", err);
+                    showModalMessage("خطأ في الاستيراد", `<p>لم نتمكن من قراءة الملف. تأكد أنه ملف JSON صالح تم تصديره من هذه الأداة.</p><p>الخطأ: ${err.message}</p>`);
+                }
+                // إعادة تعيين حقل الإدخال للسماح برفع نفس الملف مرة أخرى
+                event.target.value = null;
+            };
+            reader.onerror = function() {
+                showModalMessage("خطأ", "<p>حدث خطأ أثناء قراءة الملف.</p>");
+            };
+            reader.readAsText(file);
+        }
+
+        // 3. مسح كل البيانات
+        function clearData() {
+            // استخدام النافذة المنبثقة للتأكيد
+            const confirmationHtml = `
+                <p class="mb-4">هل أنت متأكد أنك تريد مسح جميع البيانات المحفوظة في هذا المتصفح؟</p>
+                <p class="mb-6 text-sm text-red-600">لا يمكن التراجع عن هذا الإجراء.</p>
+                <div class="flex justify-end gap-4">
+                    <button id="confirm-clear-btn" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">نعم، امسح البيانات</button>
+                    <button id="cancel-clear-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400">إلغاء</button>
+                </div>
+            `;
+            showModalMessage("تأكيد مسح البيانات", confirmationHtml);
+
+            // إضافة مستمعي الأحداث لأزرار التأكيد
+            document.getElementById('confirm-clear-btn').onclick = () => {
+                // *** مسح مفتاح التخزين الجديد ***
+                localStorage.removeItem(localStorageKey);
+                window.location.reload();
+            };
+            document.getElementById('cancel-clear-btn').onclick = () => {
+                modal.style.display = "none";
+            };
+        }
+
+        // --- دالة تصدير التقرير (تفتح صفحة جديدة) ---
+        function exportReport() {
+            try {
+                // بناء محتوى التقرير (جدول)
+                let reportContent = `
+                    <!doctype html>
+                    <html lang="ar" dir="rtl">
+                    <head>
+                        <meta charset="utf-8">
+                        <!-- *** عنوان تقرير جديد *** -->
+                        <title>تقرير الأنشطة المدرسية</title>
+                        <link href="https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+                        <style>
+                            body { 
+                                font-family: 'Noto Kufi Arabic', sans-serif; 
+                                direction: rtl; 
+                                margin: 20px auto; 
+                                max-width: 1200px;
+                                padding: 0 20px;
+                            }
+                            h1 { color: #333; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+                            .report-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                            .report-table th, .report-table td { 
+                                border: 1px solid #ddd; 
+                                padding: 10px; 
+                                text-align: right; 
+                                vertical-align: top; 
+                                word-wrap: break-word; 
+                            }
+                            .report-table thead { background-color: #f2f2f2; }
+                            .status-لم-يبدأ { color: #888; font-weight: bold; }
+                            .status-قيد-التنفيذ { color: #e67e22; font-weight: bold; }
+                            .status-مكتمل { color: #27ae60; font-weight: bold; }
+                            .report-attachment-list { list-style-type: none; padding-right: 0; margin: 0; }
+                            .report-attachment-list li { margin-bottom: 8px; word-break: break-all; }
+                            .report-attachment-link { color:#0056b3; text-decoration:underline; }
+                        </style>
+                    </head>
+                    <body>
+                        <!-- *** عنوان تقرير جديد *** -->
+                        <h1>ملخص تقرير الأنشطة المدرسية</h1>
+                        <table class="report-table">
+                            <thead>
+                                <tr>
+                                    <!-- *** عنوان عمود جديد *** -->
+                                    <th style="width: 20%;">البرنامج/النشاط</th>
+                                    <th style="width: 10%;">حالة التنفيذ</th>
+                                    <th style="width: 25%;">الشواهد والملاحظات</th>
+                                    <th style="width: 20%;">مسؤول التنفيذ</th>
+                                    <th style="width: 25%;">الروابط المرفقة</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+
+                for (const id in practicesData) {
+                    const item = practicesData[id] || {};
+                    const safeStatusClass = 'status-' + String(item.status || '').replace(/\s+/g, '-');
+
+                    let attachmentsHtml = '<ul class="report-attachment-list">';
+                    if (item.files && item.files.length) {
+                        item.files.forEach(file => {
+                            if (file.type === 'link') {
+                                attachmentsHtml += `<li><a href="${file.data}" target="_blank" rel="noopener noreferrer" class="report-attachment-link">${file.name}</a></li>`;
+                            }
+                        });
+                    } else attachmentsHtml += '<li>لا توجد روابط.</li>';
+                    attachmentsHtml += '</ul>';
+
+                    // إصلاح خطأ .replace وضمان وجود النصوص
+                    const evidenceText = String(item.evidence || '').replace(/\n/g, '<br>') || 'لا توجد ملاحظات.';
+                    const executorText = String(item.executor || '').replace(/\n/g, '<br>') || 'لم يحدد.'; // إضافة مسؤول التنفيذ للتقرير
+                    
+                    reportContent += `
+                        <tr>
+                            <td>${item.title || ''}</td>
+                            <td><span class="${safeStatusClass}">${item.status || ''}</span></td>
+                            <td>${evidenceText}</td>
+                            <td>${executorText}</td>
+                            <td>${attachmentsHtml}</td>
+                        </tr>
+                    `;
+                }
+
+                reportContent += `
+                        </tbody>
+                    </table>
+                    </body>
+                    </html>
+                `;
+
+                // استخدام Blob لعمل صفحة مستقلة بدلاً من document.write
+                const blob = new Blob([reportContent], { type: 'text/html;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const reportWindow = window.open(url, '_blank');
+
+                if (!reportWindow || reportWindow.closed || typeof reportWindow.closed == 'undefined') {
+                    showModalMessage(
+                        "خطأ في تصدير التقرير",
+                        "<p>يبدو أن متصفحك منع فتح النوافذ. الرجاء السماح بالنوافذ المنبثقة ثم حاول مرة أخرى.</p>"
+                    );
+                    setTimeout(() => URL.revokeObjectURL(url), 30000); // تنظيف الرابط
+                    return;
+                }
+                
+                setTimeout(() => URL.revokeObjectURL(url), 30000); // تنظيف الرابط بعد فترة
+
+            } catch (err) {
+                console.error("Error exporting report:", err);
+                showModalMessage("خطأ في إنشاء التقرير", `<p>حدث خطأ أثناء محاولة إنشاء التقرير.</p><p>الخطأ: ${err.message}</p>`);
+            }
+        }
+    </script>
+
+</body>
+</html>
