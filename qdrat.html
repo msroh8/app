@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>خطة دعم طلاب ثانوية دار التوحيد</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- NEW: Chart.js Annotation Plugin (for trendline) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/3.0.1/chartjs-plugin-annotation.min.js"></script>
+    
+    <style>
+        /* Using Inter font as a good default for Arabic and English */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa; /* Light gray background */
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #a5b4fc; /* indigo-300 */
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #e0e7ff; /* indigo-100 */
+        }
+        /* Style for N/A cells */
+        .na-cell {
+            color: #9ca3af; /* gray-400 */
+            font-style: italic;
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        
+        <!-- 1. Header Section - UPDATED DESIGN -->
+        <header class="flex flex-col sm:flex-row justify-between items-center bg-white p-6 rounded-lg shadow-md mb-6 border-l-8 border-indigo-600">
+            <div class="flex items-center">
+                <!-- NEW Professional SVG Logo (Growth Chart) -->
+                <svg class="w-12 h-12 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                </svg>
+                <div class="mr-4">
+                    <h1 class="text-2xl font-bold text-gray-900">خطة تحسين ودعم طلاب ثانوية دار التوحيد</h1>
+                    <p class="text-sm text-gray-500">لوحة تحكم تحليلية لاختبار القدرات</p>
+                </div>
+            </div>
+            <div class="text-lg font-semibold text-gray-700 mt-4 sm:mt-0">
+                للعام الدراسي 1447هـ
+            </div>
+        </header>
+
+        <!-- 2. Filters Section - UPDATED DESIGN -->
+        <div class="bg-white p-4 rounded-lg shadow-md mb-6">
+            <h2 class="text-xl font-bold mb-4 text-indigo-800">أدوات الفرز والبحث</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+                
+                <!-- Filter by Name -->
+                <div class="lg:col-span-2">
+                    <label for="filter-name" class="block text-sm font-medium text-gray-700 mb-1">بحث بالاسم:</label>
+                    <input type="text" id="filter-name" placeholder="اكتب اسم الطالب..." class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <!-- Filter by Class -->
+                <div>
+                    <label for="filter-class" class="block text-sm font-medium text-gray-700 mb-1">الشعبة:</label>
+                    <select id="filter-class" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                        <option value="all">الكل</option>
+                        <option value="301">301</option>
+                        <option value="302">302</option>
+                    </select>
+                </div>
+                
+                <!-- Filter by Performance Group -->
+                <div>
+                    <label for="filter-performance" class="block text-sm font-medium text-gray-700 mb-1">التصنيف:</label>
+                    <select id="filter-performance" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                        <option value="all">الكل</option>
+                        <optgroup label="مجموعات الأداء العام">
+                            <option value="group_excellent">متميز (90+)</option>
+                            <option value="group_near_excellent">قريب من التميز (80-89)</option>
+                            <option value="group_good">جيد (70-79)</option>
+                            <option value="group_avg">متوسط (60-69)</option>
+                            <option value="group_support">دعم (50-59)</option>
+                            <option value="group_very_weak">ضعيف جداً (أقل من 50)</option>
+                        </optgroup>
+                        <optgroup label="مجموعات الفروقات">
+                            <option value="strength_quant">تفوق كمي (فرق 10+)</option>
+                            <option value="strength_verbal">تفوق لفظي (فرق 10+)</option>
+                            <option value="group_gap">فجوة كبيرة (فرق 20+)</option>
+                        </optgroup>
+                        <optgroup label="متابعة إدارية">
+                            <option value="status_not_tested">لم يختبر</option>
+                            <option value="status_pending_grade">بانتظار الدرجة</option>
+                        </optgroup>
+                    </select>
+                </div>
+                
+                <!-- Filter by Test Status -->
+                <div>
+                    <label for="filter-status" class="block text-sm font-medium text-gray-700 mb-1">حالة الاختبار:</label>
+                    <select id="filter-status" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                        <option value="all">الكل</option>
+                        <option value="tested">اختبر (له درجة)</option>
+                        <option value="not_tested">لم يختبر</option>
+                        <option value="pending_grade">بانتظار الدرجة</option>
+                    </select>
+                </div>
+
+                <!-- NEW Filter by Sort -->
+                <div>
+                    <label for="filter-sort" class="block text-sm font-medium text-gray-700 mb-1">ترتيب حسب:</label>
+                    <select id="filter-sort" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                        <option value="name_asc">الاسم (أ-ي)</option>
+                        <option value="total_desc">الكلية (الأعلى)</option>
+                        <option value="total_asc">الكلية (الأدنى)</option>
+                        <option value="quant_desc">الكمي (الأعلى)</option>
+                        <option value="quant_asc">الكمي (الأدنى)</option>
+                        <option value="verbal_desc">اللفظي (الأعلى)</option>
+                        <option value="verbal_asc">اللفظي (الأدنى)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Dashboard Grid (Main Content and Sidebar) -->
+        <div class="flex flex-col lg:flex-row gap-6">
+
+            <!-- Main Content (Student Table) -->
+            <div class="lg:w-3/4 w-full">
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <h2 class="text-xl font-bold p-4 text-indigo-800 border-b">القائمة التفصيلية للطلاب</h2>
+                    <div class="overflow-x-auto">
+                        <table class="w-full min-w-[700px]">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="p-3 text-sm font-semibold text-right text-gray-600">الشعبة</th>
+                                    <th class="p-3 text-sm font-semibold text-right text-gray-600">الاسم</th>
+                                    <th class="p-3 text-sm font-semibold text-center text-gray-600">الحالة</th>
+                                    <th class="p-3 text-sm font-semibold text-center text-gray-600 bg-indigo-50">اللفظي</th>
+                                    <th class="p-3 text-sm font-semibold text-center text-gray-600 bg-indigo-50">الكمي</th>
+                                    <th class="p-3 text-sm font-semibold text-center text-gray-600 bg-indigo-100">الدرجة الكلية</th>
+                                </tr>
+                            </thead>
+                            <tbody id="student-table-body" class="divide-y divide-gray-200">
+                                <!-- JS will populate this -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="table-loading" class="p-4 text-center text-gray-500">
+                        جاري تحميل البيانات...
+                    </div>
+                </div>
+                
+                <!-- NEW: Scatter Plot Section -->
+                <div class="bg-white rounded-lg shadow-md overflow-hidden mt-6">
+                    <h2 class="text-xl font-bold p-4 text-indigo-800 border-b">مخطط انتشار (الكمي مقابل اللفظي)</h2>
+                    <div class="p-4 w-full h-[500px]">
+                        <canvas id="scatterPlot"></canvas>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Sidebar (Statistics and Groups) -->
+            <div class="lg:w-1/4 w-full flex flex-col gap-6">
+                
+                <!-- Statistics Box - UPDATED DESIGN -->
+                <div class="bg-white p-4 rounded-lg shadow-md">
+                    <h2 class="text-xl font-bold mb-4 text-indigo-800 border-b pb-2">إحصائيات تربوية (للعينة المحددة)</h2>
+                    
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-medium text-gray-600">عدد الطلاب (المحدد):</span>
+                            <span id="stat-count" class="text-lg font-bold text-indigo-700">0</span>
+                        </div>
+                        <hr>
+                        <!-- General Stats -->
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-medium text-gray-600">المتوسط الحسابي:</span>
+                            <span id="stat-mean" class="text-lg font-bold text-gray-800">0.0</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-medium text-gray-600">الوسيط:</span>
+                            <span id="stat-median" class="text-lg font-bold text-gray-800">0.0</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-medium text-gray-600">الانحراف المعياري:</span>
+                            <span id="stat-stddev" class="text-lg font-bold text-gray-800">0.0</span>
+                        </div>
+                        <hr>
+                        <!-- Range Stats -->
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-medium text-gray-600">أعلى درجة:</span>
+                            <span id="stat-max" class="text-lg font-bold text-green-600">0</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-medium text-gray-600">أدنى درجة:</span>
+                            <span id="stat-min" class="text-lg font-bold text-red-600">0</span>
+                        </div>
+                        <hr>
+                        <!-- Advanced Stats -->
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-medium text-gray-600">الرُبع الأول (Q1):</span>
+                            <span id="stat-q1" class="text-lg font-bold text-gray-800">0.0</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-medium text-gray-600">الرُبع الثالث (Q3):</span>
+                            <span id="stat-q3" class="text-lg font-bold text-gray-800">0.0</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-medium text-gray-600">المدى الرُبعي (IQR):</span>
+                            <span id="stat-iqr" class="text-lg font-bold text-gray-800">0.0</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-medium text-gray-600">معامل الارتباط (اللفظي/الكمي):</span>
+                            <span id="stat-correlation" class="text-lg font-bold text-gray-800">0.0</span>
+                        </div>
+                        
+                        <hr>
+                        <!-- Sectional Stats -->
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-medium text-gray-600">متوسط اللفظي:</span>
+                            <span id="stat-verbal-mean" class="text-lg font-bold text-gray-800">0.0</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-medium text-gray-600">متوسط الكمي:</span>
+                            <span id="stat-quant-mean" class="text-lg font-bold text-gray-800">0.0</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-medium text-gray-600">منوال اللفظي:</span>
+                            <span id="stat-verbal-mode" class="text-lg font-bold text-gray-800">N/A</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-medium text-gray-600">منوال الكمي:</span>
+                            <span id="stat-quant-mode" class="text-lg font-bold text-gray-800">N/A</span>
+                        </div>
+
+                    </div>
+                    
+                    <!-- Histogram Chart - UPDATED DESIGN -->
+                    <h3 class="text-lg font-semibold mt-6 mb-2 text-indigo-800">توزيع الدرجات</h3>
+                    <div class="w-full h-48">
+                        <canvas id="distributionHistogram"></canvas>
+                    </div>
+                </div>
+                
+            </div>
+
+        </div>
+
+        <!-- NEW: Footer Section -->
+        <footer class="mt-8 text-center text-sm text-gray-500 bg-white p-6 rounded-lg shadow-md">
+            <div class="flex flex-col md:flex-row justify-center items-center gap-2 md:gap-4">
+                <span><strong>جمع البيانات:</strong> الأستاذ تركي الجعيد</span>
+                <span class="hidden md:inline">|</span>
+                <span><strong>صمم أدوات الفرز والتحليل:</strong> الأستاذ محمد مجممي</span>
+                <span class="hidden md:inline">|</span>
+                <span><strong>مدير المدرسة:</strong> الأستاذ فهد القحطاني</span>
+            </div>
+            <p class="mt-4 text-xs text-gray-400">&copy; 2024 ثانوية دار التوحيد</p>
+        </footer>
+
+    </div>
+
+    <script>
+        // --- 1. Raw Data ---
+        // This data is based on the provided file, with corrections applied.
+        const rawData = [
+            // --- Class 301 ---
+            { class: '301', name: 'أسامة عبدالله ابن فرحان الجعيد', status: 'tested', verbal: 66.7, quant: 71, total: 69 },
+            { class: '301', name: 'اياد احمد بن محمد هادي', status: 'not_tested', verbal: null, quant: null, total: null },
+            { class: '301', name: 'خالد فهد خالد الشاعر', status: 'tested', verbal: 64, quant: 55.1, total: 60 },
+            { class: '301', name: 'حمد عزيزمحمد المالكي', status: 'tested', verbal: 46.1, quant: 48.1, total: 47 },
+            { class: '301', name: 'رياض محمد علي الثبيتي', status: 'tested', verbal: 88, quant: 86, total: 88 },
+            { class: '301', name: 'رياض محمد عوض الطلحي', status: 'tested', verbal: 51, quant: 49, total: 50 },
+            { class: '301', name: 'زياد ماجد محمد الفعر', status: 'tested', verbal: 70.7, quant: 67.2, total: 69 },
+            { class: '301', name: 'تركي مستور سفر السفياني', status: 'tested', verbal: 45.9, quant: 46.1, total: 46 },
+            { class: '301', name: 'سعود محمد خضر القرحاوي', status: 'tested', verbal: 61.9, quant: 55.5, total: 59 },
+            { class: '301', name: 'سلطان جزل ابن سلطان العتيبي', status: 'tested', verbal: 64.4, quant: 70.5, total: 67.45 },
+            { class: '301', name: 'طلا ل محمد عويض المتعاني', status: 'tested', verbal: 65.6, quant: 69.7, total: 63 },
+            { class: '301', name: 'عادل سليم مسلم القرشي', status: 'tested', verbal: 45.7, quant: 51.9, total: 49 },
+            { class: '301', name: 'عادل عبدالله بن عثمان القرشي', status: 'tested', verbal: 54, quant: 56, total: 55 },
+            // Correction: '6503' -> 65.3 based on user clarification
+            { class: '301', name: 'عامر ياسراحمد هوساوي', status: 'tested', verbal: 65.3, quant: 61.2, total: 63 }, 
+            { class: '301', name: 'عبدالمجيد صالح عوض الغامدي', status: 'tested', verbal: 65.9, quant: 53.4, total: 60 },
+            { class: '301', name: 'عبدالمجيد ماجد نايف البقمي', status: 'tested', verbal: 55.5, quant: 63.7, total: 59 },
+            { class: '301', name: 'عماد سعود محيسن المتعاني', status: 'tested', verbal: 71.3, quant: 63.7, total: 67 },
+            { class: '301', name: 'عمر تركي علوش المالكي', status: 'tested', verbal: 75.4, quant: 79.4, total: 77 },
+            { class: '301', name: 'عمر محمد عبدالله الجهني', status: 'tested', verbal: 97.9, quant: 68.4, total: 83 },
+            { class: '301', name: 'فهد عليان عبيدالله المتعاني', status: 'tested', verbal: 52.7, quant: 57.7, total: 55.2 },
+            { class: '301', name: 'فيصل عبدالله عبدالرحمن القرشي', status: 'tested', verbal: 49, quant: 77, total: 63 },
+            { class: '301', name: 'مجاهد سامي مجاهد الحربي', status: 'tested', verbal: 74.9, quant: 62.8, total: 69 },
+            { class: '301', name: 'محمد احمد محمد جعفري', status: 'tested', verbal: 72.6, quant: 58, total: 65 },
+            { class: '301', name: 'محمد ظافر محمد الشهراني', status: 'tested', verbal: 73.4, quant: 58.8, total: 66 },
+            { class: '301', name: 'محمد عطاف دخيل الله العوفي', status: 'tested', verbal: 62, quant: 64, total: 63 },
+            { class: '301', name: 'محمد غازي جابر النمري', status: 'tested', verbal: 64.6, quant: 87.2, total: 78 },
+            { class: '301', name: 'معاذ عيضه عثمان النمري', status: 'tested', verbal: 64, quant: 52, total: 59 },
+            { class: '301', name: 'مهند خالد محمد الثبيتي', status: 'not_tested', verbal: null, quant: null, total: null },
+            { class: '301', name: 'هشام عادل قليل الخديدي', status: 'tested', verbal: 82, quant: 83, total: 82 },
+            { class: '301', name: 'وسام سعيد بن خضران المالكي', status: 'tested', verbal: 61.5, quant: 59.4, total: 60 },
+            { class: '301', name: 'يزيد احمد بطي الزايدي', status: 'tested', verbal: 65, quant: 65.9, total: 65 },
+            
+            // --- Class 302 ---
+            { class: '302', name: 'احمد سلمان مسلم القرشي', status: 'tested', verbal: 75, quant: 85, total: 77 },
+            { class: '302', name: 'الحسين سليمان بن سعد الغالبى', status: 'tested', verbal: 66.1, quant: 63.1, total: 65 },
+            { class: '302', name: 'أنس مالك عمر القرشي', status: 'tested', verbal: 84, quant: 86.6, total: 85 },
+            { class: '302', name: 'بدر عواض عايض الجعيد', status: 'not_tested', verbal: null, quant: null, total: null },
+            { class: '302', name: 'سامي سليم بن هليل الحريتي', status: 'tested', verbal: 73, quant: 66.55, total: 71.45 },
+            { class: '302', name: 'تميم سطام احمد الغامدي', status: 'not_tested', verbal: null, quant: null, total: null },
+            { class: '302', name: 'جسار عطيه سعد الزهراني', status: 'tested', verbal: 71.5, quant: 54.4, total: 63 },
+            { class: '302', name: 'خالد فيصل سعد الزهراني', status: 'tested', verbal: 64.1, quant: 67.9, total: 66 },
+            { class: '302', name: 'سطام سيف بن مسعود الحارثي', status: 'tested', verbal: 100, quant: 97, total: 98 },
+            { class: '302', name: 'سطام محمد عبدالله الهذلي', status: 'tested', verbal: 69, quant: 83, total: 76 },
+            { class: '302', name: 'سعيد سعد علي الزهراني', status: 'not_tested', verbal: null, quant: null, total: null },
+            { class: '302', name: 'عبدالاله عبدالله محمد البدراني', status: 'not_tested', verbal: null, quant: null, total: null },
+            { class: '302', name: 'عبدالرحمن خالد احمد النفيعي', status: 'not_tested', verbal: null, quant: null, total: null },
+            { class: '302', name: 'عبدالرحمن هاني عبدالله القرشي', status: 'tested', verbal: 70, quant: 66, total: 69 },
+            { class: '302', name: 'عبدالعزيز عبدالرحمن دغش القحطاني', status: 'not_tested', verbal: null, quant: null, total: null },
+            { class: '302', name: 'عبدالعزيز محمد عطيه القرشي', status: 'tested', verbal: 74.1, quant: 67.8, total: 71 },
+            { class: '302', name: 'عبدالعزيز ناصر عبدالجبار الطلحي', status: 'tested', verbal: 85.4, quant: 66.8, total: 63 }, // Note: Total seems low, but using provided data.
+            { class: '302', name: 'عبدالمجيد محمد ضويان العصيمي', status: 'not_tested', verbal: null, quant: null, total: null },
+            { class: '302', name: 'عزام فائز بن مسلم العيلي', status: 'not_tested', verbal: null, quant: null, total: null },
+            { class: '302', name: 'عمر صالح مهدي الزهراني', status: 'tested', verbal: 71, quant: 75, total: 74 },
+            { class: '302', name: 'محمد حاسن هليل الحريتي', status: 'not_tested', verbal: null, quant: null, total: null },
+            { class: '302', name: 'محمد عبدالعزيز احمد هزازي', status: 'tested', verbal: 58.8, quant: 66.8, total: 63 },
+            { class: '302', name: 'مشاري عبدالرحمن محمد الثبيتي', status: 'tested', verbal: 57.4, quant: 57.7, total: 58 },
+            { class: '302', name: 'مهند باسم بن سعد الحربي', status: 'not_tested', verbal: null, quant: null, total: null },
+            { class: '302', name: 'مهند بندر بن فايت الحارثي', status: 'tested', verbal: 73.4, quant: 62.8, total: 68 },
+            { class: '302', name: 'مهند رائد خلف الله الطويرقي', status: 'tested', verbal: 96, quant: 100, total: 98 },
+            { class: '302', name: 'مهند مشاري ابن خالد الحارثي', status: 'tested', verbal: 86, quant: 72, total: 79 },
+            { class: '302', name: 'ناصر فيصل جمعان الزهراني', status: 'tested', verbal: 66.3, quant: 75.2, total: 71 },
+            { class: '302', name: 'نواف غازي صالح الخديدي', status: 'tested', verbal: 59, quant: 60, total: 60 },
+            { class: '302', name: 'هاشم هشام عطاء الله العصيمي', status: 'tested', verbal: 65.2, quant: 55.5, total: 60 },
+            // Correction: (√) with no score means 'pending_grade'
+            { class: '302', name: 'وافي سعد بن عبدالله البقمي', status: 'pending_grade', verbal: null, quant: null, total: null },
+        ];
+
+        // --- 2. Data Processing ---
+        // Function to assign performance groups
+        function getPerformanceGroup(total) {
+            if (total === null) return null;
+            if (total >= 90) return 'group_excellent';
+            if (total >= 80) return 'group_near_excellent';
+            if (total >= 70) return 'group_good';
+            if (total >= 60) return 'group_avg';
+            if (total >= 50) return 'group_support';
+            return 'group_very_weak';
+        }
+
+        // Get strength group from verbal/quant scores
+        function getStrengthGroup(verbal, quant) {
+            if (verbal === null || quant === null) return null;
+            const diff = quant - verbal;
+            if (diff > 10) return 'strength_quant'; // Quant is significantly higher (Changed from 5 to 10)
+            if (diff < -10) return 'strength_verbal'; // Verbal is significantly higher (Changed from -5 to -10)
+            return 'strength_balanced';
+        }
+
+        // Get gap info
+        function getGapInfo(verbal, quant) {
+            if (verbal === null || quant === null) return null;
+            const diff = Math.abs(quant - verbal);
+            if (diff >= 20) {
+                return {
+                    diff: parseFloat(diff.toFixed(1)),
+                    stronger: quant > verbal ? 'كمي' : 'لفظي'
+                };
+            }
+            return null;
+        }
+
+        // Process raw data to add groups
+        const processedData = rawData.map(student => ({
+            ...student,
+            performanceGroup: getPerformanceGroup(student.total),
+            strengthGroup: getStrengthGroup(student.verbal, student.quant),
+            gapInfo: getGapInfo(student.verbal, student.quant)
+        }));
+
+        // --- 3. Chart.js Instance ---
+        let histogramChart;
+        let scatterPlot; // NEW
+
+        function initializeChart() {
+            const ctx = document.getElementById('distributionHistogram').getContext('2d');
+            histogramChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: [], // e.g., '< 50', '50-59', ...
+                    datasets: [{
+                        label: 'عدد الطلاب',
+                        data: [], // counts for each bin
+                        // UPDATED: Multi-color design
+                        backgroundColor: [
+                            'rgba(199, 210, 254, 0.7)', // indigo-200
+                            'rgba(165, 180, 252, 0.7)', // indigo-300
+                            'rgba(129, 140, 248, 0.7)', // indigo-400
+                            'rgba(99, 102, 241, 0.7)',  // indigo-500
+                            'rgba(79, 70, 229, 0.7)',  // indigo-600
+                            'rgba(67, 56, 202, 0.7)'   // indigo-700
+                        ],
+                        borderColor: 'rgba(49, 46, 129, 1)', // UPDATED: indigo-900
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1, // Show integer ticks
+                                precision: 0
+                            },
+                            grid: {
+                                display: false
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            displayColors: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return `عدد الطلاب: ${context.raw}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // NEW: Initialize Scatter Plot
+        function initializeScatterPlot() {
+            const ctx = document.getElementById('scatterPlot').getContext('2d');
+            scatterPlot = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'الطلاب',
+                        data: [], // Will be { x: quant, y: verbal, name: 'Student Name' }
+                        backgroundColor: 'rgba(79, 70, 229, 0.7)', // indigo-600
+                        borderColor: 'rgba(49, 46, 129, 1)', // indigo-900
+                        pointRadius: 5,
+                        pointHoverRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'bottom',
+                            title: {
+                                display: true,
+                                text: 'الدرجة الكمية',
+                                font: { size: 14 }
+                            },
+                            min: 40,
+                            max: 100,
+                            grid: {
+                                color: '#e5e7eb' // gray-200
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            title: {
+                                display: true,
+                                text: 'الدرجة اللفظية',
+                                font: { size: 14 }
+                            },
+                            min: 40,
+                            max: 100,
+                            grid: {
+                                color: '#e5e7eb' // gray-200
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            displayColors: false,
+                            callbacks: {
+                                label: function(context) {
+                                    const point = context.raw;
+                                    return `${point.name}: (كمي: ${point.x}, لفظي: ${point.y})`;
+                                }
+                            }
+                        },
+                        // This adds the y=x diagonal line
+                        annotation: {
+                            annotations: {
+                                line1: {
+                                    type: 'line',
+                                    xMin: 40,
+                                    yMin: 40,
+                                    xMax: 100,
+                                    yMax: 100,
+                                    borderColor: 'rgb(107, 114, 128)', // gray-500
+                                    borderWidth: 2,
+                                    borderDash: [6, 6],
+                                    label: {
+                                        content: 'كمي = لفظي',
+                                        enabled: true,
+                                        position: 'start',
+                                        font: { size: 10 },
+                                        color: 'rgb(107, 114, 128)'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+
+        // --- 4. Statistics Calculation Functions ---
+        
+        // NEW: Helper function to calculate Mode
+        function calculateMode(arr) {
+            if (arr.length === 0) return 'N/A';
+            
+            const freqMap = {};
+            let maxFreq = 0;
+            
+            arr.forEach(val => {
+                if (val === null) return;
+                // Round values to one decimal place to group similar scores
+                const roundedVal = parseFloat(val.toFixed(1)); 
+                freqMap[roundedVal] = (freqMap[roundedVal] || 0) + 1;
+                if (freqMap[roundedVal] > maxFreq) {
+                    maxFreq = freqMap[roundedVal];
+                }
+            });
+
+            if (maxFreq <= 1) return 'N/A'; // No repeating values
+
+            const modes = Object.keys(freqMap).filter(key => freqMap[key] === maxFreq);
+            
+            // Check if all values have the same frequency (e.g., [1,1,2,2])
+            const allSameFreq = Object.values(freqMap).every(freq => freq === maxFreq);
+            if (allSameFreq && modes.length > 3) return 'N/A'; // No distinct mode, allow up to 3 modes
+
+            return modes.join(', ');
+        }
+        
+        function calculateStatistics(data) {
+            const scores = data.filter(s => s.status === 'tested' && s.total !== null).map(s => s.total);
+            const verbalScores = data.filter(s => s.status === 'tested' && s.verbal !== null).map(s => s.verbal);
+            const quantScores = data.filter(s => s.status === 'tested' && s.quant !== null).map(s => s.quant);
+            
+            // NEW: Prepare scatter data
+            const scatterData = data
+                .filter(s => s.status === 'tested' && s.quant !== null && s.verbal !== null)
+                .map(s => ({
+                    x: s.quant,
+                    y: s.verbal,
+                    name: s.name
+                }));
+
+            if (scores.length === 0) {
+                return {
+                    count: data.length, // Total count of selection
+                    testedCount: 0,
+                    mean: 0, median: 0, stddev: 0, min: 0, max: 0,
+                    q1: 0, q3: 0, iqr: 0,
+                    correlation: 0,
+                    verbalMean: 0, quantMean: 0, // NEW
+                    verbalMode: 'N/A', quantMode: 'N/A', // NEW
+                    histogram: { bins: [], counts: [] },
+                    scatterData: [] // NEW
+                };
+            }
+
+            // Standard Stats
+            scores.sort((a, b) => a - b);
+            const sum = scores.reduce((a, b) => a + b, 0);
+            const mean = sum / scores.length;
+            
+            const mid = Math.floor(scores.length / 2);
+            const median = scores.length % 2 === 0 ? (scores[mid - 1] + scores[mid]) / 2 : scores[mid];
+            
+            const min = scores[0];
+            const max = scores[scores.length - 1];
+            
+            const variance = scores.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / scores.length;
+            const stddev = Math.sqrt(variance);
+
+            // Quantile function
+            const quantile = (arr, q) => {
+                const pos = (arr.length - 1) * q;
+                const base = Math.floor(pos);
+                const rest = pos - base;
+                if (arr[base + 1] !== undefined) {
+                    return arr[base] + rest * (arr[base + 1] - arr[base]);
+                } else {
+                    return arr[base];
+                }
+            };
+            
+            const q1 = quantile(scores, 0.25);
+            const q3 = quantile(scores, 0.75);
+            const iqr = q3 - q1;
+
+            // Correlation
+            let correlation = 0;
+            let meanVerbal = 0; // NEW: Initialize here
+            let meanQuant = 0; // NEW: Initialize here
+
+            if (verbalScores.length > 1) { // Changed condition to allow mean calculation even if arrays differ
+                meanVerbal = verbalScores.reduce((a, b) => a + b, 0) / verbalScores.length;
+            }
+            if (quantScores.length > 1) {
+                meanQuant = quantScores.reduce((a, b) => a + b, 0) / quantScores.length;
+            }
+
+            // Only calculate correlation if lengths match and > 1
+            if (verbalScores.length === quantScores.length && verbalScores.length > 1) {
+                let numerator = 0;
+                let sumSqVerbal = 0;
+                let sumSqQuant = 0;
+                
+                for(let i = 0; i < verbalScores.length; i++) {
+                    const diffVerbal = (verbalScores[i] - meanVerbal);
+                    const diffQuant = (quantScores[i] - meanQuant);
+                    numerator += diffVerbal * diffQuant;
+                    sumSqVerbal += Math.pow(diffVerbal, 2);
+                    sumSqQuant += Math.pow(diffQuant, 2);
+                }
+                
+                const denominator = Math.sqrt(sumSqVerbal) * Math.sqrt(sumSqQuant);
+                if (denominator !== 0) {
+                    correlation = numerator / denominator;
+                }
+            }
+
+            // NEW: Calculate Modes
+            const verbalMode = calculateMode(verbalScores);
+            const quantMode = calculateMode(quantScores);
+
+
+            // Histogram Data
+            const bins = ['< 50', '50-59', '60-69', '70-79', '80-89', '90+'];
+            const counts = [0, 0, 0, 0, 0, 0];
+            scores.forEach(score => {
+                if (score < 50) counts[0]++;
+                else if (score < 60) counts[1]++;
+                else if (score < 70) counts[2]++;
+                else if (score < 80) counts[3]++;
+                else if (score < 90) counts[4]++;
+                else counts[5]++;
+            });
+
+            return {
+                count: data.length,
+                testedCount: scores.length,
+                mean: parseFloat(mean.toFixed(1)),
+                median: parseFloat(median.toFixed(1)),
+                stddev: parseFloat(stddev.toFixed(1)),
+                min: parseFloat(min.toFixed(1)),
+                max: parseFloat(max.toFixed(1)),
+                q1: parseFloat(q1.toFixed(1)),
+                q3: parseFloat(q3.toFixed(1)),
+                iqr: parseFloat(iqr.toFixed(1)),
+                correlation: parseFloat(correlation.toFixed(2)),
+                verbalMean: parseFloat(meanVerbal.toFixed(1)), // NEW
+                quantMean: parseFloat(meanQuant.toFixed(1)), // NEW
+                verbalMode: verbalMode, // NEW
+                quantMode: quantMode, // NEW
+                histogram: { bins, counts },
+                scatterData: scatterData // NEW
+            };
+        }
+
+
+        // --- 5. Main Update Function ---
+        function updateDashboard() {
+            // Get filter values
+            const filterName = document.getElementById('filter-name').value.toLowerCase();
+            const filterClass = document.getElementById('filter-class').value;
+            const filterPerformance = document.getElementById('filter-performance').value;
+            let filterStatus = document.getElementById('filter-status').value; // Changed to let
+            const filterSort = document.getElementById('filter-sort').value; // NEW
+
+            // --- NEW: If performance filter is used to select a status, it overrides the status filter.
+            if (filterPerformance === 'status_not_tested') {
+                filterStatus = 'not_tested';
+            } else if (filterPerformance === 'status_pending_grade') {
+                filterStatus = 'pending_grade';
+            }
+
+            // Apply filters
+            let filteredData = processedData.filter(s => { // Changed to let
+                const nameMatch = s.name.toLowerCase().includes(filterName);
+                const classMatch = filterClass === 'all' || s.class === filterClass;
+                // const performanceMatch = filterPerformance === 'all' || s.performanceGroup === filterPerformance; // OLD LOGIC
+                const statusMatch = filterStatus === 'all' || s.status === filterStatus;
+                
+                // --- NEW Performance/Strength/Gap Filter Logic ---
+                let performanceMatch = false;
+                if (filterPerformance === 'all') {
+                    performanceMatch = true;
+                } else if (filterPerformance.startsWith('group_')) {
+                    // This handles total score groups (e.g., group_excellent) AND gap group
+                    if (filterPerformance === 'group_gap') {
+                        performanceMatch = s.gapInfo !== null;
+                    } else {
+                        performanceMatch = s.performanceGroup === filterPerformance;
+                    }
+                } else if (filterPerformance.startsWith('strength_')) {
+                    // This handles strength groups (strength_quant, strength_verbal)
+                    performanceMatch = s.strengthGroup === filterPerformance;
+                } else if (filterPerformance.startsWith('status_')) { // NEW
+                    performanceMatch = true; // Status is already checked by statusMatch
+                }
+                // --- END NEW Logic ---
+                
+                return nameMatch && classMatch && performanceMatch && statusMatch;
+            });
+
+            // --- NEW Sorting Logic ---
+            // Helper for sorting nulls (nulls go to the bottom)
+            const sortNulls = (a, b) => {
+                if (a === null && b === null) return 0;
+                if (a === null) return 1; // nulls go to bottom
+                if (b === null) return -1; // nulls go to bottom
+                return 0; // Both are non-null
+            };
+
+            switch (filterSort) {
+                case 'total_desc':
+                    filteredData.sort((a, b) => sortNulls(a.total, b.total) || (b.total - a.total));
+                    break;
+                case 'total_asc':
+                    filteredData.sort((a, b) => sortNulls(a.total, b.total) || (a.total - b.total));
+                    break;
+                case 'quant_desc':
+                    filteredData.sort((a, b) => sortNulls(a.quant, b.quant) || (b.quant - a.quant));
+                    break;
+                case 'quant_asc':
+                    filteredData.sort((a, b) => sortNulls(a.quant, b.quant) || (a.quant - b.quant));
+                    break;
+                case 'verbal_desc':
+                    filteredData.sort((a, b) => sortNulls(a.verbal, b.verbal) || (b.verbal - a.verbal));
+                    break;
+                case 'verbal_asc':
+                    filteredData.sort((a, b) => sortNulls(a.verbal, b.verbal) || (a.verbal - b.verbal));
+                    break;
+                case 'name_asc':
+                default:
+                    filteredData.sort((a, b) => a.name.localeCompare(b.name, 'ar'));
+                    break;
+            }
+            // --- END Sorting Logic ---
+
+            // --- Calculate stats ---
+            const stats = calculateStatistics(filteredData);
+            
+            // --- Update Table ---
+            const tableBody = document.getElementById('student-table-body');
+            const loadingEl = document.getElementById('table-loading');
+            tableBody.innerHTML = ''; // Clear old data
+
+            if (filteredData.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-gray-500">لا يوجد طلاب يطابقون معايير البحث.</td></tr>';
+            } else {
+                filteredData.forEach(s => {
+                    const statusMap = {
+                        'tested': '<span class="text-xs font-medium px-2 py-1 rounded-full bg-green-100 text-green-800">اختبر</span>',
+                        'not_tested': '<span class="text-xs font-medium px-2 py-1 rounded-full bg-red-100 text-red-800">لم يختبر</span>',
+                        'pending_grade': '<span class="text-xs font-medium px-2 py-1 rounded-full bg-yellow-100 text-yellow-800">بانتظار الدرجة</span>'
+                    };
+                    
+                    const formatCell = (val) => val === null ? '<td class="p-3 text-sm na-cell">-</td>' : `<td class="p-3 text-sm text-gray-800 text-center">${val}</td>`;
+
+                    tableBody.innerHTML += `
+                        <tr class="hover:bg-gray-50">
+                            <td class="p-3 text-sm font-medium text-gray-800">${s.class}</td>
+                            <td class="p-3 text-sm font-medium text-gray-900">${s.name}</td>
+                            <td class="p-3 text-sm text-center">${statusMap[s.status]}</td>
+                            ${formatCell(s.verbal)}
+                            ${formatCell(s.quant)}
+                            ${s.total === null ? 
+                                '<td class="p-3 text-sm na-cell font-bold">-</td>' : 
+                                `<td class="p-3 text-sm text-gray-900 text-center font-bold bg-indigo-50">${s.total}</td>` // UPDATED color
+                            }
+                        </tr>
+                    `;
+                });
+            }
+            loadingEl.style.display = 'none';
+
+            // --- Update Statistics ---
+            document.getElementById('stat-count').textContent = stats.count;
+            
+            // Only show stats if there are tested students in the selection
+            const hasTestedStudents = stats.testedCount > 0;
+            document.getElementById('stat-mean').textContent = hasTestedStudents ? stats.mean : 'N/A';
+            document.getElementById('stat-median').textContent = hasTestedStudents ? stats.median : 'N/A';
+            document.getElementById('stat-stddev').textContent = hasTestedStudents ? stats.stddev : 'N/A';
+            document.getElementById('stat-min').textContent = hasTestedStudents ? stats.min : 'N/A';
+            document.getElementById('stat-max').textContent = hasTestedStudents ? stats.max : 'N/A';
+            document.getElementById('stat-q1').textContent = hasTestedStudents ? stats.q1 : 'N/A';
+            document.getElementById('stat-q3').textContent = hasTestedStudents ? stats.q3 : 'N/A';
+            document.getElementById('stat-iqr').textContent = hasTestedStudents ? stats.iqr : 'N/A';
+            document.getElementById('stat-correlation').textContent = (hasTestedStudents && stats.correlation !== 0) ? stats.correlation : 'N/A';
+            
+            // NEW: Update Sectional Stats
+            document.getElementById('stat-verbal-mean').textContent = hasTestedStudents ? stats.verbalMean : 'N/A';
+            document.getElementById('stat-quant-mean').textContent = hasTestedStudents ? stats.quantMean : 'N/A';
+            document.getElementById('stat-verbal-mode').textContent = hasTestedStudents ? stats.verbalMode : 'N/A';
+            document.getElementById('stat-quant-mode').textContent = hasTestedStudents ? stats.quantMode : 'N/A';
+
+
+            // --- Update Histogram Chart ---
+            histogramChart.data.labels = stats.histogram.bins;
+            histogramChart.data.datasets[0].data = stats.histogram.counts;
+            // Update colors (in case they were changed)
+            histogramChart.data.datasets[0].backgroundColor = [
+                'rgba(199, 210, 254, 0.7)', // indigo-200
+                'rgba(165, 180, 252, 0.7)', // indigo-300
+                'rgba(129, 140, 248, 0.7)', // indigo-400
+                'rgba(99, 102, 241, 0.7)',  // indigo-500
+                'rgba(79, 70, 229, 0.7)',  // indigo-600
+                'rgba(67, 56, 202, 0.7)'   // indigo-700
+            ];
+            histogramChart.data.datasets[0].borderColor = 'rgba(49, 46, 129, 1)'; // indigo-900
+            histogramChart.update();
+
+            // --- NEW: Update Scatter Plot ---
+            if (scatterPlot) { // Check if chart is initialized
+                scatterPlot.data.datasets[0].data = stats.scatterData;
+                scatterPlot.update();
+            }
+        }
+
+        // --- 6. Initial Load and Event Listeners ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // FIX: The plugin auto-registers when loaded from the CDN.
+            // Removing the manual registration line that caused the error.
+            // Chart.register(ChartjsPluginAnnotation); 
+            initializeChart();
+            initializeScatterPlot(); // NEW
+            updateDashboard();
+
+            // Add event listeners to filters
+            document.getElementById('filter-name').addEventListener('keyup', updateDashboard);
+            document.getElementById('filter-class').addEventListener('change', updateDashboard);
+            document.getElementById('filter-performance').addEventListener('change', updateDashboard);
+            document.getElementById('filter-status').addEventListener('change', updateDashboard);
+            document.getElementById('filter-sort').addEventListener('change', updateDashboard);
+
+        });
+
+    </script>
+</body>
+</html>
+
+
+
