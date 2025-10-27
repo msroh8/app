@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>كيمياء القهوة</title>
+    
+    <!-- تحميل Tailwind CSS للتصميم -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- تحميل خط "Cairo" من جوجل -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* تطبيق الخط الافتراضي */
+        body {
+            font-family: 'Cairo', sans-serif;
+        }
+
+        /* إخفاء النوافذ المنبثقة بشكل افتراضي */
+        .modal {
+            display: none; 
+        }
+
+        /* إظهار النافذة عند تفعيلها */
+        .modal.flex {
+            display: flex;
+        }
+
+        /* تأثير بسيط لظهور النافذة */
+        .modal-content-inner {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-50%, -45%); }
+            to { opacity: 1; transform: translate(-50%, -50%); }
+        }
+
+        /* تصميم شريط التمرير داخل النافذة */
+        .modal-scroll::-webkit-scrollbar {
+            width: 8px;
+        }
+        .modal-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        .modal-scroll::-webkit-scrollbar-thumb {
+            background: #a16207; /* لون بني متناسب مع القهوة */
+            border-radius: 10px;
+        }
+        .modal-scroll::-webkit-scrollbar-thumb:hover {
+            background: #854d0e; 
+        }
+    </style>
+</head>
+<body class="bg-stone-100 text-stone-900 leading-relaxed">
+
+    <!-- الهيدر والعنوان -->
+    <header class="bg-yellow-900 text-white p-8 pt-10 text-center shadow-lg rounded-b-xl">
+        <!-- أيقونة SVG لكوب القهوة -->
+        <svg class="w-20 h-20 mx-auto mb-4 text-amber-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M14 10.5V11a2 2 0 01-2 2H8a2 2 0 01-2-2v-1m6 0a2 2 0 100-4H8a2 2 0 100 4m6 0v2a2 2 0 01-2 2H8a2 2 0 01-2-2v-2m0 0V8c0-1.1.9-2 2-2h4a2 2 0 012 2v2.5M14 10.5c0 1.657 1.343 3 3 3h.01M17 13.5V10.5M10 6V5a1 1 0 011-1h2a1 1 0 011 1v1"></path>
+        </svg>
+        <h1 class="text-4xl md:text-5xl font-bold text-amber-100">كيمياء القهوة</h1>
+        <p class="text-lg text-amber-200 mt-4">عمل الطالبة: لمار محمد مجممي</p>
+        <p class="text-lg text-amber-200">إشراف المعلمة: آمال محمد الغامدي</p>
+    </header>
+
+    <!-- المحتوى الرئيسي -->
+    <main class="container mx-auto p-6 md:p-10">
+        <p class="text-lg md:text-xl text-center text-stone-700 max-w-3xl mx-auto mb-10">
+            تُعتبر القهوة واحدة من أكثر المشروبات استهلاكاً في العالم، وما قد لا يدركه الكثيرون هو أن كل رشفة منها هي نتاج سلسلة معقدة من التفاعلات الكيميائية. اضغط على أحد الأقسام أدناه لاستكشاف العلاقة العميقة بين الكيمياء والقهوة.
+        </p>
+
+        <!-- شبكة البطاقات التفاعلية -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            
+            <!-- البطاقة 1: تركيب حبة البن -->
+            <button data-modal-target="#modal-1" class="modal-trigger bg-white rounded-xl shadow-lg p-6 text-center cursor-pointer transition-all duration-300 hover:shadow-2xl hover:-translate-y-1.5 focus:outline-none focus:ring-2 focus:ring-yellow-800 focus:ring-opacity-50">
+                <h2 class="text-2xl font-bold text-yellow-900 mb-2">1. تركيب حبة البن</h2>
+                <p class="text-stone-600">اكتشف المكونات الكيميائية للبن الأخضر قبل التحميص.</p>
+            </button>
+            
+            <!-- البطاقة 2: كيمياء التحميص -->
+            <button data-modal-target="#modal-2" class="modal-trigger bg-white rounded-xl shadow-lg p-6 text-center cursor-pointer transition-all duration-300 hover:shadow-2xl hover:-translate-y-1.5 focus:outline-none focus:ring-2 focus:ring-yellow-800 focus:ring-opacity-50">
+                <h2 class="text-2xl font-bold text-yellow-900 mb-2">2. كيمياء التحميص</h2>
+                <p class="text-stone-600">كيف تحول الحرارة الحبوب الخضراء إلى بن عطري.</p>
+            </button>
+            
+            <!-- البطاقة 3: الكافيين -->
+            <button data-modal-target="#modal-3" class="modal-trigger bg-white rounded-xl shadow-lg p-6 text-center cursor-pointer transition-all duration-300 hover:shadow-2xl hover:-translate-y-1.5 focus:outline-none focus:ring-2 focus:ring-yellow-800 focus:ring-opacity-50">
+                <h2 class="text-2xl font-bold text-yellow-900 mb-2">3. الكافيين</h2>
+                <p class="text-stone-600">المركب الشهير: تركيبه، وظيفته، وكيفية إزالته.</p>
+            </button>
+            
+            <!-- البطاقة 4: كيمياء الاستخلاص -->
+            <button data-modal-target="#modal-4" class="modal-trigger bg-white rounded-xl shadow-lg p-6 text-center cursor-pointer transition-all duration-300 hover:shadow-2xl hover:-translate-y-1.5 focus:outline-none focus:ring-2 focus:ring-yellow-800 focus:ring-opacity-50">
+                <h2 class="text-2xl font-bold text-yellow-900 mb-2">4. كيمياء الاستخلاص</h2>
+                <p class="text-stone-600">فن سحب النكهات من البن المطحون باستخدام الماء.</p>
+            </button>
+            
+            <!-- البطاقة 5: النكهة والحموضة -->
+            <button data-modal-target="#modal-5" class="modal-trigger bg-white rounded-xl shadow-lg p-6 text-center cursor-pointer transition-all duration-300 hover:shadow-2xl hover:-translate-y-1.5 focus:outline-none focus:ring-2 focus:ring-yellow-800 focus:ring-opacity-50">
+                <h2 class="text-2xl font-bold text-yellow-900 mb-2">5. النكهة والحموضة</h2>
+                <p class="text-stone-600">ما الذي يعطي القهوة رائحتها المميزة وطعمها الحيوي.</p>
+            </button>
+
+            <!-- البطاقة 6: خلاصة -->
+            <button data-modal-target="#modal-6" class="modal-trigger bg-white rounded-xl shadow-lg p-6 text-center cursor-pointer transition-all duration-300 hover:shadow-2xl hover:-translate-y-1.5 focus:outline-none focus:ring-2 focus:ring-yellow-800 focus:ring-opacity-50">
+                <h2 class="text-2xl font-bold text-yellow-900 mb-2">خلاصة</h2>
+                <p class="text-stone-600">نظرة شاملة على الرحلة الكيميائية من الحقل للفنجان.</p>
+            </button>
+        </div>
+    </main>
+
+    <!-- تذييل الصفحة -->
+    <footer class="text-center p-6 mt-10 text-stone-500 text-sm">
+        <p>مشروع كيمياء القهوة | 2025</p>
+    </footer>
+
+    <!-- حاوية النوافذ المنبثقة -->
+
+    <!-- الخلفية المعتمة -->
+    <div id="modal-backdrop" class="modal fixed inset-0 bg-black/70 z-40 items-center justify-center"></div>
+
+    <!-- النافذة 1: تركيب حبة البن -->
+    <div id="modal-1" class="modal-content-inner modal fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-2xl w-11/12 max-w-2xl z-50">
+        <div class="flex justify-between items-center border-b border-stone-200 p-4">
+            <h3 class="text-2xl font-bold text-yellow-900">1. تركيب حبة البن</h3>
+            <button class="modal-close text-stone-500 hover:text-stone-800 text-3xl font-bold">&times;</button>
+        </div>
+        <div class="p-6 modal-scroll max-h-[60vh] overflow-y-auto">
+            <p class="mb-4 text-lg">حبة البن الخضراء قبل التحميص هي مخزن للمركبات الكيميائية، وأهمها:</p>
+            <ul class="list-disc list-outside space-y-3 mr-5">
+                <li><strong>الكربوهيدرات (السكريات):</strong> تشكل النسبة الأكبر وهي الوقود الأساسي لتفاعلات التحميص.</li>
+                <li><strong>الدهون (الزيوت):</strong> تلعب دوراً هاماً في حفظ النكهات والمركبات العطرية.</li>
+                <li><strong>البروتينات والأحماض الأمينية:</strong> مكونات أساسية في تفاعلات النكهة.</li>
+                <li><strong>الأحماض (مثل حمض الكلوروجينيك):</strong> تساهم في الحموضة والنكهة، وتتحلل أثناء التحميص.</li>
+                <li><strong>القلويدات (مثل الكافيين):</strong> المركب الأكثر شهرة، وهو منبه طبيعي.</li>
+            </ul>
+        </div>
+        <div class="border-t border-stone-200 p-4 bg-stone-50 rounded-b-xl">
+            <button class="modal-close w-full bg-yellow-800 text-white py-2 rounded-lg hover:bg-yellow-900 transition-colors font-semibold">إغلاق</button>
+        </div>
+    </div>
+
+    <!-- النافذة 2: كيمياء التحميص -->
+    <div id="modal-2" class="modal-content-inner modal fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-2xl w-11/12 max-w-2xl z-50">
+        <div class="flex justify-between items-center border-b border-stone-200 p-4">
+            <h3 class="text-2xl font-bold text-yellow-900">2. كيمياء التحميص</h3>
+            <button class="modal-close text-stone-500 hover:text-stone-800 text-3xl font-bold">&times;</button>
+        </div>
+        <div class="p-6 modal-scroll max-h-[60vh] overflow-y-auto">
+            <p class="mb-4 text-lg">التحميص هو قلب عملية تحضير القهوة، وهو عملية كيميائية بحتة يتم فيها تحويل الحبوب الخضراء عديمة النكهة إلى حبوب بنية عطرية.</p>
+            <div class="space-y-4">
+                <div>
+                    <h4 class="text-xl font-semibold text-yellow-800">تفاعل ميلارد (Maillard Reaction)</h4>
+                    <ul class="list-disc list-outside space-y-1 mr-5 mt-2">
+                        <li>هذا هو التفاعل الأهم، ويحدث بين الأحماض الأمينية (من البروتينات) والسكريات المختزلة بفعل الحرارة.</li>
+                        <li>إنه المسؤول عن اكتساب الحبوب لونها البني وعن إنتاج مئات المركبات العطرية (مثل البيرازينات التي تعطي رائحة "محمصة" أو "مكسرات").</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-xl font-semibold text-yellow-800">تكرمل السكريات (Caramelization)</h4>
+                    <ul class="list-disc list-outside space-y-1 mr-5 mt-2">
+                        <li>عند درجات حرارة أعلى، تبدأ السكريات بالتحلل والتكرمل (بدون الحاجة لأحماض أمينية).</li>
+                        <li>يساهم هذا التفاعل في اللون البني، ويضيف نكهات حلوة أو شبيهة بالكراميل، وفي التحميص الداكن قد يساهم في المرارة.</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-xl font-semibold text-yellow-800">تحلل المركبات (Degradation)</h4>
+                    <ul class="list-disc list-outside space-y-1 mr-5 mt-2">
+                        <li>تتحلل أحماض الكلوروجينيك إلى مركبات أخرى (مثل أحماض الكينيك)، مما يؤثر على حموضة ومرارة القهوة.</li>
+                        <li>تتحلل البروتينات والدهون أيضاً لتكوين مركبات نكهة جديدة.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="border-t border-stone-200 p-4 bg-stone-50 rounded-b-xl">
+            <button class="modal-close w-full bg-yellow-800 text-white py-2 rounded-lg hover:bg-yellow-900 transition-colors font-semibold">إغلاق</button>
+        </div>
+    </div>
+
+    <!-- النافذة 3: الكافيين -->
+    <div id="modal-3" class="modal-content-inner modal fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-2xl w-11/12 max-w-2xl z-50">
+        <div class="flex justify-between items-center border-b border-stone-200 p-4">
+            <h3 class="text-2xl font-bold text-yellow-900">3. الكافيين</h3>
+            <button class="modal-close text-stone-500 hover:text-stone-800 text-3xl font-bold">&times;</button>
+        </div>
+        <div class="p-6 modal-scroll max-h-[60vh] overflow-y-auto">
+            <div class="space-y-4">
+                <div>
+                    <h4 class="text-xl font-semibold text-yellow-800">التركيب والوظيفة</h4>
+                    <p class="mt-2">الكافيين (C8H10N4O2) هو مركب قلويدي يعمل كمنبه للجهاز العصبي المركزي. كيميائياً، يشبه مركب "الأدينوزين" في الدماغ، فيرتبط بمستقبلاته ويمنع الأدينوزين (الذي يسبب النعاس) من الارتباط بها، مما يشعرنا باليقظة.</p>
+                </div>
+                <div>
+                    <h4 class="text-xl font-semibold text-yellow-800">نزع الكافيين (Decaffeination)</h4>
+                    <p class="mt-2">هي عملية كيميائية بحد ذاتها، يتم فيها استخدام مذيبات (مثل أسيتات الإيثيل أو ثنائي كلورو ميثان) أو عمليات أكثر حداثة (مثل استخدام ثاني أكسيد الكربون فوق الحرج) لسحب الكافيين من الحبوب الخضراء.</p>
+                </div>
+            </div>
+        </div>
+        <div class="border-t border-stone-200 p-4 bg-stone-50 rounded-b-xl">
+            <button class="modal-close w-full bg-yellow-800 text-white py-2 rounded-lg hover:bg-yellow-900 transition-colors font-semibold">إغلاق</button>
+        </div>
+    </div>
+
+    <!-- النافذة 4: كيمياء الاستخلاص -->
+    <div id="modal-4" class="modal-content-inner modal fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-2xl w-11/12 max-w-2xl z-50">
+        <div class="flex justify-between items-center border-b border-stone-200 p-4">
+            <h3 class="text-2xl font-bold text-yellow-900">4. كيمياء الاستخلاص</h3>
+            <button class="modal-close text-stone-500 hover:text-stone-800 text-3xl font-bold">&times;</button>
+        </div>
+        <div class="p-6 modal-scroll max-h-[60vh] overflow-y-auto">
+            <p class="mb-4 text-lg">تحضير القهوة هو عملية "استخلاص" كيميائي. أنت تستخدم الماء (المذيب) لسحب المركبات القابلة للذوبان من البن المطحون (المادة المذابة).</p>
+            <div class="space-y-4">
+                <div>
+                    <h4 class="text-xl font-semibold text-yellow-800">الذوبانية (Solubility)</h4>
+                    <p class="mt-2">المركبات المختلفة تذوب بسرعات متفاوتة. الأحماض ونكهات الفاكهة تذوب أولاً، تليها السكريات، وأخيراً المركبات الثقيلة والمرة.</p>
+                </div>
+                <div>
+                    <h4 class="text-xl font-semibold text-yellow-800">عوامل الاستخلاص</h4>
+                    <ul class="list-disc list-outside space-y-2 mr-5 mt-2">
+                        <li><strong>درجة حرارة الماء:</strong> الماء الساخن (عادة 90-96 درجة مئوية) يسرّع عملية الذوبان. الماء البارد (كما في "Cold Brew") يستخلص بشكل أبطأ وينتج نكهة مختلفة (أقل حموضة ومرارة).</li>
+                        <li><strong>حجم الطحن:</strong> الطحن الناعم يوفر مساحة سطح أكبر لاستخلاص أسرع (مثل الإسبريسو). الطحن الخشن يبطئ الاستخلاص (مثل الفرنش بريس).</li>
+                        <li><strong>كيمياء الماء:</strong> جودة الماء مهمة جداً. وجود معادن مثل الكالسيوم والمغنيسيوم (العسر) يساعد في "جذب" مركبات النكهة من البن.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="border-t border-stone-200 p-4 bg-stone-50 rounded-b-xl">
+            <button class="modal-close w-full bg-yellow-800 text-white py-2 rounded-lg hover:bg-yellow-900 transition-colors font-semibold">إغلاق</button>
+        </div>
+    </div>
+
+    <!-- النافذة 5: النكهة والحموضة -->
+    <div id="modal-5" class="modal-content-inner modal fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-2xl w-11/12 max-w-2xl z-50">
+        <div class="flex justify-between items-center border-b border-stone-200 p-4">
+            <h3 class="text-2xl font-bold text-yellow-900">5. النكهة والحموضة</h3>
+            <button class="modal-close text-stone-500 hover:text-stone-800 text-3xl font-bold">&times;</button>
+        </div>
+        <div class="p-6 modal-scroll max-h-[60vh] overflow-y-auto">
+            <div class="space-y-4">
+                <div>
+                    <h4 class="text-xl font-semibold text-yellow-800">الرائحة (Aroma)</h4>
+                    <p class="mt-2">ما نشعر به كنكهة هو في الغالب رائحة. القهوة تحتوي على أكثر من 1000 مركب عطري متطاير (Volatile Compounds) تكتشفها مستقبلات الشم لدينا.</p>
+                </div>
+                <div>
+                    <h4 class="text-xl font-semibold text-yellow-800">الحموضة (Acidity)</h4>
+                    <p class="mt-2">ليست مجرد قياس (pH)، بل هي توصيف للنكهة. القهوة تحتوي على أحماض مختلفة (مثل الستريك، الماليك، الأسيتيك) التي تعطي نكهات فاكهية وحيوية. درجة التحميص ومصدر البن يحددان بشكل كبير ملامح الحموضة.</p>
+                </div>
+            </div>
+        </div>
+        <div class="border-t border-stone-200 p-4 bg-stone-50 rounded-b-xl">
+            <button class="modal-close w-full bg-yellow-800 text-white py-2 rounded-lg hover:bg-yellow-900 transition-colors font-semibold">إغلاق</button>
+        </div>
+    </div>
+
+    <!-- النافذة 6: خلاصة -->
+    <div id="modal-6" class="modal-content-inner modal fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-2xl w-11/12 max-w-2xl z-50">
+        <div class="flex justify-between items-center border-b border-stone-200 p-4">
+            <h3 class="text-2xl font-bold text-yellow-900">خلاصة</h3>
+            <button class="modal-close text-stone-500 hover:text-stone-800 text-3xl font-bold">&times;</button>
+        </div>
+        <div class="p-6 modal-scroll max-h-[60vh] overflow-y-auto">
+            <p class="text-lg">من الحقل إلى الفنجان، تعتبر القهوة درساً تطبيقياً ممتعاً في الكيمياء العضوية، الكيمياء الفيزيائية، والكيمياء التحليلية. كل قرار يتخذه المزارع، المحمصة، أو محضر القهوة (الباريستا) هو في جوهره تحكم في هذه التفاعلات الكيميائية للوصول إلى النكهة المطلوبة.</p>
+        </div>
+        <div class="border-t border-stone-200 p-4 bg-stone-50 rounded-b-xl">
+            <button class="modal-close w-full bg-yellow-800 text-white py-2 rounded-lg hover:bg-yellow-900 transition-colors font-semibold">إغلاق</button>
+        </div>
+    </div>
+
+    <!-- سكريبت التفاعلات (فتح وإغلاق النوافذ) -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // الإمساك بكل العناصر اللازمة
+            const modalTriggers = document.querySelectorAll('.modal-trigger');
+            const modalCloseButtons = document.querySelectorAll('.modal-close');
+            const modalBackdrop = document.getElementById('modal-backdrop');
+            const allModals = document.querySelectorAll('.modal-content-inner');
+
+            // دالة لفتح نافذة معينة
+            function openModal(modal) {
+                if (modal == null) return;
+                modalBackdrop.classList.add('flex'); // إظهار الخلفية
+                modal.classList.add('flex'); // إظهار النافذة المطلوبة
+            }
+
+            // دالة لإغلاق جميع النوافذ
+            function closeAllModals() {
+                modalBackdrop.classList.remove('flex'); // إخفاء الخلفية
+                allModals.forEach(modal => {
+                    modal.classList.remove('flex'); // إخفاء كل النوافذ
+                });
+            }
+
+            // ربط كل زر فتح بالنافذة الخاصة به
+            modalTriggers.forEach(button => {
+                button.addEventListener('click', () => {
+                    const modal = document.querySelector(button.dataset.modalTarget);
+                    openModal(modal);
+                });
+            });
+
+            // ربط كل أزرار الإغلاق بدالة الإغلاق
+            modalCloseButtons.forEach(button => {
+                button.addEventListener('click', closeAllModals);
+            });
+
+            // ربط الخلفية بدالة الإغلاق (للضغط خارج النافذة)
+            modalBackdrop.addEventListener('click', closeAllModals);
+        });
+    </script>
+
+</body>
+</html>
