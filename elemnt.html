@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>عناصر العملية التعليمية </title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    /* إعدادات الخط الأساسية */
+    body { font-family: 'Tajawal', sans-serif; }
+    
+    /* تصميم إطار "حديث" ليتناسب مع الخلفية البيضاء */
+    .tv-frame {
+      /* استخدام ألوان فاتحة جداً */
+      background: #F9FAFB; /* Tailwind gray-50 (هذا هو الجزء الرمادي الفاتح) */
+      /* تغيير لون الإطار إلى الأخضر (green-700) */
+      border: 18px solid #15803d; 
+      border-radius: 22px;
+      padding: 12px; /* تقليل الحشو للشاشات الصغيرة */
+      /* ظل خفيف جداً */
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05), inset 0 0 8px rgba(0,0,0,0.03);
+      width: 90%;
+      max-width: 900px; /* أقصى عرض على الشاشات الكبيرة */
+      margin: auto;
+    }
+    
+    /* تعديل الحشو للشاشات الأكبر (sm) فأكثر */
+    @media (min-width: 640px) {
+      .tv-frame {
+        padding: 20px;
+      }
+    }
+
+    /* شاشة العرض (للحفاظ على نسبة العرض للارتفاع) */
+    .tv-screen {
+      position: relative;
+      width: 100%;
+      padding-top: 56.25%; /* نسبة 16:9 */
+      background: #000;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    /* الصورة المصغرة قبل التشغيل */
+    .thumb {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      background-size: cover;
+      background-position: center;
+      background-image: url('https://cdn-icons-png.flaticon.com/512/1384/1384060.png');
+      background-color: #000;
+    }
+
+    /* زر التشغيل */
+    .play-btn {
+      width: 88px;
+      height: 88px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 3px solid rgba(255,255,255,0.85);
+      transition: all 0.2s ease-in-out; /* إضافة تأثير عند التمرير */
+    }
+    
+    .play-btn:hover {
+      background: rgba(0,0,0,0.7); /* تغميق الخلفية عند التمرير */
+      transform: scale(1.05); /* تكبير طفيف */
+    }
+
+    /* مثلث التشغيل داخل الزر */
+    .play-btn::after {
+      content: "";
+      display: block;
+      margin-left: 6px; /* لضبط التوسيط بسبب اتجاه المثلث */
+      width: 0;
+      height: 0;
+      border-left: 22px solid white;
+      border-top: 12px solid transparent;
+      border-bottom: 12px solid transparent;
+    }
+
+    /* قاعدة الإطار الحديث */
+    .tv-stand {
+      width: 35%;
+      max-width: 240px; /* تحديد عرض أقصى للشاشات الكبيرة */
+      min-width: 150px; /* تحديد عرض أدنى للشاشات الصغيرة */
+      height: 18px;
+      /* تغيير لون القاعدة إلى الرمادي (gray-500) */
+      background: #6B7280; 
+      border-radius: 0 0 8px 8px;
+      margin-top: 8px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  </style>
+</head>
+<!-- 
+  - تغيير الخلفية إلى رمادي فاتح (bg-gray-100)
+-->
+<body class="bg-gray-100 text-gray-700 min-h-screen flex flex-col items-center p-4 sm:p-6">
+
+  <!-- 
+    - حاوية رئيسية بيضاء بحد أقصى 1000px
+    - ظل (shadow) وحد علوي أخضر (border-t-8 border-green-700)
+  -->
+  <div class="w-full max-w-[1000px] mx-auto bg-white shadow-xl rounded-lg overflow-hidden border-t-8 border-green-700">
+  
+    <!-- الهيدر: توسيط وضبط الهوامش داخل البطاقة البيضاء -->
+    <header class="text-center my-6 md:my-8 px-4">
+      <!-- تغيير اللون إلى الأخضر (green-700) -->
+      <!-- !!! تم تغيير الأيقونة هنا !!! -->
+      <h1 class="text-3xl md:text-5xl font-bold text-green-700 mb-2">📚 عناصر العملية التعليمية </h1>
+      <!-- تغيير ألوان النص الفاتحة إلى داكنة لتناسب الخلفية البيضاء -->
+      <p class="text-gray-600 mb-1">إطار تحسين التدريس</p>
+      <p class="text-gray-500">نموذج تطبيقي</p>
+    </header>
+
+    <main class="w-full flex flex-col items-center px-4">
+      <div class="tv-frame">
+        <div id="tvScreen" class="tv-screen">
+          <div id="thumb" class="thumb" role="button" aria-label="تشغيل الفيديو" tabindex="0">
+            <div class="play-btn" title="تشغيل"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- قاعدة الإطار (تستخدم الفئة من CSS) -->
+      <div class="tv-stand"></div>
+
+      <!-- الرابط الاحتياطي: استخدام فئات Tailwind للتنسيق -->
+      <div class="my-6 text-center text-gray-600">
+        <p>إذا لم يعمل التضمين، افتح الفيديو في نافذة جديدة:</p>
+        <!-- تغيير لون الرابط إلى الأخضر (green) -->
+        <!-- !!! تم تحديث الرابط هنا !!! -->
+        <a class="text-green-700 hover:text-green-600 underline" id="openLink" href="https://drive.google.com/file/d/1x3WQJI8jK3UVYteJwQJ74C64EttLAxnW/view?usp=drive_link" target="_blank" rel="noopener">
+          فتح الفيديو في Google Drive
+        </a>
+      </div>
+    </main>
+
+    <!-- التذييل (Footer) -->
+    <!-- تم نقله ليكون جزءاً من البطاقة البيضاء -->
+    <!-- تغيير لون الخط الفاصل إلى gray-200 لجعله أوضح قليلاً -->
+    <footer class="w-full text-center text-gray-500 p-4 mt-8 border-t border-gray-200">
+      <p class="flex items-center justify-center text-sm">
+        <!-- !!! تم تغيير الأيقونة هنا !!! -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.523 5.754 19 7.5 19s3.332-.477 4.5-1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.523 18.247 19 16.5 19s-3.332-.477-4.5-1.253" />
+        </svg>
+        فكرة وتنفيذ: محمد مجممي
+      </p>
+    </footer>
+
+  </div> <!-- إغلاق الحاوية الرئيسية -->
+
+  <script>
+    // !!! تم تحديث رابط Google Drive هنا !!!
+    const DRIVE_EMBED = "https://drive.google.com/file/d/1x3WQJI8jK3UVYteJwQJ74C64EttLAxnW/preview";
+
+    function insertIframe() {
+      const container = document.getElementById('tvScreen');
+      const iframe = document.createElement('iframe');
+      iframe.width = "100%";
+      iframe.height = "100%";
+      iframe.style.position = "absolute";
+      iframe.style.top = "0";
+      iframe.style.left = "0";
+      iframe.frameBorder = "0";
+      iframe.allow = "autoplay; fullscreen";
+      iframe.src = DRIVE_EMBED;
+      container.innerHTML = ""; // إزالة الصورة المصغرة
+      container.appendChild(iframe); // إضافة الفيديو
+    }
+
+    // إضافة مستمعي الأحداث للماوس ولوحة المفاتيح
+    const thumb = document.getElementById('thumb');
+    thumb.addEventListener('click', insertIframe);
+    thumb.addEventListener('keydown', e => {
+      if(e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault(); // منع السلوك الافتراضي (مثل التمرير عند الضغط على space)
+        insertIframe();
+      }
+    });
+  </script>
+
+</body>
+</html>
+
