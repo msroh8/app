@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>كلمة التوحيد  </title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Tajawal', sans-serif; background:#1f2937; color:#fff; }
+    .tv-frame { background: #111; border: 18px solid #0b0b0b; border-radius: 22px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.7), inset 0 0 18px rgba(0,0,0,0.6); width:90%; max-width:900px; margin:auto; }
+    .tv-screen { position:relative; width:100%; padding-top:56.25%; background:#000; border-radius:6px; overflow:hidden; }
+    .thumb { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; cursor:pointer; background-size:cover; background-position:center; background-image:url('https://cdn-icons-png.flaticon.com/512/1384/1384060.png'); background-color:#000; }
+    .play-btn { width:88px; height:88px; border-radius:50%; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; border:3px solid rgba(255,255,255,0.85); }
+    .play-btn::after { content:""; display:block; margin-left:6px; width:0; height:0; border-left:22px solid white; border-top:12px solid transparent; border-bottom:12px solid transparent; }
+    .fallback { text-align:center; margin-top:12px; color:#d1d5db; }
+    a.fallback-link { color:#fbbf24; text-decoration:underline; }
+    header { text-align:center; margin:24px 0; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-start p-6">
+
+  <header>
+    <h1 class="text-3xl md:text-5xl font-bold text-yellow-300 mb-2">🎬 كلمة التوحيد </h1>
+    <p class="text-gray-300 mb-1">عمل الطالبة: لمار محمد مجممي</p>
+    <p class="text-gray-400">إشراف: عبير محماس العتيبي</p>
+  </header>
+
+  <main class="w-full flex flex-col items-center">
+    <div class="tv-frame">
+      <div id="tvScreen" class="tv-screen">
+        <div id="thumb" class="thumb" role="button" aria-label="تشغيل الفيديو" tabindex="0">
+          <div class="play-btn" title="تشغيل"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tv-stand" style="width:35%; height:18px; background:#0b0b0b; border-radius:0 0 8px 8px; margin-top:8px;"></div>
+
+    <div class="fallback mt-4">
+      <p>إذا لم يعمل التضمين، افتح الفيديو في نافذة جديدة:</p>
+      <a class="fallback-link" id="openLink" href="https://drive.google.com/file/d/10_D-OTswNrJklWtFKcjANEjEaumJveiI/view?usp=drive_link" target="_blank" rel="noopener">
+        فتح الفيديو في Google Drive
+      </a>
+    </div>
+  </main>
+
+  <script>
+    // رابط Google Drive القابل للتضمين
+    const DRIVE_EMBED = "https://drive.google.com/file/d/10_D-OTswNrJklWtFKcjANEjEaumJveiI/preview";
+
+    function insertIframe() {
+      const container = document.getElementById('tvScreen');
+      const iframe = document.createElement('iframe');
+      iframe.width = "100%";
+      iframe.height = "100%";
+      iframe.style.position = "absolute";
+      iframe.style.top = "0";
+      iframe.style.left = "0";
+      iframe.frameBorder = "0";
+      iframe.allow = "autoplay; fullscreen";
+      iframe.src = DRIVE_EMBED;
+      container.innerHTML = "";
+      container.appendChild(iframe);
+    }
+
+    const thumb = document.getElementById('thumb');
+    thumb.addEventListener('click', insertIframe);
+    thumb.addEventListener('keydown', e => {
+      if(e.key === 'Enter' || e.key === ' ') insertIframe();
+    });
+  </script>
+
+</body>
+</html>
