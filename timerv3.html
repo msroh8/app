@@ -722,42 +722,37 @@
                     const imgData = canvas.toDataURL('image/png');
                     const doc = new jsPDF('p', 'mm', 'a4'); // A4 portrait
                     
-                    const pdfWidth = doc.internal.pageSize.getWidth(); // عرض A4
-                    const pdfHeight = doc.internal.pageSize.getHeight(); // طول A4
+                    const pdfWidth = doc.internal.pageSize.getWidth(); // عرض A4 (210mm)
+                    const pdfHeight = doc.internal.pageSize.getHeight(); // طول A4 (297mm)
 
                     const canvasWidth = canvas.width;
                     const canvasHeight = canvas.height;
                     
-                    // الحفاظ على نسبة العرض إلى الارتفاع
+                    // الحفاظ على نسبة العرض إلى الارتفاع عند التصدير
                     const ratio = canvasWidth / canvasHeight;
-                    let imgWidth = pdfWidth - 20; // عرض الصورة (مع هامش 10مم من كل جانب)
+                    // عرض الصورة في PDF (مع هامش 10مم من كل جانب)
+                    const margin = 10;
+                    const contentWidth = pdfWidth - (2 * margin);
+                    
+                    let imgWidth = contentWidth; 
                     let imgHeight = imgWidth / ratio;
                     
-                    let yOffset = 10; // هامش علوي ثابت
+                    let heightLeft = imgHeight; // الارتفاع المتبقي للإضافة
+                    let position = margin; // الموضع الرأسي الحالي (مع هامش علوي)
+                    
+                    // إضافة الصفحة الأولى
+                    doc.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
+                    heightLeft -= (pdfHeight - (2 * margin)); // الارتفاع الذي تم وضعه في الصفحة الأولى
 
-                    // إذا كان الطول أكبر من الصفحة، نقوم بتقسيمها على صفحات
-                    if (imgHeight > pdfHeight - 20) {
-                        let heightLeft = canvasHeight;
-                        let position = 0;
-                        const pageHeight = canvasWidth / ratio * (pdfHeight / pdfWidth); // الارتفاع الذي يمكن وضعه في الصفحة الواحدة
-
-                        // إضافة الصفحة الأولى
-                        doc.addImage(imgData, 'PNG', 10, yOffset, imgWidth, imgHeight, undefined, 'FAST');
-                        heightLeft -= pageHeight;
-                        position = pageHeight;
-
-                        // إضافة الصفحات المتبقية
-                        while (position < canvasHeight) {
-                            doc.addPage();
-                            doc.addImage(imgData, 'PNG', 10, -(position), imgWidth, imgHeight, undefined, 'FAST');
-                            position += pageHeight;
-                        }
-
-                    } else {
-                        // توسيط الصورة في الصفحة إذا كانت قصيرة
-                        const xOffset = (pdfWidth - imgWidth) / 2;
-                        yOffset = (pdfHeight - imgHeight) / 2;
-                        doc.addImage(imgData, 'PNG', xOffset, yOffset, imgWidth, imgHeight);
+                    // إذا كان هناك ارتفاع متبقٍ، أضف صفحات جديدة
+                    while (heightLeft > 0) {
+                        position = heightLeft - (pdfHeight - (2 * margin));
+                        doc.addPage();
+                        // يتم حساب الموضع الرأسي للصورة على الصفحة الجديدة (يجب أن يكون سالباً)
+                        const imagePosition = -(imgHeight - heightLeft - margin); 
+                        
+                        doc.addImage(imgData, 'PNG', margin, imagePosition, imgWidth, imgHeight);
+                        heightLeft -= (pdfHeight - (2 * margin));
                     }
                     
                     // 4. حفظ الملف
