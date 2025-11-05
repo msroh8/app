@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <!-- 
+      التعديل 2: ضبط المقاييس لمنع التمدد العرضي في الجوال
+      تم استبدال الوسم القديم بهذا الوسم 
+    -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>اداة الوقت الفعلي - ثانوية دار التوحيد</title>
+    <!-- تحميل Tailwind CSS للواجهة -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- مكتبات تصدير PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        /* خطوط عربية لتحسين الشكل */
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Cairo', sans-serif;
+            min-height: 100vh;
+        }
+        /* لإظهار التحديد على القطاع الدائري */
+        .sector-selected {
+            stroke: #3b82f6; /* لون أزرق */
+            stroke-width: 4px;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+        }
+        /* تنسيق مربعات الوقت */
+        .time-segment {
+            transition: all 0.2s;
+        }
+        .time-segment-selected {
+            background-color: #3b82f6; /* أزرق */
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 4px 6px rgba(59, 130, 246, 0.5);
+        }
+        /* تنسيق أزرار أسلوب التعلم */
+        .style-btn {
+            transition: all 0.2s;
+        }
+        .style-btn-selected {
+            background-color: #10b981; /* أخضر */
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 4px 6px rgba(16, 185, 129, 0.5);
+        }
+
+        /* تنسيقات الطباعة */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            /* إظهار البطاقة فقط عند الطباعة */
+            #printable-card, #printable-card * {
+                visibility: visible !important;
+            }
+            #printable-card {
+                position: absolute; /* مهم لتظهر فوق كل شيء */
+                top: 0;
+                left: 0;
+                width: 95%; /* تحديد عرض مناسب للطباعة */
+                margin: 1rem auto; /* توسيط أفقي مع هامش علوي */
+                padding: 0;
+                border: none;
+                box-shadow: none;
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+            }
+            #close-modal-btn, #print-modal-btn {
+                display: none;
+            }
+            /* Ensure backgrounds print */
+            #report-activity-bar, #report-quality-indicator, .bg-green-600 {
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+            }
+        }
+        
+        /* ---
+        التعديلات المقترحة لتحسين عرض الجوال
+        --- */
+        
+        /* التعديل 3: تحسين التفاعل مع الأزرار الصغيرة (أهداف اللمس) */
+        button, select, input {
+            min-height: 44px; /* حسب معايير اللمس في الجوال */
+        }
+        
+        /* التعديل 5: جعل نصوص التقرير قابلة للطي */
+        #report-quality-text {
+            white-space: normal; /* السماح بالطي التلقائي */
+            line-height: 1.6;
+            font-size: 0.95rem;
+            text-align: right; /* محاذاة النص لليمين لتحسين القراءة */
+        }
+        
+        /* التعديل الخاص بحقل الملاحظات لجعله قابلاً للطي في البطاقة */
+        #report-observer-notes {
+            white-space: pre-wrap; /* للحفاظ على تنسيق الأسطر الجديدة */
+            line-height: 1.6;
+            border-right: 4px solid #3b82f6; /* شريط جانبي أزرق */
+            padding-right: 1rem;
+            background-color: #f7f9fc;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            margin-top: 0.5rem;
+        }
+
+        /* إزالة قيود الارتفاع الأقصى (#printable-card) من CSS
+           للسماح لها بالتمدد الكامل في وضع العرض العادي
+        */
+        
+        /* قواعد خاصة بالشاشات الصغيرة (الجوال) */
+        @media (max-width: 640px) {
+            #printable-card {
+                width: 100%;
+                border-radius: 1rem; 
+            }
+            .grid.grid-cols-2.gap-4 {
+                grid-template-columns: 1fr; /* عمود واحد */
+            }
+        }
+        
+        /* تنسيق نصوص النسب داخل الدائرة */
+        .sector-text {
+            fill: white; 
+            font-weight: bold; 
+            font-size: 0.3em; /* حجم صغير مناسب للرؤية داخل القطاع */
+            text-anchor: middle;
+            pointer-events: none; /* لا تتفاعل مع الماوس لتمرير النقر إلى القطاع */
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-4 md:p-8">
+
+    <!-- تم تعديل العرض الأقصى للحاوية الرئيسية إلى max-w-5xl (1024px) لتتناسب مع الطلب -->
+    <div id="main-container" class="max-w-5xl mx-auto">
+        <div class="bg-white rounded-xl shadow-2xl overflow-hidden">
+            <header class="bg-green-600 text-white p-5">
+                <div class="flex justify-center items-center gap-3">
+                    <!-- SVG Icon: Clipboard List -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    </svg>
+                    <h1 class="text-3xl font-bold text-center">اداة الوقت الفعلي - ثانوية دار التوحيد</h1>
+                </div>
+                <p class="text-lg text-center text-green-100 mt-1">مدير المدرسة: فهد بن حسن القحطاني</p>
+            </header>
+    
+            <main class="p-5 md:p-8">
+                <!-- قسم إدخال البيانات (النموذج) -->
+                <form id="observation-form" class="space-y-5">
+                    
+                    <!-- شبكة لترتيب الحقول -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="teacher-name" class="block text-sm font-semibold text-gray-700 mb-1">اسم المعلم</label>
+                            <input type="text" id="teacher-name" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                        </div>
+                        <div>
+                            <label for="subject" class="block text-sm font-semibold text-gray-700 mb-1">المادة</label>
+                            <input type="text" id="subject" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                        </div>
+                        <div>
+                            <label for="class-name" class="block text-sm font-semibold text-gray-700 mb-1">الفصل</label>
+                            <select id="class-name" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" required>
+                                <option value="" disabled selected>اختر الفصل...</option>
+                                <option value="101">101</option>
+                                <option value="102">102</option>
+                                <option value="103">103</option>
+                                <option value="104">104</option>
+                                <option value="201">201</option>
+                                <option value="202">202</option>
+                                <option value="203">203</option>
+                                <option value="301">301</option>
+                                <option value="302">302</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="location" class="block text-sm font-semibold text-gray-700 mb-1">مكان التنفيذ</label>
+                            <select id="location" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                                <option value="الفصل">الفصل</option>
+                                <option value="قاعة التدريب">قاعة التدريب</option>
+                                <option value="المعمل">المعمل</option>
+                                <option value="المختبر">المختبر</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-1">
+                            <label for="learning-event" class="block text-sm font-semibold text-gray-700 mb-1">الحدث التعليمي (أثناء الزيارة)</label>
+                            <select id="learning-event" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                                <option value="عرض">عرض (شرح)</option>
+                                <option value="المعلم يلقي الطلاب يستمعون">المعلم يلقي، الطلاب يستمعون</option>
+                                <option value="نشاط صفي">نشاط صفي (فردي/جماعي)</option>
+                                <option value="مناقشة وحوار">مناقشة وحوار</option>
+                                <option value="تقويم">تقويم (اختبار/سؤال)</option>
+                                <option value="أخرى">أخرى</option>
+                            </select>
+                        </div>
+                         <div class="md:col-span-1">
+                            <label for="lesson-output" class="block text-sm font-semibold text-gray-700 mb-1">هل يوجد مخرجات للحصة؟</label>
+                            <select id="lesson-output" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                                <option value="لا يوجد">لا يوجد</option>
+                                <option value="ورق عمل">ورق عمل</option>
+                                <option value="تجربة">تجربة</option>
+                                <option value="عمل تعاوني">عمل تعاوني</option>
+                                <option value="حل مسألة">حل مسألة</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- إضافة حقل الملاحظات النصية الجديدة -->
+                    <div class="pt-4 md:col-span-2">
+                        <label for="observer-notes" class="block text-lg font-semibold text-gray-800 mb-2">ملاحظات الزائر النصية (تعليق تفصيلي)</label>
+                        <textarea id="observer-notes" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+    
+                    <!-- قسم وقت الحصة -->
+                    <div class="pt-4">
+                        <label class="block text-lg font-semibold text-gray-800 mb-3 text-center">توقيت الرصد (بافتراض الحصة 50 دقيقة)</label>
+                        <div class="grid grid-cols-5 gap-2">
+                            <button type="button" class="time-segment text-sm md:text-base p-2 border border-gray-300 rounded-md shadow-sm hover:bg-gray-50" data-value="د 0-10">د 0-10</button>
+                            <button type="button" class="time-segment text-sm md:text-base p-2 border border-gray-300 rounded-md shadow-sm hover:bg-gray-50" data-value="د 11-20">د 11-20</button>
+                            <button type="button" class="time-segment text-sm md:text-base p-2 border border-gray-300 rounded-md shadow-sm hover:bg-gray-50" data-value="د 21-30">د 21-30</button>
+                            <button type="button" class="time-segment text-sm md:text-base p-2 border border-gray-300 rounded-md shadow-sm hover:bg-gray-50" data-value="د 31-40">د 31-40</button>
+                            <button type="button" class="time-segment text-sm md:text-base p-2 border border-gray-300 rounded-md shadow-sm hover:bg-gray-50" data-value="د 41-50">د 41-50</button>
+                        </div>
+                        <input type="hidden" id="time-segment-value" value="">
+                    </div>
+    
+                    <!-- قسم أسلوب التعلم -->
+                    <div class="pt-4">
+                        <label class="block text-lg font-semibold text-gray-800 mb-3 text-center">أسلوب التعلم</label>
+                        <div class="grid grid-cols-2 gap-4">
+                            <button type="button" class="style-btn p-3 border border-gray-300 rounded-md shadow-sm hover:bg-gray-50" data-value="نشط">
+                                <span class="text-xl">👍</span> نشط
+                            </button>
+                            <button type="button" class="style-btn p-3 border border-gray-300 rounded-md shadow-sm hover:bg-gray-50" data-value="غير نشط">
+                                <span class="text-xl">👎</span> غير نشط (تلقين)
+                            </button>
+                        </div>
+                        <input type="hidden" id="learning-style-value" value="">
+                    </div>
+    
+                    <!-- قسم ملاحظة نشاط الطلاب -->
+                    <div class="pt-4">
+                        <label class="block text-lg font-semibold text-gray-800 mb-3 text-center">ملاحظة نشاط الطلاب (انقر للاختيار)</label>
+                        <div class="flex justify-center">
+                            <!-- تم تعديل الدائرة الرسومية لتحسين المظهر وتوسيط النصوص -->
+                            <svg id="activity-wheel" width="300" height="300" viewBox="0 0 100 100" class="max-w-full h-auto">
+                                <!-- الخلفية الدائرية الكاملة -->
+                                <circle cx="50" cy="50" r="45" fill="#e5e7eb"/>
+
+                                <!-- القطاع الرابع: منخفض جداً (< 25%) - الزاوية من 90 إلى 180 -->
+                                <path id="sector-very-low" data-value="< 25%" 
+                                      class="sector cursor-pointer transition-all duration-150 fill-red-700 hover:fill-red-800" 
+                                      d="M50,50 L50,5 A45,45 0 0,1 5,50 Z"></path>
+                                <text x="25" y="25" class="sector-text">&lt; 25%</text>
+
+                                <!-- القطاع الثالث: متوسط (25% - 50%) - الزاوية من 0 إلى 90 -->
+                                <path id="sector-low" data-value="25% - 50%" 
+                                      class="sector cursor-pointer transition-all duration-150 fill-red-500 hover:fill-red-600" 
+                                      d="M50,50 L5,50 A45,45 0 0,1 50,95 Z"></path>
+                                <text x="25" y="75" class="sector-text">25% - 50%</text>
+
+                                <!-- القطاع الثاني: عالٍ (50% - 75%) - الزاوية من 270 إلى 0 -->
+                                <path id="sector-mid" data-value="50% - 75%" 
+                                      class="sector cursor-pointer transition-all duration-150 fill-yellow-400 hover:fill-yellow-500" 
+                                      d="M50,50 L50,95 A45,45 0 0,1 95,50 Z"></path>
+                                <text x="75" y="75" class="sector-text">50% - 75%</text>
+
+                                <!-- القطاع الأول: مرتفع جداً (75% - 100%) - الزاوية من 180 إلى 270 -->
+                                <path id="sector-high" data-value="75% - 100%" 
+                                      class="sector cursor-pointer transition-all duration-150 fill-green-500 hover:fill-green-600" 
+                                      d="M50,50 L95,50 A45,45 0 0,1 50,5 Z"></path>
+                                <text x="75" y="25" class="sector-text">75% - 100%</text>
+                                
+                                <circle cx="50" cy="50" r="10" fill="#fff" stroke="#3b82f6" stroke-width="2"/>
+                            </svg>
+                        </div>
+                        <input type="hidden" id="student-activity-value" value="">
+                        <!-- رسالة خطأ -->
+                        <p id="error-message" class="text-red-500 text-center mt-2 h-5"></p>
+                    </div>
+    
+                    <!-- قسم ملاحظات إضافية -->
+                    <div class="pt-4">
+                        <label class="block text-lg font-semibold text-gray-800 mb-3 text-center">ملاحظات إضافية</label>
+    
+                        <div class="space-y-3 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <label class="flex items-center cursor-pointer">
+                                <input type="checkbox" id="negative-observation" class="h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                                <span class="mr-3 text-gray-700">تم ملاحظة خمول / نوم / عبث بالأجهزة</span>
+                            </label>
+                            <label class="flex items-center cursor-pointer">
+                                <input type="checkbox" id="organized-env" class="h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                                <span class="mr-3 text-gray-700">البيئة الصفية منظمة</span>
+                            </label>
+                        </div>
+                    </div>
+    
+    
+                    <!-- زر التسجيل -->
+                    <div class="pt-4">
+                        <button type="submit" id="log-button" class="w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition duration-300 text-lg">
+                            تسجيل وعرض البطاقة
+                        </button>
+                    </div>
+                </form>
+                
+                <!-- بطاقة التقرير (تم نقلها من Modal) -->
+                <!-- تم تعديل max-w-2xl إلى max-w-5xl لزيادة عرض البطاقة إلى حوالي 900-1024 بكسل -->
+                <div class="bg-white rounded-xl shadow-2xl w-full max-w-5xl mx-auto hidden" id="printable-card">
+                    <!-- رأس البطاقة -->
+                    <div class="bg-green-600 text-white p-5 rounded-t-xl">
+                        <h2 class="text-2xl font-bold text-center">بطاقة ملاحظة صفية</h2>
+                        <p class="text-center text-green-100">ثانوية دار التوحيد</p>
+                    </div>
+                    
+                    <!-- جسم البطاقة -->
+                    <div class="p-6 space-y-4 divide-y divide-gray-200">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-3 pb-4">
+                            <div>
+                                <span class="text-sm font-semibold text-gray-500">المعلم:</span>
+                                <p class="text-lg font-bold text-gray-900" id="report-teacher"></p>
+                            </div>
+                            <div>
+                                <span class="text-sm font-semibold text-gray-500">المادة:</span>
+                                <p class="text-lg font-bold text-gray-900" id="report-subject"></p>
+                            </div>
+                            <div>
+                                <span class="text-sm font-semibold text-gray-500">الفصل:</span>
+                                <p class="text-lg font-bold text-gray-900" id="report-class"></p>
+                            </div>
+                            <div>
+                                <span class="text-sm font-semibold text-gray-500">توقيت الزيارة:</span>
+                                <p class="text-lg font-bold text-gray-900" id="report-time-segment"></p>
+                            </div>
+                             <div>
+                                <span class="text-sm font-semibold text-gray-500">أسلوب التعلم:</span>
+                                <p class="text-lg font-bold text-gray-900" id="report-style"></p>
+                            </div>
+                            <div>
+                                <span class="text-sm font-semibold text-gray-500">الحدث التعليمي:</span>
+                                <p class="text-lg font-bold text-gray-900" id="report-event"></p>
+                            </div>
+                            <div class="md:col-span-3">
+                                <span class="text-sm font-semibold text-gray-500">مخرجات الحصة:</span>
+                                <p class="text-lg font-bold text-gray-900" id="report-output"></p>
+                            </div>
+                        </div>
+                        
+                        <!-- قسم الملاحظات النصية الجديدة في البطاقة -->
+                        <div class="pt-4">
+                            <span class="text-sm font-semibold text-gray-500">ملاحظات الزائر:</span>
+                            <p class="text-base text-gray-800 mt-1" id="report-observer-notes"></p>
+                        </div>
+    
+    
+                        <!-- قسم ملاحظات إضافية (في البطاقة) -->
+                        <div class="pt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                             <div>
+                                <span class="text-sm font-semibold text-gray-500">البيئة الصفية:</span>
+                                <p class="text-lg font-bold" id="report-organized-env"></p> <!-- ستتم تعبئتها بـ "منظمة" أو "غير منظمة" -->
+                            </div>
+                            <div>
+                                <span class="text-sm font-semibold text-gray-500">ملاحظات سلبية (خمول/عبث):</span>
+                                <p class="text-lg font-bold" id="report-negative-obs"></p> <!-- ستتم تعبئتها بـ "نعم" أو "لا" -->
+                            </div>
+                        </div>
+    
+                        <!-- قسم الرسم البياني لنشاط الطلاب -->
+                        <div class="pt-4">
+                            <span class="text-sm font-semibold text-gray-500">مستوى نشاط الطلاب:</span>
+                            <div class="flex items-center space-x-3" dir="ltr">
+                                <div class="w-full bg-gray-200 rounded-full h-5 overflow-hidden">
+                                    <!-- تم تعديل الألوان والأحجام لتعكس 4 مستويات -->
+                                    <div id="report-activity-bar" class="h-5 rounded-full transition-all duration-500 ease-out"></div>
+                                </div>
+                                <span class="text-lg font-bold" id="report-activity-value"></span>
+                            </div>
+                        </div>
+    
+                        <!-- قسم مؤشر جودة التفاعل (الاحصائية) -->
+                        <div class="pt-4">
+                            <span class="text-sm font-semibold text-gray-500">مؤشر جودة التفاعل:</span>
+                            <div id="report-quality-indicator" class="p-3 rounded-lg mt-2">
+                                <p id="report-quality-text" class="font-semibold text-center"></p>
+                            </div>
+                        </div>
+    
+                        <!-- أزرار الإغلاق والتصدير -->
+                        <div class="pt-4 grid grid-cols-2 gap-4">
+                            <!-- زر التصدير -->
+                            <button id="print-btn" class="w-full bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 transition duration-300 flex items-center justify-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                                <span>تصدير PDF</span>
+                            </button>
+                            <!-- زر العودة للنموذج -->
+                            <button id="back-to-form-btn" class="w-full bg-gray-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-600 transition duration-300">
+                                العودة للنموذج
+                            </button>
+                        </div>
+                    </div>
+                </div> <!-- نهاية printable-card -->
+            </main>
+        </div>
+    </div>
+
+    <footer class="text-center text-gray-500 text-sm mt-4">
+        فكرة وتصميم: محمد مجممي
+    </footer>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('observation-form');
+            const errorMessage = document.getElementById('error-message');
+            const printableCard = document.getElementById('printable-card'); // البطاقة نفسها
+            const mainContainer = document.getElementById('main-container').querySelector('.bg-white'); // الحاوية الرئيسية لتغيير العرض
+
+            // عناصر الدائرة
+            const sectors = document.querySelectorAll('.sector');
+            const activityValueInput = document.getElementById('student-activity-value');
+
+            // عناصر مربعات الوقت
+            const timeSegments = document.querySelectorAll('.time-segment');
+            const timeSegmentValueInput = document.getElementById('time-segment-value');
+
+            // عناصر أسلوب التعلم
+            const styleButtons = document.querySelectorAll('.style-btn');
+            const learningStyleInput = document.getElementById('learning-style-value');
+
+            // حقل الملاحظات النصية
+            const observerNotesInput = document.getElementById('observer-notes'); 
+
+            // أزرار التحكم الجديدة
+            const printBtn = document.getElementById('print-btn');
+            const backToFormBtn = document.getElementById('back-to-form-btn');
+            
+            // عناصر التقرير
+            const reportTeacher = document.getElementById('report-teacher');
+            const reportSubject = document.getElementById('report-subject');
+            const reportClass = document.getElementById('report-class');
+            const reportTimeSegment = document.getElementById('report-time-segment');
+            const reportEvent = document.getElementById('report-event');
+            const reportStyle = document.getElementById('report-style');
+            const reportOutput = document.getElementById('report-output'); 
+            const reportActivityBar = document.getElementById('report-activity-bar');
+            const reportActivityValue = document.getElementById('report-activity-value');
+            const reportQualityIndicator = document.getElementById('report-quality-indicator');
+            const reportQualityText = document.getElementById('report-quality-text');
+            const reportObserverNotes = document.getElementById('report-observer-notes'); 
+
+            // عناصر الملاحظات الإضافية
+            const negativeObsCheckbox = document.getElementById('negative-observation');
+            const organizedEnvCheckbox = document.getElementById('organized-env');
+            const reportOrganizedEnv = document.getElementById('report-organized-env');
+            const reportNegativeObs = document.getElementById('report-negative-obs');
+
+            // دالة التحكم في العرض (النموذج مقابل التقرير)
+            function showForm() {
+                form.classList.remove('hidden');
+                printableCard.classList.add('hidden');
+            }
+
+            function showReport() {
+                form.classList.add('hidden');
+                printableCard.classList.remove('hidden');
+            }
+
+            // تهيئة: ابدأ بإظهار النموذج وإخفاء البطاقة (يجب أن تكون البطاقة مخفية بواسطة CSS أيضاً)
+            showForm(); 
+
+            // 1. التعامل مع اختيار القطاع الدائري (نشاط الطلاب)
+            sectors.forEach(sector => {
+                sector.addEventListener('click', (e) => {
+                    sectors.forEach(s => s.classList.remove('sector-selected'));
+                    const selectedSector = e.target.closest('.sector');
+                    selectedSector.classList.add('sector-selected');
+                    activityValueInput.value = selectedSector.dataset.value;
+                    errorMessage.textContent = ''; 
+                });
+            });
+
+            // 2. التعامل مع اختيار مربعات الوقت
+            timeSegments.forEach(segment => {
+                segment.addEventListener('click', (e) => {
+                    timeSegments.forEach(s => s.classList.remove('time-segment-selected'));
+                    const selectedSegment = e.target.closest('.time-segment');
+                    selectedSegment.classList.add('time-segment-selected');
+                    timeSegmentValueInput.value = selectedSegment.dataset.value;
+                    errorMessage.textContent = ''; 
+                });
+            });
+
+            // 3. التعامل مع اختيار أسلوب التعلم
+            styleButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    styleButtons.forEach(s => s.classList.remove('style-btn-selected'));
+                    const selectedButton = e.target.closest('.style-btn');
+                    selectedButton.classList.add('style-btn-selected');
+                    learningStyleInput.value = selectedButton.dataset.value;
+                    errorMessage.textContent = ''; 
+                });
+            });
+
+            // دالة حساب جودة التفاعل 
+            function calculateQuality(activity, time, style, organized, negative, event, notes) {
+                const lateTime = (time === 'د 31-40' || time === 'د 41-50');
+                const midTime = (time === 'د 21-30');
+                const earlyTime = (time === 'د 0-10' || time === 'د 11-20');
+
+                let messages = []; 
+                let color = 'yellow'; 
+                
+                // 1. التحليل الأساسي: النشاط مقابل التوقيت
+                
+                if (activity === '75% - 100%') {
+                    color = 'green';
+                    if (lateTime) messages.push("تفاعل **مذهل** (75% - 100%) حتى نهاية الحصة. **نقطة قوة:** الحفاظ على مستوى عالٍ من التركيز والجاذبية في المراحل المتقدمة من الدرس.");
+                    else if (earlyTime && style === 'غير نشط') color = 'yellow'; // بداية قوية بالتلقين أمر جيد لكن ليس ممتازاً
+                    else messages.push("تفاعل قوي وممتاز (75% - 100%). **توصية:** الحفاظ على تنوع الأنشطة لتجنب الرتابة.");
+                } else if (activity === '50% - 75%') {
+                    color = 'yellow';
+                    if (lateTime) messages.push("تفاعل **جيد** (50% - 75%)، لكن لوحظ هبوط بسيط في المشاركة قرب النهاية. **تحليل:** قد يكون التعب أو الإغراق بالمعلومات هو السبب.");
+                    else if (midTime) messages.push("تفاعل عالٍ نسبياً (50% - 75%) في منتصف الحصة. **توصية:** رفع وتيرة الأسئلة أو الانتقال لعمل تعاوني لزيادة النسبة.");
+                    else messages.push("بداية جيدة (50% - 75%). **توصية:** الاستثمار في أنشطة تحدي ذهنية لرفع المشاركة إلى 100%.");
+                } else if (activity === '25% - 50%') {
+                    color = 'red';
+                    if (lateTime) messages.push("تفاعل **ضعيف** (25% - 50%) نهاية الحصة. **تحليل خطير:** مؤشر واضح على فقدان التركيز. يجب مراجعة الأنشطة المتبقية.");
+                    else if (earlyTime) messages.push("بداية ضعيفة (25% - 50%). **تحليل خطير:** هذا يعني أن ربع الطلاب فقط منخرط. **إجراء مقترح:** تغيير طريقة العرض فوراً.");
+                    else messages.push("تفاعل ضعيف في المنتصف. **إجراء مقترح:** التحول لـ 'مناقشة وحوار' أو 'نشاط صفي' لكسر حاجز الخمول.");
+                } else { // < 25%
+                    color = 'red';
+                    messages.push("انتباه **منخفض جداً** (< 25%). **تحليل كارثي:** الأغلبية الساحقة غير منخرطة. **إجراء عاجل:** يجب إيقاف الشرح ومراجعة الأهداف والأسلوب المتبع.");
+                }
+
+
+                // 2. تحليل الأسلوب والحدث التعليمي
+                const isPassive = (style === 'غير نشط' || event === 'المعلم يلقي الطلاب يستمعون');
+                const isDiscussion = (event === 'مناقشة وحوار');
+
+                if (isPassive) {
+                    messages.push("تم الاعتماد على أسلوب **التلقين/العرض المباشر**.");
+                    if (activity === '75% - 100%') messages.push("لكن رغم التلقين، حافظ الطلاب على تركيز عالٍ، وهذا دليل على جودة إلقاء المعلم.");
+                    if (activity === '< 25%') messages.push("وهذا الأسلوب (التلقين) هو السبب المرجح لانخفاض التفاعل بشكل كبير.");
+                }
+
+                if (style === 'نشط') {
+                     if (activity === '< 25%') messages.push("تم تطبيق أسلوب **نشط**، لكن النتيجة كانت عكسية! يجب مراجعة مدى وضوح التعليمات أو تعقيد النشاط.");
+                     if (activity === '50% - 75%' && !isDiscussion) messages.push("التطبيق النشط جيد، ولكن التركيز على (ورق عمل/تجربة) ربما شتت بعض الطلاب. **توصية:** زيادة عنصر المراقبة والمتابعة.");
+                }
+                
+                if (isDiscussion && color !== 'green') {
+                    messages.push("لوحظ 'مناقشة وحوار'، لكن التفاعل لم يكن ممتازاً. **تحليل:** قد تكون المناقشة مقتصرة على عدد قليل من الطلاب.");
+                }
+
+                // 3. تحليل المخرجات والبيئة (التنظيم الذاتي)
+                if (organized) {
+                    messages.push("البيئة الصفية **منظمة**، مما يدعم التركيز.");
+                } else {
+                    messages.push("البيئة الصفية **غير منظمة**، وهذا قد يقلل من تركيز الطلاب ويخفض الجودة.");
+                    if (color === 'green') color = 'yellow'; // تخفيض تقييم الجودة
+                }
+
+                // 4. معالجة الملاحظات الخطيرة 
+                if (negative) {
+                    messages.push("تم رصد **خمول/عبث**، وهو مؤشر حرج يتطلب معالجة فورية. تم تثبيت التقييم على **أحمر**.");
+                    color = 'red'; 
+                }
+                
+                // 5. دمج الملاحظات النصية
+                if (notes && notes.trim().length > 0) {
+                    messages.push(`**تعليق إضافي من الزائر:** "${notes.trim()}"`);
+                }
+
+                // تجميع كل الرسائل في رسالة واحدة
+                let finalText = messages.join('\n\n- ');
+                if (finalText.length === 0) finalText = "تم تسجيل الملاحظة، والمؤشرات بحاجة لتحليل يدوي."; 
+                
+                // إضافة عنوان للتغذية الراجعة
+                finalText = `**تحليل المؤشر:**\n\n- ${finalText}`;
+
+
+                return { text: finalText, color: color };
+            }
+
+            // 4. التعامل مع تسجيل الملاحظة (Submit)
+            form.addEventListener('submit', (e) => {
+                e.preventDefault(); 
+
+                // جلب البيانات
+                const teacherName = document.getElementById('teacher-name').value;
+                const subject = document.getElementById('subject').value;
+                const className = document.getElementById('class-name').value;
+                const location = document.getElementById('location').value;
+                const learningEvent = document.getElementById('learning-event').value;
+                const lessonOutput = document.getElementById('lesson-output').value; 
+                const studentActivity = activityValueInput.value;
+                const timeSegment = timeSegmentValueInput.value;
+                const learningStyle = learningStyleInput.value;
+                const observerNotes = observerNotesInput.value; 
+                
+                // جلب بيانات الملاحظات الإضافية
+                const negativeObs = negativeObsCheckbox.checked;
+                const organizedEnv = organizedEnvCheckbox.checked;
+
+
+                // التحقق من البيانات
+                if (!teacherName || !subject || !className) {
+                    errorMessage.textContent = 'الرجاء تعبئة حقول المعلم والمادة والفصل.';
+                    return;
+                }
+                if (!timeSegment) {
+                    errorMessage.textContent = 'الرجاء اختيار توقيت الرصد من المربعات.';
+                    return;
+                }
+                 if (!learningStyle) {
+                    errorMessage.textContent = 'الرجاء اختيار أسلوب التعلم.';
+                    return;
+                }
+                if (!studentActivity) {
+                    errorMessage.textContent = 'الرجاء اختيار نسبة نشاط الطلاب من الدائرة.';
+                    return;
+                }
+                // لا نحتاج التحقق من مخرجات الحصة لأن لها قيمة افتراضية "لا يوجد"
+
+                // --- تعبئة وعرض البطاقة (الآن تظهر في الصفحة مباشرة) ---
+                
+                // تعبئة البيانات
+                reportTeacher.textContent = teacherName;
+                reportSubject.textContent = subject;
+                reportClass.textContent = className;
+                reportTimeSegment.textContent = timeSegment;
+                reportEvent.textContent = learningEvent;
+                reportStyle.textContent = learningStyle;
+                reportOutput.textContent = lessonOutput; 
+                reportActivityValue.textContent = studentActivity;
+                reportObserverNotes.textContent = observerNotes; 
+
+                // تعبئة بيانات الملاحظات الإضافية في البطاقة
+                reportOrganizedEnv.textContent = organizedEnv ? "منظمة" : "غير منظمة";
+                reportOrganizedEnv.className = organizedEnv ? "text-lg font-bold text-green-600" : "text-lg font-bold text-red-600";
+                reportNegativeObs.textContent = negativeObs ? "تم ملاحظتها" : "لا يوجد";
+                reportNegativeObs.className = negativeObs ? "text-lg font-bold text-red-600" : "text-lg font-bold text-green-600";
+
+
+                // تحديث شريط الرسم البياني (4 مستويات جديدة)
+                reportActivityBar.classList.remove('bg-green-500', 'bg-yellow-400', 'bg-red-500', 'bg-red-700', 'w-full', 'w-3/4', 'w-1/2', 'w-1/4');
+                if (studentActivity === '75% - 100%') {
+                    reportActivityBar.classList.add('bg-green-500', 'w-full');
+                } else if (studentActivity === '50% - 75%') {
+                    reportActivityBar.classList.add('bg-yellow-400', 'w-3/4');
+                } else if (studentActivity === '25% - 50%') {
+                    reportActivityBar.classList.add('bg-red-500', 'w-1/2');
+                } else { // < 25%
+                    reportActivityBar.classList.add('bg-red-700', 'w-1/4');
+                }
+
+                // تحديث مؤشر جودة التفاعل 
+                const quality = calculateQuality(studentActivity, timeSegment, learningStyle, organizedEnv, negativeObs, learningEvent, observerNotes);
+                // استخدام innerHTML للسماح بالـ bold والأسطر الجديدة
+                reportQualityText.innerHTML = quality.text.replace(/\n/g, '<br>'); 
+                reportQualityIndicator.classList.remove('bg-green-100', 'text-green-800', 'bg-yellow-100', 'text-yellow-800', 'bg-red-100', 'text-red-800');
+                if (quality.color === 'green') {
+                    reportQualityIndicator.classList.add('bg-green-100', 'text-green-800');
+                } else if (quality.color === 'yellow') {
+                    reportQualityIndicator.classList.add('bg-yellow-100', 'text-yellow-800');
+                } else {
+                    reportQualityIndicator.classList.add('bg-red-100', 'text-red-800');
+                }
+
+                // *** إظهار البطاقة وإخفاء النموذج ***
+                showReport();
+                // التمرير لأعلى البطاقة الجديدة
+                printableCard.scrollIntoView({ behavior: 'smooth' });
+
+                // --- إعادة تعيين الفورم ---
+                form.reset();
+                activityValueInput.value = '';
+                timeSegmentValueInput.value = '';
+                learningStyleInput.value = '';
+                observerNotesInput.value = ''; 
+                document.getElementById('lesson-output').value = 'لا يوجد'; 
+                document.getElementById('class-name').value = ''; 
+                
+                // إعادة تعيين الملاحظات الإضافية
+                negativeObsCheckbox.checked = false;
+                organizedEnvCheckbox.checked = false;
+
+                sectors.forEach(s => s.classList.remove('sector-selected'));
+                timeSegments.forEach(s => s.classList.remove('time-segment-selected'));
+                styleButtons.forEach(s => s.classList.remove('style-btn-selected'));
+                errorMessage.textContent = '';
+            });
+
+            // 5. زر العودة للنموذج
+            backToFormBtn.addEventListener('click', () => {
+                showForm();
+                // التمرير لأعلى النموذج الجديد
+                mainContainer.scrollIntoView({ behavior: 'smooth' });
+            });
+
+            // 6. التعامل مع زر الطباعة (تصدير PDF)
+            printBtn.addEventListener('click', () => {
+                // 1. إخفاء الأزرار وتغيير النص لإظهار التحميل
+                const originalText = printBtn.innerHTML;
+                printBtn.innerHTML = '<span class="animate-pulse">جاري الإنشاء...</span>';
+                printBtn.disabled = true;
+                backToFormBtn.classList.add('hidden'); // إخفاء زر العودة مؤقتاً
+                
+                const cardToExport = document.getElementById('printable-card');
+                const { jsPDF } = window.jspdf;
+
+                // 2. التقاط صورة كاملة للبطاقة
+                html2canvas(cardToExport, {
+                    scale: 3, // زيادة الدقة إلى 3
+                    useCORS: true,
+                }).then(canvas => {
+                    const imgData = canvas.toDataURL('image/png');
+                    
+                    // تغيير حجم صفحة PDF لتكون 900 ملم عرض (إذا كنت تقصد عرض المستند نفسه)
+                    // ملاحظة: 900 ملم هو حجم كبير جداً (أعرض من A0). 
+                    // إذا كنت تريد تحجيم المستند ليناسب 900 بكسل في المتصفح، فالتحجيم تم بالفعل أعلاه.
+                    // إذا كنت تقصد عرض المستند في jsPDF، سنستخدم A4 (210 ملم) كإطار افتراضي وسنستخدم التحجيم
+                    // لاحتواء محتوى 900 بكسل داخل صفحة A4
+                    
+                    const pdf = new jsPDF('p', 'mm', 'a4');
+                    const pdfWidth = pdf.internal.pageSize.getWidth(); // 210mm
+                    const pdfHeight = pdf.internal.pageSize.getHeight(); // 297mm
+
+                    const margin = 10;
+                    const contentWidth = pdfWidth - (2 * margin);
+                    
+                    const imgProps = pdf.getImageProperties(imgData);
+                    // الارتفاع الكلي للصورة scaled إلى عرض PDF (210 مم)
+                    const imgHeight = (imgProps.height * contentWidth) / imgProps.width; 
+
+                    // --- المنطق الجديد: التحجيم ليناسب صفحة واحدة فقط ---
+                    
+                    // حساب عامل التحجيم: إذا كان الارتفاع أكبر من ارتفاع الصفحة، قلصه
+                    const scaleFactor = imgHeight > pdfHeight ? pdfHeight / imgHeight : 1; 
+
+                    // إضافة الصورة إلى الصفحة الأولى باستخدام عامل التحجيم
+                    // سيتم تحجيم الصورة لتناسب الصفحة بالكامل (مع ترك الهوامش)
+                    pdf.addImage(
+                        imgData, 
+                        'PNG', 
+                        margin, 
+                        margin, 
+                        contentWidth * scaleFactor, 
+                        imgHeight * scaleFactor
+                    );
+
+                    // 4. حفظ الملف
+                    pdf.save('بطاقة-ملاحظة-صفية.pdf');
+
+                }).finally(() => {
+                    // 5. إعادة الأزرار لحالتها الطبيعية بعد انتهاء العملية
+                    printBtn.innerHTML = originalText;
+                    printBtn.disabled = false;
+                    backToFormBtn.classList.remove('hidden'); // إعادة إظهار زر العودة
+                });
+            });
+        });
+    </script>
+</body>
+</html>
