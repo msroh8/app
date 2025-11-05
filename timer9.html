@@ -134,8 +134,8 @@
 </head>
 <body class="bg-gray-100 p-4 md:p-8">
 
-    <!-- تم تعديل العرض الأقصى للحاوية الرئيسية إلى max-w-5xl (1024px) لتتناسب مع الطلب -->
-    <div id="main-container" class="max-w-5xl mx-auto">
+    <!-- تم إزالة قيد max-w-5xl وجعل الحاوية تملأ العرض لتعظيم الالتقاط -->
+    <div id="main-container" class="max-w-7xl mx-auto">
         <div class="bg-white rounded-xl shadow-2xl overflow-hidden">
             <header class="bg-green-600 text-white p-5">
                 <div class="flex justify-center items-center gap-3">
@@ -309,8 +309,8 @@
                 </form>
                 
                 <!-- بطاقة التقرير (تم نقلها من Modal) -->
-                <!-- تم تعديل max-w-2xl إلى max-w-5xl لزيادة عرض البطاقة إلى حوالي 900-1024 بكسل -->
-                <div class="bg-white rounded-xl shadow-2xl w-full max-w-5xl mx-auto hidden" id="printable-card">
+                <!-- تم زيادة max-w-7xl (1280px) لضمان أقصى عرض ممكن قبل الالتقاط -->
+                <div class="bg-white rounded-xl shadow-2xl w-full max-w-7xl mx-auto hidden" id="printable-card">
                     <!-- رأس البطاقة -->
                     <div class="bg-green-600 text-white p-5 rounded-t-xl">
                         <h2 class="text-2xl font-bold text-center">بطاقة ملاحظة صفية</h2>
@@ -601,7 +601,7 @@
                 const lessonOutput = document.getElementById('lesson-output').value; 
                 const studentActivity = activityValueInput.value;
                 const timeSegment = timeSegmentValueInput.value;
-                const learningStyle = learningStyleInput.value;
+                const learningStyle = document.getElementById('learning-style-value').value;
                 const observerNotes = observerNotesInput.value; 
                 
                 // جلب بيانات الملاحظات الإضافية
@@ -731,14 +731,15 @@
                     const pdfHeight = pdf.internal.pageSize.getHeight(); 
 
                     const margin = 10;
-                    const contentWidth = pdfWidth - (2 * margin); // العرض المتاح الآن أكبر
+                    // العرض المتاح الآن أكبر ويجب استغلاله
+                    const contentWidth = pdfWidth - (2 * margin); 
                     
                     const imgProps = pdf.getImageProperties(imgData);
-                    // الارتفاع الكلي للصورة scaled إلى عرض PDF الجديد (297 مم)
+                    // حساب الارتفاع المطلوب للحفاظ على نسبة العرض إلى الارتفاع
                     const imgHeight = (imgProps.height * contentWidth) / imgProps.width; 
 
-                    // --- منطق تقسيم الصفحات المحسن (لضمان التنسيق المحترم) ---
-                    // الآن، بما أن الارتفاع المتاح (210 مم) أقل من العرض (297 مم)، ففرص احتواء المحتوى تكون أكبر.
+                    // --- منطق تقسيم الصفحات المحسن: الآن يجب أن تكون الخلايا أكبر ---
+                    // الآن، العرض (contentWidth) كبير جداً (277mm)
                     
                     let heightLeft = imgHeight; // الارتفاع المتبقي من الصورة
                     let pageCount = 0; 
@@ -755,6 +756,8 @@
                         // تبدأ بالهامش (margin)، ثم يتم طرح الأجزاء التي تم عرضها في الصفحات السابقة
                         const imageYOffset = -(pageCount * pageContentHeight) + margin; 
                         
+                        // هنا يتم رسم الصورة. بما أن contentWidth كبير (277mm)، ستملأ الصورة العرض بالكامل، 
+                        // مما يجعل الخلايا أكبر وأكثر وضوحاً
                         pdf.addImage(imgData, 'PNG', margin, imageYOffset, contentWidth, imgHeight);
 
                         heightLeft -= pageContentHeight;
