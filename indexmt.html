@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>متحف مدارس دار التوحيد بالأرقام</title>
+    <!-- تحميل Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script>
+    <!-- تحميل Chart.js للرسوم البيانية --><script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <!-- خط Cairo لضمان الوضوح --><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        /* تعريف الألوان والخلفيات الداكنة التراثية */
+        :root {
+            --color-primary-dark: #7a4a4a; /* بني محروق داكن */
+            --color-secondary-dark: #f0c97d; /* ذهبي باهت/نحاسي مضيء */
+            --color-background-dark: #212121; /* رمادي فحمي داكن جداً */
+            --color-card-dark: #333333; /* رمادي داكن للبطاقات */
+            --color-text-light: #f5f5f5; /* نص فاتح للخلفية الداكنة */
+            --color-accent-dark: #5a7ea7; /* أزرق فولاذي داكن */
+        }
+        
+        body {
+            font-family: 'Cairo', sans-serif; /* استخدام خط عربي واضح */
+            background-color: var(--color-background-dark);
+            color: var(--color-text-light);
+            font-size: 1.1rem; /* زيادة حجم الخط الأساسي */
+        }
+        
+        .heritage-bg-dark {
+            background-color: var(--color-background-dark);
+            background-image: linear-gradient(135deg, rgba(240, 201, 125, 0.08) 25%, transparent 25%),
+                              linear-gradient(225deg, rgba(240, 201, 125, 0.08) 25%, transparent 25%),
+                              linear-gradient(45deg, rgba(240, 201, 125, 0.08) 25%, transparent 25%),
+                              linear-gradient(315deg, rgba(240, 201, 125, 0.08) 25%, var(--color-background-dark) 25%);
+            background-size: 15px 15px;
+        }
+
+        .main-header-dark {
+            color: var(--color-secondary-dark);
+            background-color: var(--color-primary-dark);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+            border-bottom: 4px solid var(--color-secondary-dark);
+        }
+
+        .card-dark {
+            background-color: var(--color-card-dark);
+            border-radius: 16px;
+            border: 1px solid var(--color-primary-dark);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
+            transition: transform 0.3s ease;
+        }
+        .card-dark:hover {
+            transform: translateY(-3px);
+        }
+
+        .card-dark p.text-lg { font-size: 1.25rem; }
+        .card-dark p.text-5xl { font-size: 3.5rem; }
+
+        th, td {
+            border-bottom: 1px solid rgba(122, 74, 74, 0.3);
+            padding: 0.8rem;
+            font-size: 1.05rem;
+        }
+        th {
+            background-color: #4a4a4a;
+            color: var(--color-secondary-dark);
+            font-weight: 700;
+        }
+        .table-row-dark:hover {
+            background-color: rgba(240, 201, 125, 0.1);
+            cursor: pointer;
+        }
+
+        .modal-content-dark {
+            background-color: var(--color-card-dark);
+            border: 4px solid var(--color-secondary-dark);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+        }
+        
+        /* تحديد العرض الأقصى للوحة المعلومات (900px) */
+        .max-w-900 {
+            max-width: 900px;
+        }
+    </style>
+</head>
+<body class="heritage-bg-dark min-h-screen">
+
+    <!-- البيانات المجمعة والمحسوبة --><script>
+        const rawEventData = [
+            { name: "الاحتفاء بيوم المعلم", dateH: "15-4-1447", participants: 20, executor: "فهد بن عيضه السواط", details: "احتفال وتكريم المعلمين لدورهم المحوري في العملية التعليمية. تضمن الفعالية إبراز جهودهم وإنجازاتهم، مع التأكيد على أهمية رسالتهم السامية.", beneficiaries: "المعلمين، الكادر التعليمي، إدارة المتحف" },
+            { name: "أعضاء مكتب رواد الكشافة السعودية بالطائف", dateH: "3-4-1447", participants: 8, executor: "فهد بن عيضه السواط", details: "زيارة تهدف إلى تعريف أعضاء الكشافة بتاريخ التعليم في المملكة، ودور المتحف في حفظ هذا التراث ونقله للأجيال الجديدة.", beneficiaries: "أعضاء مكتب رواد الكشافة، الشباب الكشفي" },
+            { name: "وكيل التعليم العام", dateH: "2-4-1447", participants: 15, executor: "سعد المالكي", details: "تفقد شامل لأقسام المتحف والاطلاع على المقتنيات الخاصة بالتعليم، ومناقشة سبل تطوير العرض المتحفي لخدمة الأهداف التعليمية.", beneficiaries: "مسؤولي وزارة التعليم، إدارة المتحف" },
+            { name: "زيارة مجموعة شركات تطوير التعليم", dateH: "26-3-1447", participants: 30, executor: "سعد المالكي", details: "لقاء مع ممثلي شركات تطوير التعليم لاستعراض الإمكانيات التعليمية للمتحف وبحث فرص الشراكة لتطوير المحتوى التعليمي والعرض التفاعلي.", beneficiaries: "شركات تطوير التعليم، مستثمرو التعليم، طلاب" },
+            { name: "زيارة مشرفين النشاط على مستوى المملكة", dateH: "15-7-1446", participants: 24, executor: "عادل الحصيني", details: "اجتماع مع مشرفي الأنشطة الطلابية لتعزيز دور المتحف كبيئة تعليمية داعمة للأنشطة الثقافية والتربوية على مستوى المملكة.", beneficiaries: "مشرفي الأنشطة، طلاب، معلمين" },
+            { name: "زيارة الدكتور حمد الوهيبي أمين عام إدارات التعليم بالوزارة", dateH: "6-11-1446", participants: 9, executor: "فهد بن عيضه السواط", details: "زيارة رفيعة المستوى للاطلاع على جهود المتحف في حفظ وعرض تاريخ التعليم، ومناقشة الدعم المستقبلي للمتحف.", beneficiaries: "قيادات وزارة التعليم، الإدارات التعليمية" },
+            { name: "زيارة مساعد وزير التعليم للتطوير والتحول", dateH: "8-11-1446", participants: 8, executor: "فهد بن عيضه السواط", details: "تقييم لدور المتحف في دعم خطط التطوير والتحول في قطاع التعليم، وبحث سبل الاستفادة من المتحف كمصدر إلهام للتجديد التربوي.", beneficiaries: "قيادات الوزارة، المسؤولون عن التطوير" },
+            { name: "زيارة مدير عام الإدارة العامة للصفوف الأولية", dateH: "29-4-1446", participants: 7, executor: "عاصم الغامدي", details: "تركيز على كيفية تكييف محتوى المتحف ليناسب الفئة العمرية للصفوف الأولية، وتصميم برامج تعليمية خاصة للأطفال.", beneficiaries: "طلاب الصفوف الأولية، معلمين" },
+            { name: "زيارة الأمير فيصل بن عبدالله بن مشاري آل سعود", dateH: "25-4-1446", participants: 10, executor: "فهد بن عيضه السواط", details: "زيارة تقديرية للاطلاع على المتحف ومقتنياته التاريخية، وتأكيد على أهمية الحفاظ على الإرث التعليمي للمملكة.", beneficiaries: "الأسرة الحاكمة، إدارة المتحف" },
+            { name: "ورشة عمل اللجنة الفنية", dateH: "24-4-1446", participants: 6, executor: "محمد مجعمي", details: "ورشة عمل مكثفة لتشكيل الرؤية والرسالة والخطة التشغيلية للمتحف، وضمان توافقها مع أهداف وزارة التعليم.", beneficiaries: "أعضاء اللجنة الفنية، خبراء المتاحف، خبراء التعليم" },
+            { name: "زيارة مدرسة (طالبات)", dateH: "29-3-1446", participants: 12, executor: "فهد بن عيضه السواط", details: "رحلة تعليمية للطالبات لتعريفهن بتاريخ التعليم السعودي، وإلهامهن بالنماذج التعليمية الرائدة.", beneficiaries: "الطالبات، معلمات" },
+            { name: "زيارة مدرسة (طلاب)", dateH: "28-3-1446", participants: 12, executor: "فهد بن عيضه السواط", details: "جولة تعليمية للطلاب لاستكشاف تطور التعليم في المملكة، وفهم أهمية المحافظة على التراث الثقافي والتعليمي.", beneficiaries: "الطلاب، معلمين" }
+        ];
+
+        // بيانات الخطة التشغيلية
+        const strategicPlan = {
+            vision: "أن نكون وجهة معرفية ثقافية تجسد بدء التعليم النظامي في المملكة والإرث التعليمي في محافظة الطائف.",
+            message: "توثيق وعرض المقتنيات والممارسات التعليمية النوعية لبداية التعليم النظامي في المملكة للزوار والمهتمين، من خلال حصر وإبراز الوثائق التاريخية وخبرات وتجارب ومنجزات رموز وأعلام مدارس دار التوحيد ورواد التعليم.",
+            generalGoal: "تجسيد قيمة الانتماء للوطن والولاء لقادته عبر توثيق رحلة التعليم النظامي في متحف مدارس دار التوحيد.",
+            operationalGoalsCount: 11,
+            coreValues: ["المواطنة", "الموثوقية", "المسؤولية", "الاستدامة", "الوفاء", "الالتزام"],
+            swot: {
+                strengths: ["البعد التاريخي لمدارس دار التوحيد", "الموقع الاستراتيجي للمتحف", "وجود فريق عمل متجانس ومبادر", "زيارات شخصيات اعتبارية للمتحف", "الارتباط المباشر بالمساعد للشؤون التعليمية"],
+                weaknesses: ["قلة الخبرة وتأهيل العاملين", "قلة عدد العاملين المتفرغين", "عدم توفر تجهيزات مكتبية وتقنية", "محدودية فرص توسعة المتحف", "عدم وجود منهجية للمتحف للتعامل مع الوثائق", "عدم وجود موارد مالية مخصصة"],
+                opportunities: ["رؤية المملكة 2030", "استراتيجية وزارة التعليم", "وجود عدد من الخريجين في وظائف مرموقة", "إمكانية بناء شراكات مع الجهات ذات العلاقة", "الطائف محافظة جاذبة سياحياً"],
+                threats: ["وجود لائحة تنظيمية خاصة بالمتاحف في وزارة الثقافة", "عدم وعي بعض الزوار في التعامل مع المعروضات", "عدم وجود مرجعية تنظيمية تخص المتاحف في هيكلة الوزارة"]
+            },
+            keyIndicators: [
+                { name: "مقتنياتنا (توثيق وأرشفة)", indicator: "نسبة الصور والسجلات الموصوفة", base: "12000 سجل/صورة", target: "100%", unit: "نسبة" },
+                { name: "مراحل ومناهج التعليم", indicator: "عدد المراحل المعروضة تفاعلياً", base: "0", target: "2", unit: "عدد" },
+                { name: "تحت المجهر (خدمات معرفية)", indicator: "نسبة الوثائق التي تم تحليلها", base: "0", target: "10%", unit: "نسبة" },
+                { name: "جسور (شراكات)", indicator: "عدد الشراكات الموقعة", base: "0", target: "2", unit: "عدد" },
+                { name: "سفراء المتحف (تطوع)", indicator: "عدد المتطوعين", base: "0", target: "10", unit: "عدد" },
+                { name: "حاضر ومشارك (فعاليات)", indicator: "نسبة المشاركة في الفعاليات", base: "0", target: "10%", unit: "نسبة" },
+            ]
+        };
+
+        function parseHijriDate(dateStr) {
+            const [day, month, year] = dateStr.split('-').map(Number);
+            return year * 10000 + month * 100 + day;
+        }
+        const sortedEventData = rawEventData.sort((a, b) => parseHijriDate(a.dateH) - parseHijriDate(b.dateH));
+
+        const totalParticipants = sortedEventData.reduce((sum, event) => sum + event.participants, 0);
+        const totalEvents = sortedEventData.length;
+        const avgParticipants = (totalParticipants / totalEvents).toFixed(1);
+
+    </script>
+
+    <!-- الهيدر الرئيسي --><header class="main-header-dark p-6 text-center shadow-lg sticky top-0 z-50">
+        <h1 class="text-5xl font-extrabold tracking-wider" style="font-weight: 900;">متحف مدارس دار التوحيد بالأرقام</h1>
+    </header>
+
+    <main class="container mx-auto p-4 md:p-8 max-w-900">
+
+        <!-- [تم النقل للأعلى] القيم الجوهرية والتحليل الاستراتيجي -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div class="card-dark p-6">
+                <h3 class="text-2xl font-bold mb-3" style="color: var(--color-primary-dark);">القيم الجوهرية</h3>
+                <ul class="list-disc list-inside space-y-2 text-gray-300">
+                    <script>
+                        strategicPlan.coreValues.forEach(value => {
+                            document.write(`<li class="text-lg" style="color: var(--color-secondary-dark);"><span class="text-gray-300 font-medium">${value}</span></li>`);
+                        });
+                    </script>
+                </ul>
+            </div>
+            
+            <div class="card-dark p-6">
+                <h3 class="text-2xl font-bold mb-3" style="color: var(--color-accent-dark);">التحليل الاستراتيجي (SWOT)</h3>
+                <div class="grid grid-cols-2 gap-4 text-base">
+                    <div>
+                        <p class="font-bold mb-1 text-lg" style="color: #6ee7b7;">القوة</p>
+                        <ul class="list-disc list-inside space-y-1 text-gray-400">
+                            <script>strategicPlan.swot.strengths.forEach(item => document.write(`<li>${item}</li>`));</script>
+                        </ul>
+                    </div>
+                    <div>
+                        <p class="font-bold mb-1 text-lg" style="color: #fca5a5;">الضعف</p>
+                        <ul class="list-disc list-inside space-y-1 text-gray-400">
+                            <script>strategicPlan.swot.weaknesses.forEach(item => document.write(`<li>${item}</li>`));</script>
+                        </ul>
+                    </div>
+                    <div>
+                        <p class="font-bold mb-1 text-lg" style="color: #fde047;">الفرص</p>
+                        <ul class="list-disc list-inside space-y-1 text-gray-400">
+                            <script>strategicPlan.swot.opportunities.forEach(item => document.write(`<li>${item}</li>`));</script>
+                        </ul>
+                    </div>
+                    <div>
+                        <p class="font-bold mb-1 text-lg" style="color: #fb7185;">التهديدات</p>
+                        <ul class="list-disc list-inside space-y-1 text-gray-400">
+                            <script>strategicPlan.swot.threats.forEach(item => document.write(`<li>${item}</li>`));</script>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ملخص الأهداف والرؤية والهدف العام -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <div class="card-dark p-6 lg:col-span-2">
+                <p class="text-2xl font-bold mb-3" style="color: var(--color-secondary-dark);">الرؤية والرسالة</p>
+                <p class="mb-2 text-lg font-bold" style="color: var(--color-primary-dark);">الرؤية:</p>
+                <p class="text-base text-gray-300 mb-4" id="vision-text"></p>
+                <p class="mb-2 text-lg font-bold" style="color: var(--color-primary-dark);">الرسالة:</p>
+                <p class="text-base text-gray-300" id="message-text"></p>
+            </div>
+            
+            <div class="card-dark p-6 text-center flex flex-col justify-between">
+                <div>
+                    <p class="text-lg font-semibold text-gray-400 mb-2">إجمالي الأهداف التشغيلية</p>
+                    <p id="total-operational-goals" class="text-6xl font-extrabold" style="color: var(--color-accent-dark);"></p>
+                </div>
+                <div class="mt-4">
+                    <p class="text-lg font-bold" style="color: var(--color-primary-dark);">الهدف العام:</p>
+                    <p id="general-goal" class="text-base text-gray-300"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- قسم الإحصائيات الرئيسية (بطاقات الأرقام) -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+            <div class="card-dark p-6 text-center">
+                <p class="text-lg font-semibold text-gray-400 mb-2">إجمالي المشاركين</p>
+                <p id="total-participants" class="text-5xl font-extrabold" style="color: var(--color-secondary-dark);"></p>
+            </div>
+            <div class="card-dark p-6 text-center">
+                <p class="text-lg font-semibold text-gray-400 mb-2">إجمالي عدد الفعاليات</p>
+                <p id="total-events" class="text-5xl font-extrabold" style="color: var(--color-primary-dark);"></p>
+            </div>
+            <div class="card-dark p-6 text-center">
+                <p class="text-lg font-semibold text-gray-400 mb-2">متوسط المشاركين</p>
+                <p id="avg-participants" class="text-5xl font-extrabold" style="color: var(--color-accent-dark);"></p>
+            </div>
+        </div>
+        
+        <!-- [تم التعديل] مستهدفات الخطة التشغيلية 1448هـ (أسماء المشاريع فقط) -->
+        <div class="card-dark p-6 overflow-x-auto mb-8">
+            <h2 class="text-2xl font-bold mb-4" style="color: var(--color-secondary-dark);">مستهدفات الخطة التشغيلية (1448هـ)</h2>
+            <table class="min-w-full text-right">
+                <thead>
+                    <tr>
+                        <th class="px-4 py-3 text-lg rounded-tr-md">اسم المشروع</th>
+                        <th class="px-4 py-3 text-lg rounded-tl-md">المستهدف (1448هـ)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <script>
+                        strategicPlan.keyIndicators.forEach(item => {
+                            document.write(`
+                                <tr class="table-row-dark border-b">
+                                    <td class="px-4 py-3 font-medium">${item.name}</td>
+                                    <td class="px-4 py-3 font-extrabold">${item.target} ${item.unit}</td>
+                                </tr>
+                            `);
+                        });
+                    </script>
+                </tbody>
+            </table>
+        </div>
+
+
+        <!-- قسم الرسوم البيانية -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            
+            <div class="card-dark p-4">
+                <h2 class="text-xl font-bold text-center mb-4" style="color: var(--color-secondary-dark);">عدد المشاركين لكل فعالية</h2>
+                <canvas id="participantsChart"></canvas>
+            </div>
+
+            <div class="card-dark p-4">
+                <h2 class="text-xl font-bold text-center mb-4" style="color: var(--color-secondary-dark);">التطور الزمني لعدد المشاركين</h2>
+                <canvas id="timeSeriesChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- قسم الجدول التفاعلي -->
+        <div class="card-dark p-6 overflow-x-auto">
+            <h2 class="text-2xl font-bold mb-4" style="color: var(--color-secondary-dark);">جدول الفعاليات التفصيلي</h2>
+            <table class="min-w-full text-right" id="events-table">
+                <thead>
+                    <tr>
+                        <th class="px-4 py-3 text-lg rounded-tr-md">نوع الفعالية</th>
+                        <th class="px-4 py-3 text-lg">التاريخ الهجري</th>
+                        <th class="px-4 py-3 text-lg rounded-tl-md">عدد المشاركين</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                    <!-- سيتم ملؤها بواسطة JavaScript --></tbody>
+            </table>
+        </div>
+
+    </main>
+
+    <!-- النافذة المنبثقة (المودال) --><div id="modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70" onclick="closeModal()">
+        <div class="modal-content-dark w-11/12 md:w-1/2 p-8 rounded-xl shadow-2xl relative" onclick="event.stopPropagation()">
+            <button class="modal-close-button-dark absolute top-4 left-4 text-4xl font-bold hover:text-red-500" onclick="closeModal()">
+                &times;
+            </button>
+            <h3 id="modal-title" class="text-3xl font-extrabold mb-4" style="color: var(--color-secondary-dark);"></h3>
+            <p class="mb-2 text-lg"><span class="font-bold" style="color: var(--color-primary-dark);">التاريخ:</span> <span id="modal-date"></span></p>
+            <p class="mb-2 text-lg"><span class="font-bold" style="color: var(--color-primary-dark);">عدد المشاركين:</span> <span id="modal-participants"></span></p>
+            <p class="mb-4 text-lg"><span class="font-bold" style="color: var(--color-primary-dark);">المنفذ:</span> <span id="modal-executor"></span></p>
+            
+            <div class="p-4 rounded-lg mb-4" style="background-color: #4a4a4a; border: 1px dashed var(--color-secondary-dark);">
+                <p class="font-bold mb-2 text-xl" style="color: var(--color-secondary-dark);">نبذة موجزة:</p>
+                <p id="modal-details" class="text-gray-300 text-base"></p>
+            </div>
+
+            <div class="p-4 rounded-lg" style="background-color: #4a4a4a; border: 1px dashed var(--color-secondary-dark);">
+                <p class="font-bold mb-2 text-xl" style="color: var(--color-secondary-dark);">المستفيدون:</p>
+                <p id="modal-beneficiaries" class="text-gray-300 text-base"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- [تمت الإضافة] التذييل -->
+    <footer class="text-center p-4 mt-8">
+        <p class="text-sm text-gray-500">تنفيذ: محمد مجممي</p>
+    </footer>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            initStats(); 
+            initTable();
+            initCharts();
+        });
+
+        // دالة لتعيين قيم البطاقات الإحصائية (تم التصحيح هنا)
+        function initStats() {
+            // إحصائيات الفعاليات
+            document.getElementById('total-participants').textContent = totalParticipants;
+            document.getElementById('total-events').textContent = totalEvents;
+            document.getElementById('avg-participants').textContent = avgParticipants;
+            
+            // إحصائيات الخطة
+            document.getElementById('total-operational-goals').textContent = strategicPlan.operationalGoalsCount;
+            document.getElementById('general-goal').textContent = strategicPlan.generalGoal;
+            document.getElementById('vision-text').textContent = strategicPlan.vision;
+            document.getElementById('message-text').textContent = strategicPlan.message;
+        }
+
+        function initTable() {
+            const tableBody = document.getElementById('table-body');
+            tableBody.innerHTML = ''; 
+
+            sortedEventData.forEach((event, index) => {
+                const row = document.createElement('tr');
+                row.className = 'table-row-dark border-b hover:bg-opacity-10';
+                row.innerHTML = `
+                    <td class="px-4 py-3 font-medium">${event.name}</td>
+                    <td class="px-4 py-3">${event.dateH}</td>
+                    <td class="px-4 py-3 font-extrabold text-lg">${event.participants}</td>
+                `;
+                row.onclick = () => openModal(event);
+                tableBody.appendChild(row);
+            });
+        }
+
+        function openModal(event) {
+            document.getElementById('modal-title').textContent = event.name;
+            document.getElementById('modal-date').textContent = event.dateH;
+            document.getElementById('modal-participants').textContent = event.participants;
+            document.getElementById('modal-executor').textContent = event.executor || 'غير محدد';
+            document.getElementById('modal-details').textContent = event.details || 'لا يوجد وصف متاح.';
+            document.getElementById('modal-beneficiaries').textContent = event.beneficiaries || 'غير محددين.';
+            document.getElementById('modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
+        }
+
+        function initCharts() {
+            const chart1Labels = rawEventData.map(e => e.name);
+            const chart1Data = rawEventData.map(e => e.participants);
+            
+            const chart2Labels = sortedEventData.map(e => e.dateH);
+            const chart2Data = sortedEventData.map(e => e.participants);
+
+            const primaryColorDark = getComputedStyle(document.documentElement).getPropertyValue('--color-primary-dark');
+            const secondaryColorDark = getComputedStyle(document.documentElement).getPropertyValue('--color-secondary-dark');
+            const accentColorDark = getComputedStyle(document.documentElement).getPropertyValue('--color-accent-dark');
+            const textLightColor = getComputedStyle(document.documentElement).getPropertyValue('--color-text-light');
+
+            const chartFontConfig = {
+                color: textLightColor,
+                font: {
+                    family: 'Cairo, sans-serif',
+                    size: 14
+                }
+            };
+            
+            new Chart(document.getElementById('participantsChart'), {
+                type: 'bar',
+                data: {
+                    labels: chart1Labels,
+                    datasets: [{
+                        label: 'عدد المشاركين',
+                        data: chart1Data,
+                        backgroundColor: primaryColorDark,
+                        borderColor: secondaryColorDark,
+                        borderWidth: 1,
+                        borderRadius: 6,
+                        hoverBackgroundColor: secondaryColorDark,
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(51,51,51,0.9)', 
+                            titleColor: secondaryColorDark,
+                            bodyColor: textLightColor,
+                            borderColor: primaryColorDark,
+                            borderWidth: 1
+                        }
+                    },
+                    scales: {
+                        x: { 
+                            beginAtZero: true, 
+                            title: { display: true, text: 'العدد', ...chartFontConfig },
+                            ticks: chartFontConfig,
+                            grid: { color: 'rgba(240, 201, 125, 0.1)' }
+                        },
+                        y: { 
+                            title: { display: false, text: 'الفعالية', ...chartFontConfig },
+                            ticks: { ...chartFontConfig }, // [تم التصحيح] إزالة 'mirror: true'
+                            grid: { color: 'rgba(240, 201, 125, 0.1)' }
+                        }
+                    }
+                }
+            });
+
+            new Chart(document.getElementById('timeSeriesChart'), {
+                type: 'line',
+                data: {
+                    labels: chart2Labels,
+                    datasets: [{
+                        label: 'عدد المشاركين',
+                        data: chart2Data,
+                        backgroundColor: accentColorDark + '60',
+                        borderColor: accentColorDark,
+                        borderWidth: 3,
+                        tension: 0.4,
+                        pointBackgroundColor: secondaryColorDark,
+                        pointRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(51,51,51,0.9)',
+                            titleColor: secondaryColorDark,
+                            bodyColor: textLightColor,
+                            borderColor: primaryColorDark,
+                            borderWidth: 1,
+                            callbacks: {
+                                title: (context) => `التاريخ: ${context[0].label}`,
+                                label: (context) => `المشاركين: ${context.formattedValue}`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { 
+                            title: { display: true, text: 'التاريخ الهجري', ...chartFontConfig },
+                            ticks: chartFontConfig,
+                            grid: { color: 'rgba(240, 201, 125, 0.1)' }
+                        },
+                        y: { 
+                            beginAtZero: true, 
+                            title: { display: true, text: 'العدد', ...chartFontConfig },
+                            ticks: chartFontConfig,
+                            grid: { color: 'rgba(240, 201, 125, 0.1)' }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
