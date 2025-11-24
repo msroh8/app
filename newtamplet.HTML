@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>أداة تقدير واقع المدرسة وخطة التحسين</title>
+
+    <!-- خط Cairo -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- مكتبات توليد PDF بالاعتماد على صور الصفحات -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #f2f2f2;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        .layout {
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        .side-column {
+            width: 90px;
+            background: #2d2d2d;
+            min-height: 100vh;
+        }
+
+        .main-area {
+            flex-grow: 1;
+        }
+
+        /* الهيدر */
+        .main-header {
+            position: relative;
+            height: 140px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #ffffff;
+            overflow: hidden;
+        }
+
+        .main-header img {
+            height: 140px;
+            width: auto;
+            max-width: 100%;
+        }
+
+        /* عبارة الإدارة العامة للتعليم بالطائف */
+        .main-header-title {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            right: 260px;        /* إزاحة ليسار الشعار حتى لا يغطيه */
+            color: #ffffff;
+            font-size: 20px;
+            font-weight: 500;    /* وسط مثل ما طلبت */
+            text-shadow: 0 0 4px rgba(0,0,0,0.5);
+            white-space: nowrap;
+        }
+
+        /* NAVBAR */
+        .top-navbar {
+            background: #ffffff;
+            border-bottom: 1px solid #ddd;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+        }
+
+        .top-navbar ul {
+            list-style: none;
+            margin: 0;
+            padding: 8px 10px;
+            display: flex;
+            justify-content: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .top-navbar a {
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 600;
+            color: #333;
+            padding: 7px 14px;
+            border-radius: 8px;
+            transition: 0.3s;
+            border: 1px solid transparent;
+        }
+
+        .top-navbar a:hover,
+        .top-navbar a.active {
+            background: #008c5f;
+            color: #ffffff;
+            border-color: #007050;
+            transform: translateY(-1px);
+        }
+
+        .page-content {
+            max-width: 980px;
+            margin: 28px auto 10px;
+            padding: 0 10px 20px;
+        }
+
+        .section-card {
+            background: white;
+            padding: 20px 22px;
+            border-radius: 12px;
+            box-shadow: 0 0 8px rgba(0,0,0,0.12);
+            margin-bottom: 25px;
+        }
+
+        .section-card h2 {
+            margin-top: 0;
+            font-size: 21px;
+            font-weight: 700;
+        }
+
+        .section-card h3 {
+            margin-top: 18px;
+            font-size: 18px;
+        }
+
+        label {
+            font-size: 14px;
+            display: block;
+            margin-top: 8px;
+            margin-bottom: 4px;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 7px 9px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        textarea {
+            min-height: 60px;
+            resize: vertical;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0,1fr));
+            gap: 12px 20px;
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0,1fr));
+            gap: 12px 12px;
+        }
+
+        .field-box {
+            margin-bottom: 6px;
+        }
+
+        .hint {
+            font-size: 12px;
+            color: #777;
+            margin-top: 6px;
+        }
+
+        .btn {
+            background: #008c5f;
+            color: #ffffff;
+            padding: 9px 16px;
+            border: none;
+            font-size: 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn:disabled {
+            opacity: 0.55;
+            cursor: default;
+        }
+
+        .btn:hover:not(:disabled) {
+            opacity: 0.92;
+        }
+
+        .btn-secondary {
+            background: #0066cc;
+        }
+
+        table.plan-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-top: 10px;
+        }
+
+        table.plan-table th,
+        table.plan-table td {
+            border: 1px solid #ccc;
+            padding: 6px;
+            vertical-align: top;
+        }
+
+        table.plan-table th {
+            background: #eef6e8;
+            font-weight: 600;
+        }
+
+        table.plan-table input,
+        table.plan-table textarea {
+            width: 100%;
+            border: none;
+            padding: 0;
+            font-size: 13px;
+            resize: vertical;
+        }
+
+        table.plan-table input:focus,
+        table.plan-table textarea:focus {
+            outline: none;
+        }
+
+        .main-footer {
+            text-align: center;
+            font-size: 14px;
+            color: #555;
+            margin: 5px 0 20px;
+        }
+
+        /* صفحات التقرير (غير ظاهرة في الواجهة، تستخدم في توليد PDF) */
+        .report-pages-container {
+            position: absolute;
+            left: -9999px;
+            top: 0;
+            width: 794px; /* عرض A4 تقريبي */
+        }
+
+        .report-page {
+            width: 794px;
+            min-height: 1123px;
+            padding: 40px 40px 60px;
+            background: white;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+        }
+
+        .report-header {
+            position: relative;
+            margin-bottom: 18px;
+        }
+
+        .report-header img {
+            width: 100%;
+            height: 40px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .report-title {
+            position: absolute;
+            right: 220px;   /* يسار الشعار في صورة الهيدر */
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 15px;
+            font-weight: 600;
+            color: #ffffff;
+            text-align: right;
+            max-width: 60%;
+            text-shadow: 0 0 3px rgba(0,0,0,0.5);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .report-section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 15px;
+            margin-bottom: 8px;
+        }
+
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .report-table th,
+        .report-table td {
+            border: 1px solid #ddd;
+            padding: 6px 8px;
+            vertical-align: top;
+            text-align: right; /* محاذاة النص داخل الخلايا لليمين افتراضيا */
+        }
+
+        .report-table th {
+            background: #f5f5f5;
+            text-align: center;
+        }
+
+        .swot-grid-report {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0,1fr));
+            gap: 10px 18px;
+        }
+
+        .swot-box-report {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 8px 10px;
+            font-size: 13px;
+        }
+
+        .swot-box-report h4 {
+            margin: 0 0 6px;
+            font-size: 14px;
+        }
+
+        .swot-box-report ul {
+            margin: 0;
+            padding-right: 18px;
+        }
+
+        .swot-box-report li {
+            margin-bottom: 3px;
+        }
+
+        /* تنسيق جدول الضعف المجمع وتطبيقه على جميع جداول SWOT المجمعة */
+        .swot-summary-table th:first-child, .swot-summary-table td:first-child {
+            width: 25%;
+            text-align: center; /* تثبيت توسيط عمود المجال */
+        }
+        .swot-summary-table th:last-child {
+            text-align: right; /* محاذاة عمود المحتوى لليمين */
+        }
+        .swot-summary-table td ul {
+            padding-right: 20px;
+            margin: 0;
+            list-style-type: disc;
+        }
+
+
+        /* تنسيق جدول الخطة المعدل ليطابق المرفق */
+        .plan-table-report th, .plan-table-report td {
+            text-align: center;
+        }
+        .plan-table-report th:nth-child(1), .plan-table-report td:nth-child(1) { width: 10%; } /* المجال */
+        .plan-table-report th:nth-child(2), .plan-table-report td:nth-child(2) { width: 15%; } /* العنصر */
+        .plan-table-report th:nth-child(3), .plan-table-report td:nth-child(3) { width: 20%; } /* وصف الاحتياج */
+        .plan-table-report th:nth-child(4), .plan-table-report td:nth-child(4) { width: 15%; } /* إجراءات التحسين */
+        .plan-table-report th:nth-child(5), .plan-table-report td:nth-child(5) { width: 15%; } /* أساليب التحسين */
+        .plan-table-report th:nth-child(6), .plan-table-report td:nth-child(6) { width: 10%; } /* مدة التنفيذ */
+        .plan-table-report th:nth-child(7), .plan-table-report td:nth-child(7) { width: 15%; } /* التنفيذ والمسؤولية */
+
+        @media (max-width: 900px) {
+            .layout {
+                flex-direction: column;
+            }
+
+            .side-column {
+                display: none;
+            }
+
+            .main-header {
+                height: auto;
+            }
+
+            .main-header img {
+                width: 100%;
+                height: auto;
+            }
+
+            .main-header-title {
+                right: 140px;
+                font-size: 16px;
+            }
+
+            .page-content {
+                margin: 15px auto 10px;
+                padding: 0 8px 15px;
+            }
+
+            .section-card {
+                padding: 15px 14px;
+                margin-bottom: 18px;
+            }
+
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+
+            .grid-4 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .top-navbar ul {
+                gap: 7px;
+            }
+
+            .top-navbar a {
+                font-size: 13px;
+                padding: 5px 9px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="layout">
+
+    <div class="side-column"></div>
+
+    <div class="main-area">
+
+        <!-- الهيدر -->
+        <header class="main-header">
+            <img src="https://raw.githubusercontent.com/msroh8/app/main/headr.jpg" alt="شعار" crossorigin="anonymous">
+            <div class="main-header-title">الإدارة العامة للتعليم بالطائف</div>
+        </header>
+
+        <!-- NAVBAR -->
+        <nav class="top-navbar">
+            <ul>
+                <li><a href="#" id="nav-basic" class="active">📋 البيانات الأساسية</a></li>
+                <li><a href="#" id="nav-swot">📊 تحليل SWOT</a></li>
+                <li><a href="#" id="nav-weak">🛠 آليات معالجة الضعف</a></li>
+                <li><a href="#" id="nav-plan">📈 خطة التحسين</a></li>
+                <li><a href="#" id="nav-report">📄 التقرير النهائي</a></li>
+            </ul>
+        </nav>
+
+        <!-- المحتوى -->
+        <div class="page-content">
+
+            <!-- القسم 1: البيانات الأساسية -->
+            <div class="section-card" id="section-basic">
+                <h2>📋 البيانات الأساسية وتقرير واقع المدرسة</h2>
+
+                <h3>أولاً: البيانات الأساسية</h3>
+                <div class="grid-2">
+                    <div class="field-box">
+                        <label>اسم المدرسة</label>
+                        <input type="text" id="sch-name">
+                    </div>
+                    <div class="field-box">
+                        <label>المرحلة الدراسية</label>
+                        <input type="text" id="sch-level">
+                    </div>
+                    <div class="field-box">
+                        <label>الفترة</label>
+                        <input type="text" id="sch-period" placeholder="مثال: 1447هـ">
+                    </div>
+                    <div class="field-box">
+                        <label>الرقم الوزاري</label>
+                        <input type="text" id="sch-code">
+                    </div>
+                    <div class="field-box">
+                        <label>استقلالية الإدارة</label>
+                        <input type="text" id="sch-admin-indep">
+                    </div>
+                    <div class="field-box">
+                        <label>نوع المبنى</label>
+                        <input type="text" id="sch-building">
+                    </div>
+                    <div class="field-box">
+                        <label>جنس المدرسة</label>
+                        <input type="text" id="sch-gender" placeholder="بنين / بنات / مشتركة">
+                    </div>
+                    <div class="field-box">
+                        <label>نظام الدراسة</label>
+                        <input type="text" id="sch-system" placeholder="مسارات، مقررات، ...">
+                    </div>
+                    <div class="field-box">
+                        <label>اسم مدير/مديرة المدرسة</label>
+                        <input type="text" id="sch-principal">
+                    </div>
+                    <div class="field-box">
+                        <label>رقم الجوال</label>
+                        <input type="text" id="sch-mobile">
+                    </div>
+                </div>
+
+                <h3>ثانياً: نتائج التقويم المدرسي</h3>
+                <div class="grid-2">
+                    <div class="field-box">
+                        <label>نوع تقرير التقويم المدرسي</label>
+                        <input type="text" id="eval-type" placeholder="مثال: تقويم خارجي، ذاتي...">
+                    </div>
+                    <div class="field-box">
+                        <label>تاريخ التقرير</label>
+                        <input type="date" id="eval-date">
+                    </div>
+                    <div class="field-box">
+                        <label>متوسط الأداء العام للمدرسة (آخر تقرير)</label>
+                        <input type="text" id="eval-overall">
+                    </div>
+                    <div class="field-box">
+                        <label>مستوى المدرسة في نواتج التعلّم (آخر تقرير)</label>
+                        <input type="text" id="eval-results-level">
+                    </div>
+                </div>
+
+                <h3>ثالثاً: متوسط أداء المدرسة في مجالات التقويم المدرسي</h3>
+                <div class="grid-4">
+                    <div class="field-box">
+                        <label>الإدارة المدرسية</label>
+                        <input type="text" id="avg-admin">
+                    </div>
+                    <div class="field-box">
+                        <label>التعليم والتعلّم</label>
+                        <input type="text" id="avg-teach">
+                    </div>
+                    <div class="field-box">
+                        <label>نواتج التعلّم</label>
+                        <input type="text" id="avg-results">
+                    </div>
+                    <div class="field-box">
+                        <label>البيئة المدرسية</label>
+                        <input type="text" id="avg-env">
+                    </div>
+                </div>
+
+                <p class="hint">كل هذه المدخلات ستظهر في الصفحات الأولى من التقرير النهائي PDF.</p>
+            </div>
+
+            <!-- القسم 2: SWOT -->
+            <div class="section-card" id="section-swot" style="display:none;">
+                <h2>📊 تحليل SWOT وفق مجالات التقويم المدرسي</h2>
+                <p class="hint">سيظهر كل نوع من عناصر SWOT (قوة، ضعف، فرص، تهديدات) مجمعًا للمجالات الأربعة في صفحة واحدة بالتقرير.</p>
+
+                <!-- التوجيه الطلابي -->
+                <h3>١) التوجيه الطلابي</h3>
+                <div class="grid-4">
+                    <div class="field-box">
+                        <label>نقاط القوة</label>
+                        <textarea id="st-orient-strength"></textarea>
+                    </div>
+                    <div class="field-box">
+                        <label>نقاط الضعف</label>
+                        <textarea id="st-orient-weak"></textarea>
+                    </div>
+                    <div class="field-box">
+                        <label>الفرص</label>
+                        <textarea id="st-orient-opp"></textarea>
+                    </div>
+                    <div class="field-box">
+                        <label>التهديدات</label>
+                        <textarea id="st-orient-threat"></textarea>
+                    </div>
+                </div>
+
+                <!-- الأنشطة المدرسية -->
+                <h3>٢) الأنشطة المدرسية</h3>
+                <div class="grid-4">
+                    <div class="field-box">
+                        <label>نقاط القوة</label>
+                        <textarea id="st-activity-strength"></textarea>
+                    </div>
+                    <div class="field-box">
+                        <label>نقاط الضعف</label>
+                        <textarea id="st-activity-weak"></textarea>
+                    </div>
+                    <div class="field-box">
+                        <label>الفرص</label>
+                        <textarea id="st-activity-opp"></textarea>
+                    </div>
+                    <div class="field-box">
+                        <label>التهديدات</label>
+                        <textarea id="st-activity-threat"></textarea>
+                    </div>
+                </div>
+
+                <!-- نواتج التعلّم -->
+                <h3>٣) نواتج التعلّم</h3>
+                <div class="grid-4">
+                    <div class="field-box">
+                        <label>نقاط القوة</label>
+                        <textarea id="st-result-strength"></textarea>
+                    </div>
+                    <div class="field-box">
+                        <label>نقاط الضعف</label>
+                        <textarea id="st-result-weak"></textarea>
+                    </div>
+                    <div class="field-box">
+                        <label>الفرص</label>
+                        <textarea id="st-result-opp"></textarea>
+                    </div>
+                    <div class="field-box">
+                        <label>التهديدات</label>
+                        <textarea id="st-result-threat"></textarea>
+                    </div>
+                </div>
+
+                <!-- التدريس -->
+                <h3>٤) التدريس</h3>
+                <div class="grid-4">
+                    <div class="field-box">
+                        <label>نقاط القوة</label>
+                        <textarea id="st-teach-strength"></textarea>
+                    </div>
+                    <div class="field-box">
+                        <label>نقاط الضعف</label>
+                        <textarea id="st-teach-weak"></textarea>
+                    </div>
+                    <div class="field-box">
+                        <label>الفرص</label>
+                        <textarea id="st-teach-opp"></textarea>
+                    </div>
+                    <div class="field-box">
+                        <label>التهديدات</label>
+                        <textarea id="st-teach-threat"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- القسم 3: آليات معالجة الضعف -->
+            <div class="section-card" id="section-weak" style="display:none;">
+                <h2>🛠 آليات معالجة الضعف</h2>
+                <p class="hint">سجّل الآليات العامة لمعالجة نقاط الضعف في المجالات المختلفة (إجراءات، مسؤوليات، موارد، مدد زمنية... إلخ).</p>
+                <textarea id="weak-actions" style="min-height:280px;"></textarea>
+            </div>
+
+            <!-- القسم 4: خطة التحسين -->
+            <div class="section-card" id="section-plan" style="display:none;">
+                <h2>📈 خطة التحسين والتطوير في مجالات العمليات الإشرافية</h2>
+                <p class="hint">تم تعديل ترتيب الأعمدة ليطابق النموذج المرفق.</p>
+
+                <table class="plan-table">
+                    <thead>
+                        <tr>
+                            <th>المجال</th>
+                            <th>العنصر / المكوّن</th>
+                            <th>وصف الاحتياج</th>
+                            <th>إجراءات التحسين</th>
+                            <th>أساليب وطرق التحسين</th>
+                            <th>مدة التنفيذ</th>
+                            <th>التنفيذ والمسؤولية</th>
+                        </tr>
+                    </thead>
+                    <tbody id="plan-body">
+                        <!-- صفوف الخطة تُنشأ برمجيًا -->
+                    </tbody>
+                </table>
+
+                <h3>ثالثاً: التوصيات والملاحظات العامة</h3>
+                <textarea id="plan-notes" style="min-height:100px;"></textarea>
+            </div>
+
+            <!-- القسم 5: التقرير النهائي -->
+            <div class="section-card" id="section-report" style="display:none;">
+                <h2>📄 التقرير النهائي للمدرسة</h2>
+                <p class="hint">
+                    عند الضغط على الزر أدناه يتم جمع البيانات من جميع الأيقونات (البيانات الأساسية، SWOT، آليات الضعف، خطة التحسين)،
+                    ثم تُنشأ صفحات تقرير متتالية، كل صفحة تبدأ من نقطة جديدة دون انقسام وسط الجداول، مع تكرار الهيدر في أعلى كل صفحة.
+                </p>
+
+                <button class="btn btn-secondary" id="btn-generate-pdf">توليد تقرير PDF نهائي</button>
+            </div>
+
+        </div>
+
+        <footer class="main-footer">
+            فكرة وتنفيذ: محمد مجممي
+        </footer>
+
+    </div>
+
+    <div class="side-column"></div>
+
+</div>
+
+<!-- حاوية صفحات التقرير (مخفية) -->
+<div class="report-pages-container" id="reportPagesContainer"></div>
+
+<script>
+    // عناصر التنقل
+    const navBasic  = document.getElementById('nav-basic');
+    const navSwot   = document.getElementById('nav-swot');
+    const navWeak   = document.getElementById('nav-weak');
+    const navPlan   = document.getElementById('nav-plan');
+    const navReport = document.getElementById('nav-report');
+
+    const sectionBasic  = document.getElementById('section-basic');
+    const sectionSwot   = document.getElementById('section-swot');
+    const sectionWeak   = document.getElementById('section-weak');
+    const sectionPlan   = document.getElementById('section-plan');
+    const sectionReport = document.getElementById('section-report');
+
+    function showSection(sec) {
+        [sectionBasic, sectionSwot, sectionWeak, sectionPlan, sectionReport].forEach(s => s.style.display = 'none');
+        sec.style.display = 'block';
+
+        [navBasic, navSwot, navWeak, navPlan, navReport].forEach(a => a.classList.remove('active'));
+        if (sec === sectionBasic)  navBasic.classList.add('active');
+        if (sec === sectionSwot)   navSwot.classList.add('active');
+        if (sec === sectionWeak)   navWeak.classList.add('active');
+        if (sec === sectionPlan)   navPlan.classList.add('active');
+        if (sec === sectionReport) navReport.classList.add('active');
+
+        window.scrollTo({top: 0, behavior: 'smooth'});
+    }
+
+    navBasic.onclick  = (e) => { e.preventDefault(); showSection(sectionBasic);  };
+    navSwot.onclick   = (e) => { e.preventDefault(); showSection(sectionSwot);   };
+    navWeak.onclick   = (e) => { e.preventDefault(); showSection(sectionWeak);   };
+    navPlan.onclick   = (e) => { e.preventDefault(); showSection(sectionPlan);   };
+    navReport.onclick = (e) => { e.preventDefault(); showSection(sectionReport); };
+
+    // ربط الحقول بالـ localStorage
+    function bindInputToStorage(id, key) {
+        const el = document.getElementById(id);
+        el.value = localStorage.getItem(key) || '';
+        el.addEventListener('input', () => {
+            localStorage.setItem(key, el.value);
+        });
+    }
+
+    // الحقول الأساسية
+    bindInputToStorage('sch-name',          'sch_name');
+    bindInputToStorage('sch-level',         'sch_level');
+    bindInputToStorage('sch-period',        'sch_period');
+    bindInputToStorage('sch-code',          'sch_code');
+    bindInputToStorage('sch-admin-indep',   'sch_admin_indep');
+    bindInputToStorage('sch-building',      'sch_building');
+    bindInputToStorage('sch-gender',        'sch_gender');
+    bindInputToStorage('sch-system',        'sch_system');
+    bindInputToStorage('sch-principal',     'sch_principal');
+    bindInputToStorage('sch-mobile',        'sch_mobile');
+
+    bindInputToStorage('eval-type',         'eval_type');
+    bindInputToStorage('eval-date',         'eval_date');
+    bindInputToStorage('eval-overall',      'eval_overall');
+    bindInputToStorage('eval-results-level','eval_results_level');
+
+    bindInputToStorage('avg-admin',         'avg_admin');
+    bindInputToStorage('avg-teach',         'avg_teach');
+    bindInputToStorage('avg-results',       'avg_results');
+    bindInputToStorage('avg-env',           'avg_env');
+
+    // SWOT
+    const swotFields = [
+        'st-orient-strength','st-orient-weak','st-orient-opp','st-orient-threat',
+        'st-activity-strength','st-activity-weak','st-activity-opp','st-activity-threat',
+        'st-result-strength','st-result-weak','st-result-opp','st-result-threat',
+        'st-teach-strength','st-teach-weak','st-teach-opp','st-teach-threat'
+    ];
+    swotFields.forEach(id => bindInputToStorage(id, id));
+
+    // آليات الضعف
+    bindInputToStorage('weak-actions', 'weak_actions');
+
+    // خطة التحسين
+    const planBody = document.getElementById('plan-body');
+
+    function initPlanRows() {
+        planBody.innerHTML = '';
+        const rows = 5; // خمسة صفوف افتراضية
+        for (let i = 0; i < rows; i++) {
+            const tr = document.createElement('tr');
+            // الترتيب: المجال، العنصر، وصف، إجراءات، أساليب، مدة، مسؤول
+            tr.innerHTML = `
+                <td><input type="text" id="plan-field-${i}-domain"></td>
+                <td><input type="text" id="plan-field-${i}-component"></td>
+                <td><textarea id="plan-field-${i}-need"></textarea></td>
+                <td><textarea id="plan-field-${i}-actions"></textarea></td>
+                <td><textarea id="plan-field-${i}-methods"></textarea></td>
+                <td><input type="text" id="plan-field-${i}-duration"></td>
+                <td><textarea id="plan-field-${i}-responsible"></textarea></td>
+            `;
+            planBody.appendChild(tr);
+        }
+
+        for (let i = 0; i < rows; i++) {
+            ['domain','component','need','actions','methods','duration','responsible'].forEach(field => {
+                const id = `plan-field-${i}-${field}`;
+                bindInputToStorage(id, id);
+            });
+        }
+    }
+    initPlanRows();
+    bindInputToStorage('plan-notes', 'plan_notes');
+
+    // بناء صفحات التقرير في الحاوية المخفية
+    const reportPagesContainer = document.getElementById('reportPagesContainer');
+
+    function getVal(key, fallback="—") {
+        const v = localStorage.getItem(key);
+        return (v && v.trim()) ? v : fallback;
+    }
+
+    function swotList(id) {
+        const text = getVal(id, '');
+        if (!text || text === '—') return '<li>لا يوجد مدخلات.</li>';
+        const parts = text.split(/\n+/).filter(t => t.trim());
+        return parts.map(p => `<li>${p}</li>`).join('') || '<li>لا يوجد مدخلات.</li>';
+    }
+
+    function generateSwotSummaryPage(swotTypeKey, swotTypeTitle) {
+        const swotAreas = [
+            { id: 'st-orient', title: '١) التوجيه الطلابي' }, // تم التعديل
+            { id: 'st-activity', title: '٢) الأنشطة المدرسية' },
+            { id: 'st-result', title: '٣) نواتج التعلّم' }, // تم التعديل
+            { id: 'st-teach', title: '٤) التدريس' },
+        ];
+        
+        const page = document.createElement('div');
+        page.className = 'report-page';
+        
+        let rowsHtml = swotAreas.map(area => `
+            <tr>
+                <th>${area.title}</th>
+                <td><ul>${swotList(`${area.id}-${swotTypeKey}`)}</ul></td>
+            </tr>
+        `).join('');
+
+        // تم حذف كلمة "المجمعة" من عنوان الصفحة والعنوان الفرعي
+        page.innerHTML = `
+            <div class="report-header">
+                <img src="https://raw.githubusercontent.com/msroh8/app/main/headr.jpg" alt="شعار" crossorigin="anonymous">
+                <div class="report-title">تحليل SWOT: ${swotTypeTitle}</div>
+            </div>
+
+            <div class="report-section-title">تحليل واقع المدرسة وفق منهجية SWOT - ${swotTypeTitle}</div>
+            <table class="report-table swot-summary-table">
+                <thead>
+                    <tr>
+                        <th style="width: 25%;">المجال</th>
+                        <th>${swotTypeTitle}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rowsHtml}
+                </tbody>
+            </table>
+        `;
+        return page;
+    }
+
+
+    function buildReportPages() {
+        reportPagesContainer.innerHTML = '';
+
+        // بيانات SWOT الأساسية
+        const swotAreas = [
+            { id: 'st-orient', title: '١) التوجيه الطلابي' }, // تم التعديل
+            { id: 'st-activity', title: '٢) الأنشطة المدرسية' },
+            { id: 'st-result', title: '٣) نواتج التعلّم' }, // تم التعديل
+            { id: 'st-teach', title: '٤) التدريس' },
+        ];
+
+        // ===============================================
+        // صفحة 1: البيانات الأساسية
+        // ===============================================
+        const page1 = document.createElement('div');
+        page1.className = 'report-page';
+        page1.innerHTML = `
+            <div class="report-header">
+                <img src="https://raw.githubusercontent.com/msroh8/app/main/headr.jpg" alt="شعار" crossorigin="anonymous">
+                <div class="report-title">تقرير واقع المدرسة - البيانات الأساسية</div>
+            </div>
+
+            <div class="report-section-title">أولاً: البيانات الأساسية</div>
+            <table class="report-table">
+                <tr><th>اسم المدرسة</th><td>${getVal('sch_name')}</td></tr>
+                <tr><th>المرحلة الدراسية</th><td>${getVal('sch_level')}</td></tr>
+                <tr><th>الفترة</th><td>${getVal('sch_period')}</td></tr>
+                <tr><th>الرقم الوزاري</th><td>${getVal('sch_code')}</td></tr>
+                <tr><th>استقلالية الإدارة</th><td>${getVal('sch_admin-indep')}</td></tr>
+                <tr><th>نوع المبنى</th><td>${getVal('sch_building')}</td></tr>
+                <tr><th>جنس المدرسة</th><td>${getVal('sch_gender')}</td></tr>
+                <tr><th>نظام الدراسة</th><td>${getVal('sch_system')}</td></tr>
+                <tr><th>اسم مدير/مديرة المدرسة</th><td>${getVal('sch_principal')}</td></tr>
+                <tr><th>رقم الجوال</th><td>${getVal('sch_mobile')}</td></tr>
+            </table>
+
+            <div class="report-section-title">ثانياً: نتائج التقويم المدرسي</div>
+            <table class="report-table">
+                <tr><th>نوع تقرير التقويم المدرسي</th><td>${getVal('eval_type')}</td></tr>
+                <tr><th>تاريخ التقرير</th><td>${getVal('eval_date')}</td></tr>
+                <tr><th>متوسط الأداء العام للمدرسة (آخر تقرير)</th><td>${getVal('eval_overall')}</td></tr>
+                <tr><th>مستوى المدرسة في نواتج التعلّم (آخر تقرير)</th><td>${getVal('eval_results_level')}</td></tr>
+            </table>
+
+            <div class="report-section-title">ثالثاً: متوسط أداء المدرسة في مجالات التقويم المدرسي</div>
+            <table class="report-table">
+                <tr><th>الإدارة المدرسية</th><td>${getVal('avg_admin')}</td></tr>
+                <tr><th>التعليم والتعلّم</th><td>${getVal('avg_teach')}</td></tr>
+                <tr><th>نواتج التعلّم</th><td>${getVal('avg_results')}</td></tr>
+                <tr><th>البيئة المدرسية</th><td>${getVal('avg_env')}</td></tr>
+            </table>
+        `;
+        reportPagesContainer.appendChild(page1);
+
+        // ===============================================
+        // صفحات SWOT المجمعة (القوة، الضعف، الفرص، التهديدات)
+        // ===============================================
+        const swotTypes = [
+            { key: 'weak', title_ar: 'نقاط الضعف' },
+            { key: 'strength', title_ar: 'نقاط القوة' },
+            { key: 'opp', title_ar: 'الفرص' },
+            { key: 'threat', title_ar: 'التهديدات' }
+        ];
+
+        swotTypes.forEach(type => {
+            const page = generateSwotSummaryPage(type.key, type.title_ar);
+            reportPagesContainer.appendChild(page);
+        });
+        
+        // ===============================================
+        // صفحة آليات معالجة الضعف
+        // ===============================================
+        const pageWeakActions = document.createElement('div');
+        pageWeakActions.className = 'report-page';
+        pageWeakActions.innerHTML = `
+            <div class="report-header">
+                <img src="https://raw.githubusercontent.com/msroh8/app/main/headr.jpg" alt="شعار" crossorigin="anonymous">
+                <div class="report-title">آليات معالجة نقاط الضعف</div>
+            </div>
+
+            <div class="report-section-title">الآليات المقترحة لمعالجة نقاط الضعف</div>
+            <p style="font-size:13px; white-space:pre-wrap; line-height:1.8;">
+                ${getVal('weak_actions','لم يتم إدخال آليات معالجة الضعف بعد.')}
+            </p>
+        `;
+        reportPagesContainer.appendChild(pageWeakActions);
+
+        // ===============================================
+        // صفحة خطة التحسين (العمليات الإشرافية)
+        // ===============================================
+        const pagePlan = document.createElement('div');
+        pagePlan.className = 'report-page';
+
+        let planRowsHtml = '';
+        // 5 صفوف افتراضية يتم إنشاؤها في initPlanRows
+        for (let i = 0; i < 5; i++) {
+            const domain = getVal(`plan-field-${i}-domain`, '');
+            const comp   = getVal(`plan-field-${i}-component`, '');
+            const need   = getVal(`plan-field-${i}-need`, '');
+            const act    = getVal(`plan-field-${i}-actions`, '');
+            const meth   = getVal(`plan-field-${i}-methods`, '');
+            const dur    = getVal(`plan-field-${i}-duration`, '');
+            const resp   = getVal(`plan-field-${i}-responsible`, '');
+
+            const rowEmpty = [domain, comp, need, act, meth, dur, resp].every(v => v === '—' || !v.trim());
+            
+            // يتم ترتيب عرض الخلايا هنا ليطابق النموذج المرفق: المجال، العنصر، وصف الاحتياج، إجراءات التحسين، أساليب التحسين، مدة التنفيذ، التنفيذ والمسؤولية
+            if (rowEmpty) {
+                planRowsHtml += `
+                    <tr>
+                        <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
+                        <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
+                    </tr>
+                `;
+            } else {
+                planRowsHtml += `
+                    <tr>
+                        <td>${domain}</td>
+                        <td>${comp}</td>
+                        <td>${need}</td>
+                        <td>${act}</td>
+                        <td>${meth}</td>
+                        <td>${dur}</td>
+                        <td>${resp}</td>
+                    </tr>
+                `;
+            }
+        }
+
+        pagePlan.innerHTML = `
+            <div class="report-header">
+                <img src="https://raw.githubusercontent.com/msroh8/app/main/headr.jpg" alt="شعار" crossorigin="anonymous">
+                <div class="report-title">ثانياً: خطة التحسين والتطوير في مجالات العمليات الإشرافية</div>
+            </div>
+
+            <div class="report-section-title" style="text-align:center; font-size:18px;">ثانياً: إجراءات خطة التحسين والتطوير في مجالات العمليات الإشرافية</div>
+            <table class="report-table plan-table-report">
+                <thead>
+                    <tr>
+                        <th>المجال</th>
+                        <th>العنصر / المكوّن</th>
+                        <th>وصف الاحتياج</th>
+                        <th>إجراءات التحسين</th>
+                        <th>أساليب وطرق التحسين</th>
+                        <th>مدة التنفيذ</th>
+                        <th>التنفيذ والمسؤولية</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${planRowsHtml}
+                </tbody>
+            </table>
+
+            <div class="report-section-title" style="text-align:center; font-size:18px; margin-top: 40px;">ثالثاً: التوصيات والمقترحات</div>
+            <p style="font-size:13px; white-space:pre-wrap; line-height:1.8;">
+                ${getVal('plan_notes','لا توجد توصيات مسجلة.')}
+            </p>
+
+            <div style="margin-top:60px; font-size:13px;">
+                <div style="float:right; width:30%; text-align:center;">
+                    مدير/مديرة المدرسة /<br><br>______________________
+                </div>
+                <div style="float:left; width:30%; text-align:center;">
+                    ختم المدرسة<br><br>______________________
+                </div>
+                 <div style="float:left; width:30%; text-align:center;">
+                    التوقيع<br><br>______________________
+                </div>
+                <div style="clear:both;"></div>
+            </div>
+        `;
+        reportPagesContainer.appendChild(pagePlan);
+    }
+
+    // توليد PDF عند الضغط على زر التقرير
+    const btnGeneratePDF = document.getElementById('btn-generate-pdf');
+
+    btnGeneratePDF.onclick = async () => {
+        btnGeneratePDF.disabled = true;
+        btnGeneratePDF.textContent = 'جاري إعداد التقرير...';
+
+        try {
+            buildReportPages();
+
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'pt', 'a4');
+            const pages = document.querySelectorAll('.report-page');
+
+            for (let i = 0; i < pages.length; i++) {
+                const page = pages[i];
+                // استخدام scale: 3 لتحسين جودة الصورة النهائية
+                const canvas = await html2canvas(page, { scale: 3, useCORS: true }); 
+                const imgData = canvas.toDataURL('image/png');
+                const imgWidth = pdf.internal.pageSize.getWidth();
+                const imgHeight = canvas.height * imgWidth / canvas.width;
+
+                if (i > 0) pdf.addPage();
+                pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+            }
+
+            pdf.save('تقرير_واقع_المدرسة_وخطة_التحسين.pdf');
+        } catch(error) {
+            console.error("حدث خطأ أثناء توليد PDF:", error);
+            // رسالة بسيطة للمستخدم بدلاً من alert()
+            document.querySelector('.page-content').insertAdjacentHTML('beforeend', 
+                '<div style="color:red; background:#fee; border:1px solid red; padding:10px; border-radius:8px; margin-top:15px;">عذراً، حدث خطأ أثناء توليد التقرير. يرجى المحاولة مرة أخرى أو التأكد من سلامة المدخلات.</div>'
+            );
+        } finally {
+            btnGeneratePDF.disabled = false;
+            btnGeneratePDF.textContent = 'توليد تقرير PDF نهائي';
+        }
+    };
+</script>
+
+</body>
+</html>
