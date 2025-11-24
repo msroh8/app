@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>التأمل المهني</title>
+
+    <!-- خط Cairo -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- مكتبات توليد PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            background: #f2f2f2;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        .layout {
+            display: flex;
+            width: 100%;
+        }
+
+        .side-column {
+            width: 90px;
+            background: #2d2d2d;
+            min-height: 100vh;
+        }
+
+        .main-area {
+            flex-grow: 1;
+        }
+
+        /* الهيدر الكبير في الواجهة */
+        .main-header {
+            height: 140px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+        }
+
+        .main-header img {
+            height: 140px;
+            width: auto;
+        }
+
+        /* NAVBAR */
+        .top-navbar {
+            background: #ffffff;
+            border-bottom: 1px solid #ddd;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+        }
+
+        .top-navbar ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+        }
+
+        .top-navbar a {
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            padding: 10px 18px;
+            border-radius: 8px;
+            transition: 0.3s;
+        }
+
+        .top-navbar a:hover {
+            background: #008c5f;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .page-content {
+            max-width: 900px;
+            margin: 40px auto 10px;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            line-height: 1.9;
+            box-shadow: 0 0 8px rgba(0,0,0,0.12);
+        }
+
+        .page-content h1 {
+            font-size: 22px;
+            font-weight: 700;
+            margin-top: 0;
+        }
+
+        /* أداة التأمل */
+        .reflection-box {
+            margin-top: 40px;
+            padding: 25px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 0 8px rgba(0,0,0,0.12);
+            display: none;
+        }
+
+        .reflection-box h2 {
+            margin-top: 0;
+            font-size: 22px;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .item-row {
+            margin: 18px 0;
+            padding: 12px;
+            border: 1px solid #eee;
+            border-radius: 10px;
+        }
+
+        .item-title {
+            font-size: 18px;
+            margin-bottom: 12px;
+        }
+
+        .options {
+            display: flex;
+            gap: 25px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .opt label {
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .opt input {
+            transform: scale(1.1);
+            margin-left: 6px;
+        }
+
+        .green { color: #0a7d21; }
+        .red { color: #c62828; }
+        .orange { color: #f57c00; }
+
+        .comment-box {
+            width: 100%;
+            height: 40px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            padding: 6px;
+            font-size: 14px;
+            resize: none;
+        }
+
+        .btn-small {
+            background: #008c5f;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            font-size: 15px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .btn-small:disabled {
+            opacity: 0.5;
+            cursor: default;
+        }
+
+        /* MODAL */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 99;
+        }
+
+        .modal-box {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            width: 350px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.22);
+        }
+
+        .modal-box h3 {
+            margin-top: 0;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .modal-box input {
+            width: 100%;
+            padding: 10px;
+            margin: 6px 0 14px;
+            font-size: 17px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        .btn {
+            background: #008c5f;
+            color: white;
+            padding: 10px 18px;
+            border: none;
+            font-size: 17px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        /* أداة SWOT */
+        .swot-box {
+            margin-top: 40px;
+            padding: 25px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 0 8px rgba(0,0,0,0.12);
+            display: none;
+        }
+
+        .swot-box h2 {
+            margin-top: 0;
+            font-size: 22px;
+        }
+
+        .swot-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .swot-card {
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid #ddd;
+        }
+
+        .swot-card h3 {
+            margin-top: 0;
+            margin-bottom: 4px;
+            font-size: 18px;
+        }
+
+        .swot-hint {
+            font-size: 12px;
+            color: #555;
+            margin: 0 0 6px;
+        }
+
+        .swot-input {
+            width: 100%;
+            min-height: 50px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            padding: 8px;
+            font-size: 14px;
+            resize: vertical;
+        }
+
+        .swot-add {
+            margin-top: 8px;
+            margin-bottom: 10px;
+            background: #0066cc;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 6px;
+            border: none;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .swot-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .swot-list li {
+            background: white;
+            border-radius: 6px;
+            padding: 6px 8px;
+            margin-bottom: 6px;
+            border: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .swot-del {
+            background: transparent;
+            border: none;
+            color: #c62828;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .swot-strength {
+            background: #e8f5e9;
+            border-color: #c8e6c9;
+        }
+
+        .swot-weakness {
+            background: #ffebee;
+            border-color: #ffcdd2;
+        }
+
+        .swot-opportunity {
+            background: #e3f2fd;
+            border-color: #bbdefb;
+        }
+
+        .swot-threat {
+            background: #fff3e0;
+            border-color: #ffe0b2;
+        }
+
+        @media (max-width: 800px) {
+            .swot-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* صندوق التقرير والإحصائيات */
+        .report-box {
+            margin-top: 40px;
+            padding: 25px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 0 8px rgba(0,0,0,0.12);
+            display: none;
+        }
+
+        .report-box h2 {
+            margin-top: 0;
+            font-size: 22px;
+        }
+
+        #statsChart {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            background: #fafafa;
+            text-align: center;
+        }
+
+        /* صفحات التقرير (للتصدير PDF) */
+        .report-pages-container {
+            position: absolute;
+            left: -9999px;
+            top: 0;
+            width: 794px; /* عرض A4 تقريبًا */
+        }
+
+        .report-page {
+            width: 794px;
+            min-height: 1123px; /* ارتفاع A4 تقريبًا */
+            padding: 40px 40px 60px;
+            box-sizing: border-box;
+            background: white;
+            margin-bottom: 20px;
+        }
+
+        .report-header {
+            position: relative;
+            margin-bottom: 18px;
+        }
+
+        .report-header img {
+            height: 40px;
+            width: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .report-title {
+            position: absolute;
+            right: 220px;      /* نترك مساحة للشعار */
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+            font-weight: 600;
+            color: #ffffff;
+            text-align: right;
+            max-width: 60%;
+            text-shadow: 0 0 3px rgba(0,0,0,0.5);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .report-section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 15px;
+            margin-bottom: 8px;
+        }
+
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .report-table th,
+        .report-table td {
+            border: 1px solid #ddd;
+            padding: 6px 8px;
+            vertical-align: top;
+        }
+
+        .report-table th {
+            background: #f5f5f5;
+        }
+
+        .report-stat-line {
+            font-size: 13px;
+        }
+
+        .main-footer {
+            text-align: center;
+            font-size: 14px;
+            color: #555;
+            margin: 5px 0 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="layout">
+
+    <div class="side-column"></div>
+
+    <div class="main-area">
+
+        <header class="main-header">
+            <img src="https://raw.githubusercontent.com/msroh8/app/main/HEADR2.jpg" alt="شعار" crossorigin="anonymous">
+        </header>
+
+        <nav class="top-navbar">
+            <ul>
+                <li><a href="#" id="btn-main">🏠 البيانات الرئيسية</a></li>
+                <li><a href="#" id="btn-reflect">🧘 أدوات التأمل</a></li>
+                <li><a href="#" id="btn-swot">📊 أداة SWOT</a></li>
+                <li><a href="#" id="btn-report">📈 الإحصائيات والتقرير</a></li>
+            </ul>
+        </nav>
+
+        <div class="page-content">
+            <h1>البيانات المدخلة</h1>
+
+            <p><b>الإدارة العامة:</b> <span id="out-edara">---</span></p>
+            <p><b>اسم المدرسة:</b> <span id="out-school">---</span></p>
+            <p><b>اسم المعلم:</b> <span id="out-teacher">---</span></p>
+            <p><b>مدير المدرسة:</b> <span id="out-manager">---</span></p>
+
+            <!-- أداة التأمل -->
+            <div class="reflection-box" id="reflectionBox">
+                <h2>🧘 أداة التأمل المهني</h2>
+
+                <label>اختر المحور:</label>
+                <select id="pivotSelect">
+                    <option value="">— اختر المحور —</option>
+                    <option>أداء الواجبات الوظيفية</option>
+                    <option>التفاعل مع المجتمع المهني</option>
+                    <option>التفاعل مع أولياء الأمور</option>
+                    <option>استراتيجيات التدريس</option>
+                    <option>تحسين نتائج المتعلمين</option>
+                    <option>خطة التعلم</option>
+                    <option>التقنيات التعليمية</option>
+                    <option>البيئة التعليمية</option>
+                    <option>الإدارة الصفية</option>
+                    <option>تحليل نتائج المتعلمين</option>
+                    <option>أساليب التقويم</option>
+                </select>
+
+                <div id="checklistContainer"></div>
+
+                <button class="btn-small" id="nextPivot">التالي ▶</button>
+            </div>
+
+            <!-- أداة SWOT -->
+            <div class="swot-box" id="swotBox">
+                <h2>📊 أداة SWOT الاحترافية</h2>
+
+                <div class="swot-grid">
+
+                    <div class="swot-card swot-strength" data-type="strength">
+                        <h3>💪 نقاط القوة (Strengths)</h3>
+                        <p class="swot-hint">مثال: "إجادة تنويع استراتيجيات التدريس" أو "علاقة إيجابية قوية مع الطلاب".</p>
+                        <textarea id="strengthInput" class="swot-input" placeholder="أضف نقطة قوة..."></textarea>
+                        <button class="swot-add" onclick="addSWOT('strength')">إضافة</button>
+                        <ul id="strengthList" class="swot-list"></ul>
+                    </div>
+
+                    <div class="swot-card swot-weakness" data-type="weakness">
+                        <h3>⚠️ نقاط الضعف (Weaknesses)</h3>
+                        <p class="swot-hint">مثال: "التأخر في إنهاء الخطة الدراسية" أو "ضعف في توظيف استراتيجيات التقويم".</p>
+                        <textarea id="weaknessInput" class="swot-input" placeholder="أضف نقطة ضعف..."></textarea>
+                        <button class="swot-add" onclick="addSWOT('weakness')">إضافة</button>
+                        <ul id="weaknessList" class="swot-list"></ul>
+                    </div>
+
+                    <div class="swot-card swot-opportunity" data-type="opportunity">
+                        <h3>🌱 الفرص (Opportunities)</h3>
+                        <p class="swot-hint">مثال: "دورات التطوير المهني المتاحة" أو "برامج دعم المعلمين من الوزارة".</p>
+                        <textarea id="opportunityInput" class="swot-input" placeholder="أضف فرصة..."></textarea>
+                        <button class="swot-add" onclick="addSWOT('opportunity')">إضافة</button>
+                        <ul id="opportunityList" class="swot-list"></ul>
+                    </div>
+
+                    <div class="swot-card swot-threat" data-type="threat">
+                        <h3>⚡ التهديدات (Threats)</h3>
+                        <p class="swot-hint">مثال: "كثرة الأعباء الإدارية" أو "ضعف التجهيزات التقنية في المدرسة".</p>
+                        <textarea id="threatInput" class="swot-input" placeholder="أضف تهديدًا..."></textarea>
+                        <button class="swot-add" onclick="addSWOT('threat')">إضافة</button>
+                        <ul id="threatList" class="swot-list"></ul>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- الإحصائيات والتقرير -->
+            <div class="report-box" id="reportBox">
+                <h2>📈 الإحصائيات والتقرير النهائي</h2>
+                <p>يعرض هذا القسم مخططًا دائريًا واحدًا للمحاور، ملوّنًا حسب مستوى الأداء (مميز / متوسط / بحاجة لتحسين)، ثم يمكن توليد تقرير PDF مفصل.</p>
+
+                <div id="statsChart"></div>
+
+                <button class="btn" id="btn-generate-pdf" style="margin-top:20px;">توليد تقرير PDF</button>
+            </div>
+
+        </div>
+
+        <footer class="main-footer">
+            فكرة وتنفيذ: محمد مجممي
+        </footer>
+
+    </div>
+
+    <div class="side-column"></div>
+
+</div>
+
+<!-- منطقة بناء صفحات التقرير (غير ظاهرة للمستخدم) -->
+<div class="report-pages-container" id="reportPagesContainer"></div>
+
+<!-- نافذة إدخال البيانات -->
+<div class="modal" id="modal">
+    <div class="modal-box">
+        <h3>إدخال البيانات</h3>
+
+        <label>الإدارة العامة للتعليم بـ</label>
+        <input type="text" id="edara">
+
+        <label>اسم المدرسة</label>
+        <input type="text" id="school">
+
+        <label>اسم المعلم</label>
+        <input type="text" id="teacher">
+
+        <label>مدير المدرسة</label>
+        <input type="text" id="manager">
+
+        <button class="btn" id="save">حفظ</button>
+    </div>
+</div>
+
+<script>
+    // عناصر عامة
+    const modal              = document.getElementById("modal");
+    const btnMain            = document.getElementById("btn-main");
+    const btnReflect         = document.getElementById("btn-reflect");
+    const btnSwot            = document.getElementById("btn-swot");
+    const btnReport          = document.getElementById("btn-report");
+    const reflectionBox      = document.getElementById("reflectionBox");
+    const swotBox            = document.getElementById("swotBox");
+    const reportBox          = document.getElementById("reportBox");
+    const pivotSelect        = document.getElementById("pivotSelect");
+    const checklistContainer = document.getElementById("checklistContainer");
+    const nextPivotBtn       = document.getElementById("nextPivot");
+    const reportPagesContainer = document.getElementById("reportPagesContainer");
+    const btnGeneratePDF     = document.getElementById("btn-generate-pdf");
+    const statsChart         = document.getElementById("statsChart");
+
+    const inpEdara   = document.getElementById("edara");
+    const inpSchool  = document.getElementById("school");
+    const inpTeacher = document.getElementById("teacher");
+    const inpManager = document.getElementById("manager");
+
+    const outEdara   = document.getElementById("out-edara");
+    const outSchool  = document.getElementById("out-school");
+    const outTeacher = document.getElementById("out-teacher");
+    const outManager = document.getElementById("out-manager");
+
+    // فتح نافذة البيانات
+    btnMain.onclick = (e) => {
+        e.preventDefault();
+        modal.style.display = "flex";
+        inpEdara.value   = localStorage.getItem("edara")   || "";
+        inpSchool.value  = localStorage.getItem("school")  || "";
+        inpTeacher.value = localStorage.getItem("teacher") || "";
+        inpManager.value = localStorage.getItem("manager") || "";
+    };
+
+    // حفظ البيانات
+    document.getElementById("save").onclick = () => {
+        localStorage.setItem("edara",   inpEdara.value);
+        localStorage.setItem("school",  inpSchool.value);
+        localStorage.setItem("teacher", inpTeacher.value);
+        localStorage.setItem("manager", inpManager.value);
+        loadMainData();
+        modal.style.display = "none";
+    };
+
+    function loadMainData() {
+        outEdara.textContent   = localStorage.getItem("edara")   || "---";
+        outSchool.textContent  = localStorage.getItem("school")  || "---";
+        outTeacher.textContent = localStorage.getItem("teacher") || "---";
+        outManager.textContent = localStorage.getItem("manager") || "---";
+    }
+
+    loadMainData();
+
+    modal.onclick = (e) => {
+        if (e.target === modal) modal.style.display = "none";
+    };
+
+    // فتح أداة التأمل
+    btnReflect.onclick = (e) => {
+        e.preventDefault();
+        swotBox.style.display   = "none";
+        reportBox.style.display = "none";
+        reflectionBox.style.display = "block";
+        window.scrollTo({ top: reflectionBox.offsetTop - 30, behavior: "smooth" });
+    };
+
+    // فتح أداة SWOT
+    btnSwot.onclick = (e) => {
+        e.preventDefault();
+        reflectionBox.style.display = "none";
+        reportBox.style.display     = "none";
+        swotBox.style.display       = "block";
+        window.scrollTo({ top: swotBox.offsetTop - 30, behavior: "smooth" });
+    };
+
+    // فتح صفحة الإحصائيات والتقرير
+    btnReport.onclick = (e) => {
+        e.preventDefault();
+        reflectionBox.style.display = "none";
+        swotBox.style.display       = "none";
+        reportBox.style.display     = "block";
+        buildStatsChart();
+        window.scrollTo({ top: reportBox.offsetTop - 30, behavior: "smooth" });
+    };
+
+    // محاور التأمل وعناصرها
+    const reflectionItems = {
+        "أداء الواجبات الوظيفية": [
+            "أطبق الأنظمة والتعليمات.",
+            "ألتزم بالسلوك الوظيفي.",
+            "أؤدي المهام بدقة وجودة.",
+            "ألتزم بأخلاقيات المهنة."
+        ],
+        "التفاعل مع المجتمع المهني": [
+            "أتبادل المعرفة مع الزملاء.",
+            "أشارك في المجتمعات المهنية.",
+            "أحضر ورش العمل المهنية.",
+            "أدعم زملائي في الممارسات التعليمية."
+        ],
+        "التفاعل مع أولياء الأمور": [
+            "أتواصل بفعالية مع أولياء الأمور.",
+            "أعقد لقاءات دورية معهم.",
+            "أتابع تأثير التواصل على تقدم الطالب.",
+            "أستثمر التغذية الراجعة من أولياء الأمور."
+        ],
+        "استراتيجيات التدريس": [
+            "أنوع في استراتيجيات التدريس.",
+            "أطبق التعلم النشط.",
+            "أراعي الفروق الفردية.",
+            "أصمم أنشطة تفاعلية ومحفزة."
+        ],
+        "تحسين نتائج المتعلمين": [
+            "أحلل نتائج الطلاب بشكل منتظم.",
+            "أضع خطط علاجية وتحسينية.",
+            "أستخدم نواتج التقويم لتحسين التدريس.",
+            "أتابع تحسن التحصيل الدراسي."
+        ],
+        "خطة التعلم": [
+            "أعد خطة تعلم واضحة ومكتوبة.",
+            "أربط الخطة بالأهداف والمعايير.",
+            "أراجع تنفيذ الخطة دوريًا.",
+            "أعدل الخطة وفقًا لاحتياجات الطلاب."
+        ],
+        "التقنيات التعليمية": [
+            "أستخدم المنصات التعليمية الإلكترونية.",
+            "أوظف العروض التقديمية والوسائط الرقمية.",
+            "أدمج تطبيقات وأدوات تفاعلية.",
+            "أوجه الطلاب لاستخدام التقنية في تعلمهم."
+        ],
+        "البيئة التعليمية": [
+            "أوفر بيئة صفية آمنة ومحفزة.",
+            "أنظم مقاعد الطلاب بما يدعم التعلم.",
+            "أعزز الانضباط الإيجابي.",
+            "أخلق مناخًا مشجعًا على المشاركة."
+        ],
+        "الإدارة الصفية": [
+            "أضبط السلوك داخل الصف بحكمة.",
+            "أدير وقت الحصة بفاعلية.",
+            "أوزع الأدوار والمسؤوليات بين الطلاب.",
+            "أتعامل مع المواقف الطارئة بهدوء."
+        ],
+        "تحليل نتائج المتعلمين": [
+            "أجمع بيانات أداء الطلاب.",
+            "أفسر نتائج الاختبارات والواجبات.",
+            "أعد تقارير أداء للمتعلمين.",
+            "أستخدم النتائج لاتخاذ قرارات تعليمية."
+        ],
+        "أساليب التقويم": [
+            "أنوع أدوات وأساليب التقويم.",
+            "أستخدم التقويم التشخيصي في البداية.",
+            "أطبق التقويم التكويني أثناء التعلم.",
+            "أستعمل الروبركات لقياس الأداء."
+        ]
+    };
+
+    const pivotOrder = [
+        "أداء الواجبات الوظيفية",
+        "التفاعل مع المجتمع المهني",
+        "التفاعل مع أولياء الأمور",
+        "استراتيجيات التدريس",
+        "تحسين نتائج المتعلمين",
+        "خطة التعلم",
+        "التقنيات التعليمية",
+        "البيئة التعليمية",
+        "الإدارة الصفية",
+        "تحليل نتائج المتعلمين",
+        "أساليب التقويم"
+    ];
+
+    // عند اختيار محور للتأمل
+    pivotSelect.onchange = function () {
+        const pivot = this.value;
+        checklistContainer.innerHTML = "";
+
+        if (!pivot || !reflectionItems[pivot]) {
+            nextPivotBtn.disabled = true;
+            nextPivotBtn.textContent = "التالي ▶";
+            return;
+        }
+
+        const idx = pivotOrder.indexOf(pivot);
+        if (idx === pivotOrder.length - 1) {
+            nextPivotBtn.textContent = "إنهاء";
+        } else {
+            nextPivotBtn.textContent = "التالي ▶";
+        }
+        nextPivotBtn.disabled = false;
+
+        reflectionItems[pivot].forEach((text, index) => {
+            const baseID     = `${pivot}_${index}`;
+            const storageKey = baseID;
+            const commentKey = baseID + "_comment";
+
+            const row = document.createElement("div");
+            row.className = "item-row";
+
+            row.innerHTML = `
+                <div class="item-title">${text}</div>
+                <div class="options">
+                    <div class="opt green">
+                        <input type="radio" id="${baseID}_always" name="${baseID}" value="دائمًا">
+                        <label for="${baseID}_always">دائمًا</label>
+                    </div>
+                    <div class="opt orange">
+                        <input type="radio" id="${baseID}_sometimes" name="${baseID}" value="أحيانًا">
+                        <label for="${baseID}_sometimes">أحيانًا</label>
+                    </div>
+                    <div class="opt red">
+                        <input type="radio" id="${baseID}_never" name="${baseID}" value="أبدًا">
+                        <label for="${baseID}_never">أبدًا</label>
+                    </div>
+                </div>
+                <textarea class="comment-box" id="${commentKey}" placeholder="تعليق إضافي (اختياري)"></textarea>
+            `;
+
+            checklistContainer.appendChild(row);
+
+            // استرجاع الاختيار
+            const savedChoice = localStorage.getItem(storageKey);
+            if (savedChoice) {
+                const radios = row.querySelectorAll(`input[name="${baseID}"]`);
+                radios.forEach(r => {
+                    if (r.value === savedChoice) r.checked = true;
+                });
+            }
+
+            // استرجاع التعليق
+            const savedComment = localStorage.getItem(commentKey);
+            if (savedComment) {
+                document.getElementById(commentKey).value = savedComment;
+            }
+
+            // حفظ عند التغيير
+            row.querySelectorAll(`input[name="${baseID}"]`).forEach(radio => {
+                radio.onchange = () => {
+                    localStorage.setItem(storageKey, radio.value);
+                };
+            });
+
+            // حفظ التعليق
+            document.getElementById(commentKey).onkeyup = (e) => {
+                localStorage.setItem(commentKey, e.target.value);
+            };
+        });
+    };
+
+    // زر "التالي / إنهاء"
+    nextPivotBtn.onclick = () => {
+        const current = pivotSelect.value;
+
+        if (!current) {
+            pivotSelect.value = pivotOrder[0];
+            pivotSelect.dispatchEvent(new Event("change"));
+            return;
+        }
+
+        const idx = pivotOrder.indexOf(current);
+        if (idx === -1) return;
+
+        if (idx < pivotOrder.length - 1) {
+            const next = pivotOrder[idx + 1];
+            pivotSelect.value = next;
+            pivotSelect.dispatchEvent(new Event("change"));
+        } else {
+            reflectionBox.style.display = "none"; // آخر محور
+        }
+    };
+
+    // ---------------- SWOT ----------------
+    function getSWOTKey(type) {
+        return "swot_" + type;
+    }
+
+    function addSWOT(type) {
+        const input = document.getElementById(type + "Input");
+        const text = (input.value || "").trim();
+        if (!text) return;
+
+        const listKey = getSWOTKey(type);
+        const stored = JSON.parse(localStorage.getItem(listKey) || "[]");
+        stored.push(text);
+        localStorage.setItem(listKey, JSON.stringify(stored));
+
+        input.value = "";
+        renderSWOT(type);
+    }
+
+    function renderSWOT(type) {
+        const listKey = getSWOTKey(type);
+        const data = JSON.parse(localStorage.getItem(listKey) || "[]");
+        const ul = document.getElementById(type + "List");
+        ul.innerHTML = "";
+
+        data.forEach((item, index) => {
+            const li = document.createElement("li");
+            li.innerHTML = `
+                <span>${item}</span>
+                <button class="swot-del" onclick="deleteSWOT('${type}', ${index})">&times;</button>
+            `;
+            ul.appendChild(li);
+        });
+    }
+
+    function deleteSWOT(type, index) {
+        const listKey = getSWOTKey(type);
+        const data = JSON.parse(localStorage.getItem(listKey) || "[]");
+        data.splice(index, 1);
+        localStorage.setItem(listKey, JSON.stringify(data));
+        renderSWOT(type);
+    }
+
+    function loadAllSWOT() {
+        ["strength", "weakness", "opportunity", "threat"].forEach(renderSWOT);
+    }
+
+    loadAllSWOT();
+
+    // ---------------- دالة مساعدة: حساب تقييم محور ----------------
+    function computePivotStats(pivot) {
+        const items = reflectionItems[pivot] || [];
+        const stats = { "دائمًا": 0, "أحيانًا": 0, "أبدًا": 0 };
+        const rows  = [];
+
+        items.forEach((text, index) => {
+            const baseID  = `${pivot}_${index}`;
+            const val     = localStorage.getItem(baseID) || "";
+            const comment = localStorage.getItem(baseID + "_comment") || "";
+
+            if (stats[val] !== undefined) stats[val]++;
+
+            rows.push({
+                text,
+                value: val || "—",
+                comment: comment || "—"
+            });
+        });
+
+        const total = stats["دائمًا"] + stats["أحيانًا"] + stats["أبدًا"];
+        let performance = "لا توجد بيانات";
+        let percentAlways = 0;
+
+        if (total > 0) {
+            percentAlways = (stats["دائمًا"] / total) * 100;
+
+            if (percentAlways >= 60 && stats["دائمًا"] >= stats["أحيانًا"] && stats["دائمًا"] >= stats["أبدًا"]) {
+                performance = "أداء مميز";
+            } else if (stats["أحيانًا"] >= stats["دائمًا"] && stats["أحيانًا"] >= stats["أبدًا"]) {
+                performance = "أداء متوسط";
+            } else {
+                performance = "بحاجة لتحسين";
+            }
+        }
+
+        return { stats, rows, total, performance, percentAlways };
+    }
+
+    // ---------------- الإحصائيات (Pie SVG واحد) ----------------
+    function getStatsSVG() {
+        const segments = [];
+        let totalSlices = 0;
+
+        pivotOrder.forEach(pivot => {
+            const { stats, total, performance, percentAlways } = computePivotStats(pivot);
+            if (total === 0) return;
+
+            let color = "#c62828"; // افتراضي بحاجة لتحسين
+            if (performance === "أداء مميز") color = "#0a7d21";
+            else if (performance === "أداء متوسط") color = "#f57c00";
+
+            segments.push({
+                pivot,
+                total,
+                performance,
+                percentAlways,
+                color,
+                stats
+            });
+
+            totalSlices += total;
+        });
+
+        if (segments.length === 0 || totalSlices === 0) {
+            return "";
+        }
+
+        const width = 500;
+        const height = 500;
+        const radius = 180;
+        const cx = width / 2;
+        const cy = height / 2;
+
+        let svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg" dir="ltr">
+            <rect x="0" y="0" width="${width}" height="${height}" fill="#ffffff"/>
+            <text x="${width / 2}" y="24" text-anchor="middle" font-size="16" font-weight="600">
+                التوزيع النسبي للمحاور حسب مستوى الأداء
+            </text>
+        `;
+
+        let currentAngle = -Math.PI / 2; // نبدأ من الأعلى
+
+        segments.forEach(seg => {
+            const angle = (seg.total / totalSlices) * Math.PI * 2;
+            const startAngle = currentAngle;
+            const endAngle = currentAngle + angle;
+
+            const x1 = cx + radius * Math.cos(startAngle);
+            const y1 = cy + radius * Math.sin(startAngle);
+            const x2 = cx + radius * Math.cos(endAngle);
+            const y2 = cy + radius * Math.sin(endAngle);
+
+            const largeArcFlag = angle > Math.PI ? 1 : 0;
+
+            const pathData = `
+                M ${cx} ${cy}
+                L ${x1} ${y1}
+                A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2}
+                Z
+            `;
+
+            svg += `
+                <path d="${pathData}" fill="${seg.color}" stroke="#ffffff" stroke-width="1"/>
+            `;
+
+            // كتابة اسم المحور + مستوى الأداء داخل القطاع
+            const midAngle = startAngle + angle / 2;
+            const labelRadius = radius * 0.65;
+            const lx = cx + labelRadius * Math.cos(midAngle);
+            const ly = cy + labelRadius * Math.sin(midAngle);
+
+            svg += `
+                <text x="${lx}" y="${ly - 6}" font-size="11" font-weight="600" text-anchor="middle">
+                    ${seg.pivot}
+                </text>
+                <text x="${lx}" y="${ly + 8}" font-size="10" fill="#333" text-anchor="middle">
+                    (${seg.performance})
+                </text>
+            `;
+
+            currentAngle = endAngle;
+        });
+
+        // وسيلة إيضاح (Legend) بدون نسب ولا أعداد
+        let legendY = 60;
+        segments.forEach((seg, index) => {
+            const legendX = 20;
+            svg += `
+                <rect x="${legendX}" y="${legendY}" width="14" height="14" fill="${seg.color}" stroke="#444" stroke-width="0.5"/>
+                <text x="${legendX + 20}" y="${legendY + 11}" font-size="11">
+                    ${index + 1} - ${seg.pivot} (${seg.performance})
+                </text>
+            `;
+            legendY += 18;
+        });
+
+        svg += `</svg>`;
+        return svg;
+    }
+
+    function buildStatsChart() {
+        const svg = getStatsSVG();
+        if (!svg) {
+            statsChart.innerHTML = "<p>لا توجد بيانات كافية لعرض الرسم البياني. يرجى تعبئة أداة التأمل أولًا.</p>";
+        } else {
+            statsChart.innerHTML = svg;
+        }
+    }
+
+    // ---------------- التقرير و PDF ----------------
+
+    function buildReportPages() {
+        reportPagesContainer.innerHTML = "";
+
+        // حساب إحصائيات عامة
+        const globalTotals = { "دائمًا": 0, "أحيانًا": 0, "أبدًا": 0 };
+        const perPivotData = [];
+
+        pivotOrder.forEach(pivot => {
+            const result = computePivotStats(pivot);
+            const { stats, rows, total, performance, percentAlways } = result;
+
+            globalTotals["دائمًا"] += stats["دائمًا"];
+            globalTotals["أحيانًا"] += stats["أحيانًا"];
+            globalTotals["أبدًا"]   += stats["أبدًا"];
+
+            perPivotData.push({
+                pivot,
+                stats,
+                rows,
+                total,
+                performance,
+                percentAlways
+            });
+        });
+
+        // صفحة 1: بيانات + إحصائيات عامة + الرسم
+        const page1 = document.createElement("div");
+        page1.className = "report-page";
+
+        const statsSVG = getStatsSVG();
+        const chartSection = statsSVG
+            ? `
+            <div class="report-section-title">مخطط إحصائي للمحاور</div>
+            <div style="text-align:center; margin-top:10px;">
+                ${statsSVG}
+            </div>
+        `
+            : "";
+
+        page1.innerHTML = `
+            <div class="report-header">
+                <img src="https://raw.githubusercontent.com/msroh8/app/main/headr.jpg" alt="شعار" crossorigin="anonymous">
+                <div class="report-title">التأمل المهني – التقرير العام</div>
+            </div>
+
+            <div class="report-section-title">البيانات الرئيسية</div>
+            <table class="report-table">
+                <tr><th>الإدارة العامة</th><td>${localStorage.getItem("edara")   || "—"}</td></tr>
+                <tr><th>اسم المدرسة</th><td>${localStorage.getItem("school")  || "—"}</td></tr>
+                <tr><th>اسم المعلم</th><td>${localStorage.getItem("teacher") || "—"}</td></tr>
+                <tr><th>مدير المدرسة</th><td>${localStorage.getItem("manager") || "—"}</td></tr>
+            </table>
+
+            <div class="report-section-title">إحصائيات عامة لاختيارات التأمل</div>
+            <p class="report-stat-line">عدد "دائمًا": ${globalTotals["دائمًا"]}</p>
+            <p class="report-stat-line">عدد "أحيانًا": ${globalTotals["أحيانًا"]}</p>
+            <p class="report-stat-line">عدد "أبدًا": ${globalTotals["أبدًا"]}</p>
+            ${chartSection}
+        `;
+        reportPagesContainer.appendChild(page1);
+
+        // صفحة لكل محور
+        perPivotData.forEach(({ pivot, stats, rows, total, performance, percentAlways }) => {
+            const page = document.createElement("div");
+            page.className = "report-page";
+
+            let rowsHtml = "";
+            rows.forEach((r, idx) => {
+                rowsHtml += `
+                    <tr>
+                        <td>${idx + 1}</td>
+                        <td>${r.text}</td>
+                        <td>${r.value}</td>
+                        <td>${r.comment}</td>
+                    </tr>
+                `;
+            });
+
+            const totalText = total > 0
+                ? `إجمالي البنود المجابة: ${total} / نسبة "دائمًا": ${percentAlways.toFixed(1)}%`
+                : "لا توجد استجابات مسجلة لهذا المحور.";
+
+            page.innerHTML = `
+                <div class="report-header">
+                    <img src="https://raw.githubusercontent.com/msroh8/app/main/headr.jpg" alt="شعار" crossorigin="anonymous">
+                    <div class="report-title">التأمل المهني – محور: ${pivot}</div>
+                </div>
+
+                <div class="report-section-title">إحصائيات المحور</div>
+                <p class="report-stat-line">
+                    دائمًا: ${stats["دائمًا"]} | أحيانًا: ${stats["أحيانًا"]} | أبدًا: ${stats["أبدًا"]}
+                </p>
+                <p class="report-stat-line">
+                    التقييم الإجمالي للمحور: <b>${performance}</b> (${totalText})
+                </p>
+
+                <div class="report-section-title">تفاصيل البنود</div>
+                <table class="report-table">
+                    <thead>
+                        <tr>
+                            <th>م</th>
+                            <th>البند</th>
+                            <th>الاختيار</th>
+                            <th>التعليق الإضافي</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rowsHtml}
+                    </tbody>
+                </table>
+            `;
+            reportPagesContainer.appendChild(page);
+        });
+
+        // صفحة SWOT
+        const swotPage = document.createElement("div");
+        swotPage.className = "report-page";
+
+        const swotData = {
+            "نقاط القوة (Strengths)": JSON.parse(localStorage.getItem("swot_strength")   || "[]"),
+            "نقاط الضعف (Weaknesses)": JSON.parse(localStorage.getItem("swot_weakness") || "[]"),
+            "الفرص (Opportunities)":   JSON.parse(localStorage.getItem("swot_opportunity") || "[]"),
+            "التهديدات (Threats)":     JSON.parse(localStorage.getItem("swot_threat")    || "[]")
+        };
+
+        let swotHtml = "";
+        Object.keys(swotData).forEach(title => {
+            const list = swotData[title];
+            let itemsHtml = "";
+            list.forEach((item, idx) => {
+                itemsHtml += `<tr><td>${idx + 1}</td><td>${item}</td></tr>`;
+            });
+
+            swotHtml += `
+                <div class="report-section-title">${title}</div>
+                <table class="report-table" style="margin-bottom:10px;">
+                    <thead>
+                        <tr><th>م</th><th>البند</th></tr>
+                    </thead>
+                    <tbody>
+                        ${itemsHtml || '<tr><td colspan="2">لا توجد بنود مدخلة.</td></tr>'}
+                    </tbody>
+                </table>
+            `;
+        });
+
+        swotPage.innerHTML = `
+            <div class="report-header">
+                <img src="https://raw.githubusercontent.com/msroh8/app/main/headr.jpg" alt="شعار" crossorigin="anonymous">
+                <div class="report-title">التأمل المهني – تحليل SWOT</div>
+            </div>
+            ${swotHtml}
+        `;
+        reportPagesContainer.appendChild(swotPage);
+    }
+
+    // توليد PDF
+    async function generatePDF() {
+        buildReportPages();
+
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p', 'pt', 'a4');
+        const pages = document.querySelectorAll(".report-page");
+
+        for (let i = 0; i < pages.length; i++) {
+            const page = pages[i];
+            const canvas = await html2canvas(page, { scale: 2, useCORS: true });
+            const imgData = canvas.toDataURL("image/png");
+
+            const imgWidth  = pdf.internal.pageSize.getWidth();
+            const imgHeight = canvas.height * imgWidth / canvas.width;
+
+            if (i > 0) pdf.addPage();
+            pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+        }
+
+        pdf.save("التأمل_المهني.pdf");
+    }
+
+    btnGeneratePDF.onclick = () => {
+        generatePDF();
+    };
+</script>
+
+</body>
+</html>
