@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام تقييم واعتماد أنشطة التطوير المهني</title>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Tajawal', sans-serif;
+        }
+        @media print {
+            @page { 
+                size: A4; 
+                margin: 1cm; 
+            }
+            body { 
+                background: white; 
+                -webkit-print-color-adjust: exact; 
+                padding: 0 !important;
+            }
+            .no-print { display: none !important; }
+            
+            /* تنسيق صفحة الغلاف */
+            .print-cover-page {
+                height: 90vh; /* تأخذ كامل ارتفاع الصفحة تقريباً */
+                display: flex !important;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                page-break-after: always; /* إجبار الانتقال لصفحة جديدة بعد الغلاف */
+                border: 2px solid #eee;
+                border-radius: 10px;
+                padding: 20px;
+                margin-bottom: 0;
+            }
+
+            /* إجبار كل معيار رئيسي على البدء في صفحة جديدة */
+            .print-new-page {
+                page-break-before: always;
+                page-break-inside: avoid;
+                margin-top: 0;
+                padding-top: 20px;
+            }
+
+            /* منع انقسام العناصر الداخلية */
+            .break-inside-avoid { 
+                break-inside: avoid; 
+                page-break-inside: avoid; 
+            }
+
+            /* إخفاء حدود المدخلات عند الطباعة */
+            input, textarea { 
+                border: none !important; 
+                resize: none; 
+                background: transparent !important;
+            }
+            
+            /* تحسين عرض النصوص في الطباعة */
+            .print-text-large {
+                font-size: 1.5rem;
+                font-weight: bold;
+                text-align: center;
+                margin-bottom: 1rem;
+            }
+        }
+        .animate-fadeIn { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-gray-50 text-right min-h-screen p-6">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        // --- مكونات الأيقونات ---
+        const IconPrinter = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+        );
+        const IconCheck = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        );
+        const IconX = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        );
+        const IconFileText = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+        );
+
+        // --- التطبيق الرئيسي ---
+        const App = () => {
+            const [schoolName, setSchoolName] = useState('');
+            const [applicantName, setApplicantName] = useState('');
+            const [principalName, setPrincipalName] = useState('');
+            const [selectedFormId, setSelectedFormId] = useState(null);
+            const [responses, setResponses] = useState({});
+
+            const handleResponseChange = (formId, itemId, field, value) => {
+                setResponses(prev => ({
+                    ...prev,
+                    [formId]: {
+                        ...prev[formId],
+                        [itemId]: {
+                            ...prev[formId]?.[itemId],
+                            [field]: value
+                        }
+                    }
+                }));
+            };
+
+            const formsData = {
+                lessonStudy: {
+                    title: "بحث الدرس",
+                    standards: [
+                        {
+                            main: "1. الغلاف الخارجي",
+                            subs: [
+                                { id: "1-1", text: "إضافة البيانات الرئيسة." },
+                                { id: "2-1", text: "إدراج العنوان." },
+                                { id: "3-1", text: "إدراج أسماء فريق بحث الدرس." },
+                                { id: "4-1", text: "إضافة تاريخ التنفيذ." }
+                            ]
+                        },
+                        {
+                            main: "2. قائمة المحتويات",
+                            subs: [
+                                { id: "1-2", text: "إدراج العناوين الرئيسة وأرقام الصفحات." },
+                                { id: "2-2", text: "إدراج العناوين الفرعية وأرقام الصفحات." },
+                                { id: "3-2", text: "إدراج قائمة الجداول والأشكال والصور (إن وجدت)." },
+                                { id: "4-2", text: "إدراج قائمة بالملاحق (إن وجدت)." }
+                            ]
+                        },
+                        {
+                            main: "3. المقدمة",
+                            subs: [
+                                { id: "1-3", text: "الوضوح والإيجاز في التعريف بموضوع بحث الدرس." },
+                                { id: "2-3", text: "إيضاح الأسباب والمبررات التي أدت لتنفيذ دورة بحث الدرس." }
+                            ]
+                        },
+                        {
+                            main: "4. ميثاق عمل الفريق",
+                            subs: [
+                                { id: "1-4", text: "تحديد أنماط التفكير المأمولة المتفق عليها من قبل أعضاء الفريق." },
+                                { id: "2-4", text: "تحديد ميسر عمل الفريق." },
+                                { id: "3-4", text: "تحديد المهام وتوزيعها على أعضاء الفريق." },
+                                { id: "4-4", text: "إدراج التأملات حول ميثاق الفريق." }
+                            ]
+                        },
+                        {
+                            main: "5. الهدف البعيد",
+                            subs: [
+                                { id: "1-5", text: "تحديد مصادر البيانات اللازمة لضبط الهدف البعيد (الرؤية المشتركة للفريق)." },
+                                { id: "2-5", text: "إدراج تأملات الفريق حول الهدف البعيد." }
+                            ]
+                        },
+                        {
+                            main: "6. الخطة الإجرائية للفريق",
+                            subs: [
+                                { id: "1-6", text: "تحديد الإجراءات بتسلسل منطقي." },
+                                { id: "2-6", text: "تخصيص وقت التعلم لكل مهمة ضمن أوقات العمل في ضوء خطة المدرسة." },
+                                { id: "3-6", text: "تحديد مصادر التعلم لفريق بحث الدرس." },
+                                { id: "4-6", text: "تحديد الموارد الداعمة للفريق لكل مهمة ضمن الخطة الإجرائية." },
+                                { id: "5-6", text: "إدراج التأملات حول الخطة الإجرائية." }
+                            ]
+                        },
+                        {
+                            main: "7. مرحلة التخطيط",
+                            subs: [
+                                { id: "1-7", text: "التأملات حول تحديد درس البحث." },
+                                { id: "2-7", text: "إدراج تأملات الفريق حول الأهداف." },
+                                { id: "3-7", text: "إدراج تأملات الفريق حول الفهم العميق للمحتوى العلمى في - نشاط بحث الدرس - في ضوء أهداف الدرس المباشرة والهدف البعيد." },
+                                { id: "4-7", text: "إدراج فرضيات الفريق وتأملاته حول الممارسات التدريسية التي تحسن من تعلم الطلاب وتحقق الهدف البعيد." },
+                                { id: "5-7", text: "إدراج خطة الدرس المبحوث." },
+                                { id: "6-7", text: "إدراج مخطط السبورة." },
+                                { id: "7-7", text: "تحديد مخطط الفصل." },
+                                { id: "8-7", text: "إدراج منهجية الفريق وأدواتهم لجمع البيانات القائمة على الأدلة حول تعلم الطلاب لتحقيق هدفهم البعيد." }
+                            ]
+                        },
+                        {
+                            main: "8. تنفيذ الدرس وجمع البيانات",
+                            subs: [
+                                { id: "1-8", text: "إدراج تأملات الفريق حول الملاحظة." },
+                                { id: "2-8", text: "إدراج منهجية الفريق في تحليل البيانات وتأملاته حول النتائج وفرص التحسين." },
+                                { id: "3-8", text: "إدراج تأملات الفريق حول إعادة التدريس." },
+                                { id: "4-8", text: "خطة الفريق القادمة في ضوء نتائج البحث." }
+                            ]
+                        },
+                        {
+                            main: "9. المراجع",
+                            subs: [
+                                { id: "1-9", text: "توثيق المراجع بالطريقة العلمية بمنهجية APA، الإصدار الأخير." }
+                            ]
+                        }
+                    ]
+                },
+                appliedLesson: {
+                    title: "الدرس التطبيقي",
+                    standards: [
+                        {
+                            main: "1. الإطار العام للدرس",
+                            subs: [
+                                { id: "1-1", text: "تحديد البيانات الرئيسة للدرس التطبيقي (المادة - عنوان الدرس - اليوم - التاريخ - الصف الدراسي)." },
+                                { id: "2-1", text: "تحديد الهدف العام للدرس التطبيقي كنشاط تطوير مهني." },
+                                { id: "3-1", text: "ذكر مبررات إقامة الدرس التطبيقي (معالجة مشكلة تربوية أو تعليمية، استخدام إستراتيجية أو طريقة تدريس معينة ....)." },
+                                { id: "4-1", text: "تحديد أسلوب تنفيذ الدرس حضوري أو عن بعد (منصة مدرستي)." },
+                                { id: "5-1", text: "تحديد الفئة المستفيدة من الدرس التطبيقي من داخل المدرسة، أم خارج المدرسة أم داخل المدرسة وخارجها معاً)." },
+                                { id: "6-1", text: "تحديد أدوات تدوين التأملات حول الدرس التطبيقي (مثل: بطاقة ملاحظة، أو استبيان.... إلخ)." }
+                            ]
+                        },
+                        {
+                            main: "2. التهيئة للدرس الجديد",
+                            subs: [
+                                { id: "1-2", text: "تعزز التهيئة استدعاء الخبرات السابقة لدى الطلاب." },
+                                { id: "2-2", text: "تجذب التهيئة انتباه الطلاب للدرس الجديد." }
+                            ]
+                        },
+                        {
+                            main: "3. الأهداف ونواتج التعلم",
+                            subs: [
+                                { id: "1-3", text: "شمولية الأهداف لجميع المجالات المعرفية والوجدانية والمهارية." },
+                                { id: "2-3", text: "صياغة الأهداف بطريقة سليمة توضح نواتج التعلم." }
+                            ]
+                        },
+                        {
+                            main: "4. التخطيط للدرس الجديد",
+                            subs: [
+                                { id: "1-4", text: "استخدام إستراتيجيات التدريس التي تضمن تفاعل الطلاب." },
+                                { id: "2-4", text: "ملاءمة إستراتيجيات التدريس لأهداف الدرس." },
+                                { id: "3-4", text: "سلامة خطوات تنفيذ الإستراتيجيات خلال الدرس." },
+                                { id: "4-4", text: "مناسبة إستراتيجيات التدريس للفئة المستهدفة من الطلاب." }
+                            ]
+                        },
+                        {
+                            main: "5. المحتوى",
+                            subs: [
+                                { id: "1-5", text: "مناسبة توزيع المحتوى العلمي على الزمن المخصص للتنفيذ." },
+                                { id: "2-5", text: "سلامة المحتوى من الأخطاء العلمية واللغوية والفكرية." },
+                                { id: "3-5", text: "الترابط والتسلسل المنطقي في عرض الدرس." },
+                                { id: "4-5", text: "ربط الدرس بواقع حياة الطالب." },
+                                { id: "5-5", text: "ربط الدرس بالمواد الأخرى التكامل بين المواد الدراسية." }
+                            ]
+                        },
+                        {
+                            main: "6. الأنشطة",
+                            subs: [
+                                { id: "1-6", text: "تنوع أسلوب الأنشطة بين الفردي والثنائي والجماعي." },
+                                { id: "2-6", text: "مناسبة الأنشطة للفئة المستهدفة من الطلاب." },
+                                { id: "3-6", text: "استهداف الأنشطة لمستويات التفكير العليا." },
+                                { id: "4-6", text: "مراعاة الأنشطة للفروق الفردية بين الطلاب." },
+                                { id: "5-6", text: "مناسبة الأنشطة لزمن الحصة." },
+                                { id: "6-6", text: "ارتباط الأنشطة بأهداف الدرس." },
+                                { id: "7-6", text: "وضوح تعليمات تنفيذ النشاط." }
+                            ]
+                        },
+                        {
+                            main: "7. الوسائل التعليمية",
+                            subs: [
+                                { id: "1-7", text: "مناسبة الوسائل التعليمية لأهداف التعلم." },
+                                { id: "2-7", text: "مناسبة الوسائل التعليمية للفئة العمرية للطلاب." },
+                                { id: "3-7", text: "مناسبة الوسائل التعليمية لطبيعة المادة الدراسية." },
+                                { id: "4-7", text: "توافر عنصر التشويق والإبداع في الوسائل التعليمية." },
+                                { id: "5-7", text: "تنوع الوسائل التعليمية في دعم خبرات التعلم." }
+                            ]
+                        },
+                        {
+                            main: "8. توظيف التقنية",
+                            subs: [
+                                { id: "1-8", text: "تحقيق الأدوات التقنية المستخدمة لأهداف الدرس." },
+                                { id: "2-8", text: "تحفيز وإثارة حماس الطلاب." }
+                            ]
+                        },
+                        {
+                            main: "9. التقويم",
+                            subs: [
+                                { id: "1-9", text: "تنوع أساليب التقويم (قبلي - تكويني - بعدي)." },
+                                { id: "2-9", text: "تنوع أدوات التقويم بما يراعي الفروق الفردية للطلاب." },
+                                { id: "3-9", text: "مناسبة أدوات التقويم لتحديد مدى تقدم الطلبة في تحقيق الأهداف." }
+                            ]
+                        }
+                    ]
+                },
+                workshop: {
+                    title: "ورشة عمل",
+                    standards: [
+                        {
+                            main: "1. العنوان",
+                            subs: [
+                                { id: "1-1", text: "تعبير العنوان عن الغرض من الورشة." },
+                                { id: "1-2", text: "صياغتها بطريقة توضح المخرجات المرغوبة." }
+                            ]
+                        },
+                        {
+                            main: "2. الأهداف",
+                            subs: [
+                                { id: "2-2", text: "ارتباط الأهداف بالمجال التعليمي." },
+                                { id: "3-2", text: "التسلسل المنطقي للأهداف حسب محاور الورشة." }
+                            ]
+                        },
+                        {
+                            main: "3. خطة التنفيذ",
+                            subs: [
+                                { id: "1-3", text: "تحديد الفئة ( المشاركة ) المناسبة للورشة." },
+                                { id: "2-3", text: "ترتيب الأنشطة بشكل منطقي ومنظم." },
+                                { id: "3-3", text: "تحديد الزمن الكلي للورشة." },
+                                { id: "4-3", text: "تحديد المواد وأوراق العمل اللازمة." }
+                            ]
+                        },
+                        {
+                            main: "4. المحتوى",
+                            subs: [
+                                { id: "1-4", text: "ارتباط محتوى الورشة بالمجال التعليمي." },
+                                { id: "2-4", text: "مناسبته للفئة المستهدفة." },
+                                { id: "3-4", text: "مناسبته للتوزيع الزمني للورشة." },
+                                { id: "4-4", text: "الارتباط بأهداف الورشة." },
+                                { id: "5-4", text: "خلوه من المخالفات الفكرية والأخطاء العلمية واللغوية." }
+                            ]
+                        },
+                        {
+                            main: "5. الأنشطة",
+                            subs: [
+                                { id: "1-5", text: "أن تشجع على المشاركة والتفاعل بين المشاركين." },
+                                { id: "2-5", text: "توزيع الوقت على الأنشطة بشكل ملائم." },
+                                { id: "3-5", text: "وضوح إجراءات النشاط وتعليماته." }
+                            ]
+                        },
+                        {
+                            main: "6. التقويم",
+                            subs: [
+                                { id: "1-6", text: "توفر أدوات تقويم للورشة من قبل المشاركين." },
+                                { id: "2-6", text: "مناسبة أدوات تقويم الورشة." }
+                            ]
+                        },
+                        {
+                            main: "7. مخرجات الورشة",
+                            subs: [
+                                { id: "1-7", text: "تحديد آلية توثيق المخرجات والتوصيات (مثال: تقرير، أوراق عمل .... إلخ)." }
+                            ]
+                        },
+                        {
+                            main: "8. المراجع",
+                            subs: [
+                                { id: "1-8", text: "توثيق المراجع بالطريقة العلمية بمنهجية APA ، الإصدار الأخير. ( في المتن وقائمة المراجع )" }
+                            ]
+                        }
+                    ]
+                },
+                directedReading: {
+                    title: "القراءة الموجهة",
+                    standards: [
+                        {
+                            main: "1. العنوان",
+                            subs: [
+                                { id: "1-1", text: "أن يكون معبرا عن المحتوى." },
+                                { id: "1-2", text: "ارتباط الموضوع بالمجال التعليمي أو التربوي." }
+                            ]
+                        },
+                        {
+                            main: "2. المحتوى",
+                            subs: [
+                                { id: "2-2", text: "تحديد أهداف القراءة الموجهة." },
+                                { id: "3-2", text: "التنظيم والتسلسل المنطقي للأفكار." },
+                                { id: "4-2", text: "ظهور رأي المعد من خلال مناقشة الأفكار." },
+                                { id: "5-2", text: "وضوح التوصيات حول كيفية الاستفادة من نتائج القراءة الموجهة عمليا." },
+                                { id: "6-2", text: "سلامة النص من الأخطاء اللغوية والإملائية." },
+                                { id: "7-2", text: "سلامة النص من المخالفات الشرعية والسياسية والثقافية." }
+                            ]
+                        },
+                        {
+                            main: "3. المراجع",
+                            subs: [
+                                { id: "1-3", text: "توثيق المراجع بالطريقة العلمية بمنهجية ، APA الإصدار الأخير." }
+                            ]
+                        }
+                    ]
+                }
+            };
+
+            const handlePrint = () => {
+                window.print();
+            };
+
+            return (
+                <div className="max-w-4xl mx-auto">
+                    {/* قسم الهيدر والبيانات الأساسية - سيتحول لصفحة غلاف عند الطباعة */}
+                    <div className="bg-white rounded-lg shadow-md p-6 mb-8 print:shadow-none print:p-0 print:max-w-full print:print-cover-page">
+                        <div className="flex justify-between items-center mb-6 no-print">
+                            <h1 className="text-2xl font-bold text-gray-800">أدوات تقييم التطوير المهني</h1>
+                            <button 
+                                onClick={handlePrint}
+                                className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+                            >
+                                <IconPrinter />
+                                <span>طباعة التقرير</span>
+                            </button>
+                        </div>
+                        
+                        {/* العنوان يظهر فقط في الطباعة في الغلاف */}
+                        <div className="hidden print:block text-center mb-12">
+                            <h1 className="text-4xl font-bold text-gray-900 mb-4">تقرير تقييم نشاط تطوير مهني</h1>
+                            <h2 className="text-2xl text-gray-600">{selectedFormId ? formsData[selectedFormId].title : ''}</h2>
+                        </div>
+
+                        {/* حقول الإدخال */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6 pb-6 print:grid-cols-1 print:gap-12 print:w-full print:text-center print:border-none">
+                            <div className="print:border-b-2 print:border-gray-200 print:pb-2">
+                                <label className="block text-sm font-medium text-gray-700 mb-2 print:text-xl print:text-gray-500">اسم المدرسة</label>
+                                <input 
+                                    type="text" 
+                                    value={schoolName}
+                                    onChange={(e) => setSchoolName(e.target.value)}
+                                    className="w-full border rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none print:text-2xl print:font-bold print:text-black print:text-center"
+                                    placeholder="أدخل اسم المدرسة"
+                                />
+                            </div>
+                            <div className="print:border-b-2 print:border-gray-200 print:pb-2">
+                                <label className="block text-sm font-medium text-gray-700 mb-2 print:text-xl print:text-gray-500">اسم مقدم الطلب</label>
+                                <input 
+                                    type="text" 
+                                    value={applicantName}
+                                    onChange={(e) => setApplicantName(e.target.value)}
+                                    className="w-full border rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none print:text-2xl print:font-bold print:text-black print:text-center"
+                                    placeholder="أدخل اسم مقدم الطلب"
+                                />
+                            </div>
+                            <div className="print:border-b-2 print:border-gray-200 print:pb-2">
+                                <label className="block text-sm font-medium text-gray-700 mb-2 print:text-xl print:text-gray-500">اسم مدير المدرسة</label>
+                                <input 
+                                    type="text" 
+                                    value={principalName}
+                                    onChange={(e) => setPrincipalName(e.target.value)}
+                                    className="w-full border rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none print:text-2xl print:font-bold print:text-black print:text-center"
+                                    placeholder="أدخل اسم مدير المدرسة"
+                                />
+                            </div>
+                        </div>
+
+                        {/* اختيار النموذج */}
+                        <div className="mb-8 no-print">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">اختر نموذج التقييم:</label>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                {Object.entries(formsData).map(([key, data]) => (
+                                    <button
+                                        key={key}
+                                        onClick={() => setSelectedFormId(key)}
+                                        className={`p-3 rounded border text-sm font-medium transition-all ${
+                                            selectedFormId === key 
+                                                ? 'bg-blue-50 border-blue-500 text-blue-700 ring-1 ring-blue-500' 
+                                                : 'bg-white hover:bg-gray-50 text-gray-600'
+                                        }`}
+                                    >
+                                        {data.title}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* عرض النموذج المختار */}
+                    {selectedFormId ? (
+                        <div className="print:block">
+                            
+                            {/* المحتوى مع فواصل الصفحات */}
+                            <div className="space-y-6">
+                                {formsData[selectedFormId].standards.map((std, index) => (
+                                    // هنا يتم تطبيق كلاس الفاصل للصفحة الجديدة لكل معيار
+                                    <div key={index} className="print-new-page break-inside-avoid">
+                                        <div className="bg-gray-100 p-3 rounded-lg font-bold text-gray-800 mb-4 text-xl border-b-2 border-gray-300 print:bg-gray-50 print:border-black print:text-black">
+                                            {std.main}
+                                        </div>
+                                        <div className="space-y-4">
+                                            {std.subs.map((sub) => {
+                                                const res = responses[selectedFormId]?.[sub.id] || {};
+                                                const isNotAchieved = res.status === 'not_achieved';
+
+                                                return (
+                                                    <div key={sub.id} className="bg-white border rounded p-4 shadow-sm break-inside-avoid print:shadow-none print:border-gray-300 print:mb-2">
+                                                        <div className="flex flex-col md:flex-row justify-between gap-4">
+                                                            <div className="flex-1">
+                                                                <span className="ml-2 inline-block bg-blue-100 text-blue-800 text-sm px-2 py-1 rounded font-mono print:border print:bg-transparent print:text-black print:font-bold">
+                                                                    {sub.id}
+                                                                </span>
+                                                                <span className="text-gray-800 text-lg">{sub.text}</span>
+                                                            </div>
+
+                                                            <div className="flex items-center gap-3 shrink-0 no-print">
+                                                                <label className={`cursor-pointer flex items-center gap-1 px-3 py-1.5 rounded border transition-colors ${
+                                                                    res.status === 'achieved' ? 'bg-green-50 border-green-500 text-green-700' : 'hover:bg-gray-50'
+                                                                }`}>
+                                                                    <input
+                                                                        type="radio"
+                                                                        className="hidden"
+                                                                        name={`status-${sub.id}`}
+                                                                        checked={res.status === 'achieved'}
+                                                                        onChange={() => handleResponseChange(selectedFormId, sub.id, 'status', 'achieved')}
+                                                                    />
+                                                                    <IconCheck />
+                                                                    <span className="text-sm">متحقق</span>
+                                                                </label>
+
+                                                                <label className={`cursor-pointer flex items-center gap-1 px-3 py-1.5 rounded border transition-colors ${
+                                                                    res.status === 'not_achieved' ? 'bg-red-50 border-red-500 text-red-700' : 'hover:bg-gray-50'
+                                                                }`}>
+                                                                    <input
+                                                                        type="radio"
+                                                                        className="hidden"
+                                                                        name={`status-${sub.id}`}
+                                                                        checked={res.status === 'not_achieved'}
+                                                                        onChange={() => handleResponseChange(selectedFormId, sub.id, 'status', 'not_achieved')}
+                                                                    />
+                                                                    <IconX />
+                                                                    <span className="text-sm">غير متحقق</span>
+                                                                </label>
+                                                            </div>
+
+                                                            {/* مؤشر الحالة للطباعة فقط */}
+                                                            <div className="hidden print:block shrink-0 min-w-[120px] text-left">
+                                                                {res.status === 'achieved' && <div className="flex items-center gap-1 text-green-800 font-bold border border-green-600 px-2 py-1 rounded justify-center"><IconCheck /> متحقق</div>}
+                                                                {res.status === 'not_achieved' && <div className="flex items-center gap-1 text-red-800 font-bold border border-red-600 px-2 py-1 rounded justify-center"><IconX /> غير متحقق</div>}
+                                                                {!res.status && <div className="text-gray-300 text-sm border px-2 py-1 rounded text-center">---</div>}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* صندوق التغذية الراجعة */}
+                                                        {(isNotAchieved || (res.status === 'not_achieved' && res.feedback)) && (
+                                                            <div className="mt-3 mr-4 border-r-4 border-red-200 pr-3 animate-fadeIn print:border-red-500">
+                                                                <label className="block text-sm font-bold text-red-600 mb-1 no-print">التغذية الراجعة المطلوبة:</label>
+                                                                <label className="hidden print:block text-sm font-bold text-black mb-1 underline">ملاحظات / تغذية راجعة:</label>
+                                                                <textarea
+                                                                    value={res.feedback || ''}
+                                                                    onChange={(e) => handleResponseChange(selectedFormId, sub.id, 'feedback', e.target.value)}
+                                                                    className="w-full text-base p-2 border border-red-100 rounded bg-red-50 focus:border-red-300 outline-none print:bg-transparent print:border-none print:p-0 print:min-h-0 print:text-black print:w-full"
+                                                                    placeholder="اكتب أسباب عدم التحقق هنا..."
+                                                                    rows={3}
+                                                                />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* قسم التوقيعات في صفحة منفصلة أخيرة */}
+                            <div className="hidden print:flex flex-col justify-between print-new-page h-[50vh]">
+                                <h3 className="text-center text-xl font-bold mb-12">الاعتماد والتوقيع</h3>
+                                <div className="flex justify-between items-end w-full px-12">
+                                    <div className="text-center">
+                                        <p className="text-lg text-gray-600 mb-8">مقدم الطلب</p>
+                                        <p className="font-bold text-xl mb-4">{applicantName}</p>
+                                        <div className="w-48 h-0.5 bg-black mx-auto"></div>
+                                    </div>
+                                    <div className="text-center">
+                                        <p className="text-lg text-gray-600 mb-8">الختم الرسمي</p>
+                                        <div className="w-32 h-32 border-2 border-dashed border-gray-400 rounded-full mx-auto flex items-center justify-center">
+                                            <span className="text-gray-400">ختم المدرسة</span>
+                                        </div>
+                                    </div>
+                                    <div className="text-center">
+                                        <p className="text-lg text-gray-600 mb-8">مدير المدرسة</p>
+                                        <p className="font-bold text-xl mb-4">{principalName}</p>
+                                        <div className="w-48 h-0.5 bg-black mx-auto"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="text-center py-16 bg-gray-50 border-2 border-dashed border-gray-200 rounded-lg no-print">
+                            <IconFileText />
+                            <p className="text-gray-500 mt-4">الرجاء اختيار نموذج من القائمة أعلاه لعرض بنوده</p>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
