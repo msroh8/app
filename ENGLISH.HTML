@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لعبة حديقة الكلمات الإنجليزية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6c5ce7;
+            --secondary: #a29bfe;
+            --accent: #fdcb6e;
+            --success: #00b894;
+            --error: #d63031;
+            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --glass: rgba(255, 255, 255, 0.95);
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Cairo', sans-serif;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--glass);
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.4);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 15px;
+        }
+
+        .score-box {
+            background: var(--primary);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3);
+        }
+
+        /* --- New Layout for Two Faces --- */
+        .interaction-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .character {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            width: 120px;
+        }
+
+        .avatar {
+            font-size: 5rem;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1));
+            transition: transform 0.3s;
+        }
+
+        .speech-bubble {
+            background: white;
+            border: 3px solid var(--primary);
+            border-radius: 20px;
+            padding: 15px 25px;
+            font-size: 2rem;
+            font-weight: 900;
+            color: #2d3436;
+            position: absolute;
+            top: -20px;
+            right: 110px; /* Position next to speaker */
+            white-space: nowrap;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 10;
+        }
+        
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            right: -10px;
+            top: 50%;
+            transform: translateY(-50%);
+            border-width: 10px;
+            border-style: solid;
+            border-color: transparent transparent transparent var(--primary);
+        }
+
+        /* Input Area */
+        .input-area {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin: 0 20px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            max-width: 300px;
+            padding: 15px;
+            font-size: 1.5rem;
+            text-align: center;
+            border: 3px solid #dfe6e9;
+            border-radius: 12px;
+            outline: none;
+            transition: all 0.3s;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Better for English text */
+            direction: ltr;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.1);
+        }
+
+        .submit-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 40px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+
+        .submit-btn:hover {
+            transform: scale(1.05);
+            background: #5649c0;
+        }
+
+        /* Feedback Styles */
+        .feedback-msg {
+            height: 30px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .speaker-anim {
+            animation: speak 0.5s infinite alternate;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            background: #dfe6e9;
+            border-radius: 10px;
+            height: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--success);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        /* Footer */
+        .footer-credits {
+            margin-top: auto;
+            padding-top: 20px;
+            border-top: 2px solid #eee;
+            text-align: center;
+        }
+
+        .student-names {
+            font-size: 1.1rem;
+            color: #2d3436;
+            font-weight: 900;
+        }
+
+        .supervisor {
+            font-size: 0.95rem;
+            color: #636e72;
+        }
+
+        /* Animations */
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.5) translate(20px, 0); }
+            to { opacity: 1; transform: scale(1) translate(0, 0); }
+        }
+
+        @keyframes speak {
+            from { transform: scale(1); }
+            to { transform: scale(1.1); }
+        }
+
+        /* Responsive */
+        @media (max-width: 700px) {
+            .interaction-area {
+                flex-direction: column;
+                gap: 40px;
+            }
+            .speech-bubble {
+                top: auto;
+                bottom: 110%;
+                right: auto;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+            .speech-bubble::after {
+                right: auto;
+                left: 50%;
+                top: 100%;
+                transform: translateX(-50%) rotate(90deg);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <header>
+            <div style="font-weight: 900; font-size: 1.5rem; color: var(--primary);">
+                🗣️ تحدي الإملاء
+            </div>
+            <div class="score-box">
+                الكلمة: <span id="current-count">1</span> / 10
+            </div>
+            <div class="score-box" style="background: var(--accent); color: #2d3436;">
+                النقاط: <span id="score">0</span>
+            </div>
+        </header>
+
+        <div class="progress-container">
+            <div id="progress-bar" class="progress-bar"></div>
+        </div>
+
+        <div class="game-area">
+            
+            <div class="interaction-area">
+                <!-- Speaker Character (Left/Right depending on RTL but visual logic: Face 1) -->
+                <div class="character">
+                    <div class="avatar" id="speaker-avatar">👩‍🏫</div>
+                    <div class="speech-bubble" id="word-hint">Gar...</div>
+                    <button onclick="speakCurrentWord()" style="margin-top:10px; border:none; background:none; cursor:pointer; color:var(--primary); font-weight:bold;">🔊 استمع</button>
+                </div>
+
+                <!-- Input Area -->
+                <div class="input-area">
+                    <div style="margin-bottom: 10px; color: #636e72;">أكمل الكلمة الإنجليزية:</div>
+                    <input type="text" id="user-input" placeholder="اكتب الكلمة هنا..." autocomplete="off">
+                    <button class="submit-btn" onclick="checkAnswer()">تحقق ✅</button>
+                    <div id="feedback" class="feedback-msg"></div>
+                </div>
+
+                <!-- Listener Character -->
+                <div class="character">
+                    <div class="avatar">👩‍🎓</div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="footer-credits">
+            <div class="student-names">
+                عمل الطالبتان: ليلى محمد مجممي - رفيف الهذلي
+            </div>
+            <div class="supervisor">
+                بإشراف المعلمة الأستاذة: رباب الخالدي
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 10 Words List
+        const wordsList = [
+            { full: "Garden", hint: "Gar...", meaning: "حديقة" },
+            { full: "School", hint: "Sch...", meaning: "مدرسة" },
+            { full: "Flower", hint: "Flo...", meaning: "زهرة" },
+            { full: "Family", hint: "Fam...", meaning: "عائلة" },
+            { full: "Rabbit", hint: "Rab...", meaning: "أرنب" },
+            { full: "Doctor", hint: "Doc...", meaning: "طبيب" },
+            { full: "Orange", hint: "Ora...", meaning: "برتقال" },
+            { full: "Window", hint: "Win...", meaning: "نافذة" },
+            { full: "Yellow", hint: "Yel...", meaning: "أصفر" },
+            { full: "Friend", hint: "Fri...", meaning: "صديق" }
+        ];
+
+        let currentIndex = 0;
+        let score = 0;
+        let gameActive = true;
+
+        // DOM Elements
+        const hintEl = document.getElementById('word-hint');
+        const inputEl = document.getElementById('user-input');
+        const feedbackEl = document.getElementById('feedback');
+        const scoreEl = document.getElementById('score');
+        const countEl = document.getElementById('current-count');
+        const progressBar = document.getElementById('progress-bar');
+        const speakerAvatar = document.getElementById('speaker-avatar');
+
+        // Init
+        function loadLevel() {
+            if (currentIndex >= wordsList.length) {
+                endGame();
+                return;
+            }
+
+            const currentWord = wordsList[currentIndex];
+            hintEl.textContent = currentWord.hint;
+            inputEl.value = "";
+            inputEl.focus();
+            feedbackEl.textContent = "";
+            countEl.textContent = currentIndex + 1;
+            
+            // Speak automatically after short delay
+            setTimeout(() => speakCurrentWord(), 500);
+            
+            updateProgress();
+        }
+
+        function speakCurrentWord() {
+            if (!gameActive) return;
+            const word = wordsList[currentIndex].full;
+            
+            // Visual feedback
+            speakerAvatar.classList.add('speaker-anim');
+            
+            const utterance = new SpeechSynthesisUtterance(word);
+            utterance.lang = 'en-US';
+            utterance.rate = 0.8; // Slightly slower for learning
+            
+            utterance.onend = () => {
+                speakerAvatar.classList.remove('speaker-anim');
+            };
+            
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function checkAnswer() {
+            if (!gameActive) return;
+
+            const userText = inputEl.value.trim().toLowerCase();
+            const correctText = wordsList[currentIndex].full.toLowerCase();
+
+            if (userText === correctText) {
+                // Correct
+                score += 10;
+                scoreEl.textContent = score;
+                feedbackEl.textContent = "ممتاز! إجابة صحيحة 🌟";
+                feedbackEl.style.color = "var(--success)";
+                playSound(true);
+                
+                currentIndex++;
+                setTimeout(loadLevel, 1500);
+            } else {
+                // Wrong
+                feedbackEl.textContent = "حاول مرة أخرى!";
+                feedbackEl.style.color = "var(--error)";
+                playSound(false);
+                inputEl.classList.add('shake');
+                setTimeout(() => inputEl.classList.remove('shake'), 500);
+            }
+        }
+
+        function updateProgress() {
+            const pct = ((currentIndex) / wordsList.length) * 100;
+            progressBar.style.width = pct + "%";
+        }
+
+        function endGame() {
+            gameActive = false;
+            progressBar.style.width = "100%";
+            document.querySelector('.game-area').innerHTML = `
+                <div style="text-align:center; padding: 40px;">
+                    <h2 style="font-size:3rem; margin-bottom:20px;">🎉 مبروك!</h2>
+                    <p style="font-size:1.5rem;">لقد أكملت جميع الكلمات بنجاح.</p>
+                    <p style="font-size:2rem; color:var(--primary); font-weight:bold; margin-top:10px;">نتيجتك: ${score} / 100</p>
+                    <button onclick="location.reload()" class="submit-btn" style="margin-top:30px;">لعب مرة أخرى 🔄</button>
+                </div>
+            `;
+        }
+
+        // Sound Synth
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(isCorrect) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            if (isCorrect) {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+            } else {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(100, audioCtx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+            }
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.2);
+        }
+
+        // Keyboard support
+        inputEl.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                checkAnswer();
+            }
+        });
+
+        // Start
+        loadLevel();
+
+    </script>
+</body>
+</html>
