@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مقياس أنماط التعلم VARK - </title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: #f8fafc;
+            color: #334155;
+            -webkit-print-color-adjust: exact;
+        }
+
+        /* تنسيق خاص لأزرار الاختيار */
+        .option-label {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        /* عند تحديد الخيار */
+        .option-input:checked + .option-content {
+            background-color: #eff6ff; /* blue-50 */
+            border-color: #3b82f6; /* blue-500 */
+            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1);
+        }
+        
+        .option-input:checked + .option-content .check-icon {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        /* تنسيق الطباعة */
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; }
+            #report-view { display: block !important; box-shadow: none; border: none; }
+            .print-break { page-break-before: always; }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="min-h-screen py-6 px-4">
+
+    <div id="quiz-view" class="max-w-4xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden">
+        
+        <header class="bg-gradient-to-r from-blue-700 to-indigo-800 text-white p-8 text-center relative overflow-hidden">
+            <div class="absolute opacity-10 top-0 left-0 transform -translate-x-10 -translate-y-10">
+                <i class="fas fa-shapes text-9xl"></i>
+            </div>
+            <h1 class="text-3xl md:text-4xl font-extrabold mb-2">مقياس أنماط التعلم (VARK)</h1>
+            <p class="text-blue-100 text-lg">النسخة المخصصة للطلاب والشباب</p>
+        </header>
+
+        <div class="p-8 bg-slate-50 border-b border-slate-200">
+            <div class="max-w-xl mx-auto">
+                <label class="block text-gray-700 font-bold mb-2">اسم الطالب:</label>
+                <div class="relative">
+                    <input type="text" id="username" placeholder="اكتب اسمك الثلاثي هنا..." 
+                           class="w-full pl-4 pr-12 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition shadow-sm text-lg">
+                    <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                        <i class="fas fa-user text-gray-400"></i>
+                    </div>
+                </div>
+                <div class="mt-4 bg-yellow-50 text-yellow-800 p-4 rounded-lg text-sm border border-yellow-200 flex items-start gap-3">
+                    <i class="fas fa-lightbulb mt-1 text-yellow-600"></i>
+                    <p>اختر الإجابة التي تصفك بدقة. يمكنك اختيار <strong>أكثر من إجابة</strong> للسؤال الواحد إذا كانت الخيارات تنطبق عليك بنفس الدرجة.</p>
+                </div>
+            </div>
+        </div>
+
+        <form id="quiz-form" class="p-6 md:p-10 space-y-8">
+            <div id="questions-container">
+                </div>
+
+            <div class="text-center pt-8 border-t border-gray-100">
+                <button type="button" onclick="calculateResults()" 
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-10 rounded-full shadow-lg transform transition hover:-translate-y-1 hover:shadow-xl text-lg flex items-center justify-center mx-auto gap-3">
+                    <span>تحليل النتائج</span>
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+            </div>
+        </form>
+        
+        <footer class="bg-gray-50 p-4 text-center text-xs text-gray-500 border-t">
+             تصميم وبرمجة: محمد مجممي | بناءً على نموذج VARK التعليمي
+        </footer>
+    </div>
+
+    <div id="report-view" class="hidden max-w-5xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden animate-fade-in my-8">
+        <div class="bg-slate-800 text-white p-6 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <h2 class="text-2xl font-bold">تقرير تحليل نمط التعلم</h2>
+                <p class="text-slate-400 text-sm">VARK Learning Styles Inventory</p>
+            </div>
+            <div class="text-left bg-slate-700 px-5 py-2 rounded-lg">
+                <div class="text-xs text-slate-400">الطالب</div>
+                <div id="report-name" class="font-bold text-lg text-blue-300">--</div>
+            </div>
+        </div>
+
+        <div class="p-8 md:p-12">
+            <div class="text-center mb-12">
+                <h3 class="text-sm font-bold text-gray-500 uppercase tracking-widest mb-2">نمطك الأساسي هو</h3>
+                <div id="dominant-title" class="text-4xl md:text-5xl font-black text-blue-800 mb-4">--</div>
+                <p id="dominant-desc" class="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">--</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                <div class="bg-gray-50 rounded-2xl p-6 border border-gray-100">
+                    <h4 class="font-bold text-gray-800 mb-6 border-b pb-2">توزيع الدرجات التفصيلي</h4>
+                    
+                    <div class="mb-5">
+                        <div class="flex justify-between mb-1">
+                            <span class="font-bold text-purple-700 flex items-center gap-2"><i class="fas fa-eye"></i> بصري (Visual)</span>
+                            <span id="score-v" class="font-bold text-gray-700">0</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-3">
+                            <div id="bar-v" class="bg-purple-500 h-3 rounded-full transition-all duration-1000" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-5">
+                        <div class="flex justify-between mb-1">
+                            <span class="font-bold text-yellow-600 flex items-center gap-2"><i class="fas fa-ear-listen"></i> سمعي (Aural)</span>
+                            <span id="score-a" class="font-bold text-gray-700">0</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-3">
+                            <div id="bar-a" class="bg-yellow-500 h-3 rounded-full transition-all duration-1000" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div class="mb-5">
+                        <div class="flex justify-between mb-1">
+                            <span class="font-bold text-blue-700 flex items-center gap-2"><i class="fas fa-book-open"></i> قرائي (Read/Write)</span>
+                            <span id="score-r" class="font-bold text-gray-700">0</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-3">
+                            <div id="bar-r" class="bg-blue-600 h-3 rounded-full transition-all duration-1000" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div class="mb-5">
+                        <div class="flex justify-between mb-1">
+                            <span class="font-bold text-red-600 flex items-center gap-2"><i class="fas fa-hand-holding-heart"></i> حركي (Kinesthetic)</span>
+                            <span id="score-k" class="font-bold text-gray-700">0</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-3">
+                            <div id="bar-k" class="bg-red-500 h-3 rounded-full transition-all duration-1000" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        <i class="fas fa-star text-yellow-500"></i> نصائح ذهبية لمذاكرتك:
+                    </h4>
+                    <div class="bg-blue-50 border-l-4 border-blue-500 p-5 rounded-r-lg">
+                        <ul id="tips-list" class="space-y-3 text-gray-700">
+                            </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-10 pt-6 border-t border-gray-200 flex justify-center gap-4 no-print">
+                <button onclick="window.print()" class="bg-gray-800 text-white px-6 py-2 rounded-lg hover:bg-gray-900 transition flex items-center gap-2">
+                    <i class="fas fa-print"></i> طباعة التقرير
+                </button>
+                <button onclick="location.reload()" class="bg-white border border-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-50 transition flex items-center gap-2">
+                    <i class="fas fa-redo"></i> اختبار جديد
+                </button>
+            </div>
+        </div>
+        
+        <footer class="bg-gray-50 p-4 text-center text-xs text-gray-500 border-t">
+             تصميم: محمد مجممي
+        </footer>
+    </div>
+
+    <script>
+        // === 1. قاعدة البيانات: أسئلة النسخة الطلابية (16 سؤال) ===
+        const questionsDB = [
+            {
+                id: 1,
+                text: "أنت بحاجة لتعلم كيفية لعب لعبة فيديو جديدة أو برنامج جديد. ماذا تفضل؟",
+                options: [
+                    { text: "أتبع الرسومات والمخططات المرفقة.", type: "V" },
+                    { text: "أقرأ التعليمات المكتوبة.", type: "R" },
+                    { text: "أسأل شخصاً جربها قبلي.", type: "A" },
+                    { text: "أبدأ اللعب مباشرة وأتعلم بالمحاولة.", type: "K" }
+                ]
+            },
+            {
+                id: 2,
+                text: "لست متأكداً من طريقة تهجئة (كتابة) كلمة معينة باللغة الإنجليزية أو العربية. ماذا تفعل؟",
+                options: [
+                    { text: "أبحث عنها في القاموس أو جوجل.", type: "R" },
+                    { text: "أتخيل شكل الكلمة في ذهني لأرى إن كانت تبدو صحيحة.", type: "V" },
+                    { text: "أنطقها بصوت عالٍ لأسمع إن كانت صحيحة.", type: "A" },
+                    { text: "أكتبها بيدي لأشعر إن كانت صحيحة.", type: "K" }
+                ]
+            },
+            {
+                id: 3,
+                text: "تخطط لرحلة مدرسية أو عائلية. ما الذي يثير حماسك أكثر؟",
+                options: [
+                    { text: "التحدث مع الآخرين وسماع تجاربهم.", type: "A" },
+                    { text: "مشاهدة صور وخرائط للمكان.", type: "V" },
+                    { text: "قراءة الجدول الزمني والتفاصيل المكتوبة.", type: "R" },
+                    { text: "تخيل الأنشطة والحركة التي ستقوم بها هناك.", type: "K" }
+                ]
+            },
+            {
+                id: 4,
+                text: "تريد شراء هاتف محمول جديد. ما الذي يؤثر في قرارك؟",
+                options: [
+                    { text: "الإمساك بالهاتف وتجربة وزنه وملمسه.", type: "K" },
+                    { text: "قراءة المواصفات التقنية المكتوبة.", type: "R" },
+                    { text: "سؤال البائع أو الأصدقاء عن رأيهم.", type: "A" },
+                    { text: "شكل الهاتف، ألوانه، وتصميمه.", type: "V" }
+                ]
+            },
+            {
+                id: 5,
+                text: "عند تعلم درس جديد في الفصل، ما الذي يساعدك أكثر؟",
+                options: [
+                    { text: "الصور والرسوم البيانية على السبورة.", type: "V" },
+                    { text: "الاستماع لشرح المعلم والنقاش.", type: "A" },
+                    { text: "قراءة الكتاب أو الملخص.", type: "R" },
+                    { text: "القيام بنشاط عملي أو تجربة.", type: "K" }
+                ]
+            },
+            {
+                id: 6,
+                text: "لديك مشكلة في تركيب لعبة أو جهاز. ماذا تفعل؟",
+                options: [
+                    { text: "تطلب من شخص أن يخبرك كيف تركبها.", type: "A" },
+                    { text: "تنظر للصور في الكتالوج.", type: "V" },
+                    { text: "تقرأ خطوات التركيب.", type: "R" },
+                    { text: "تحاول التركيب بيدك وتجرب حتى تنجح.", type: "K" }
+                ]
+            },
+            {
+                id: 7,
+                text: "تريد وصف الطريق لمنزلك لصديقك. ماذا تفعل؟",
+                options: [
+                    { text: "ترسم له خريطة.", type: "V" },
+                    { text: "تكتب له العنوان بالتفصيل.", type: "R" },
+                    { text: "تصف له الطريق بالكلام.", type: "A" },
+                    { text: "تذهب معه أو تطلب منه أن يتبعك.", type: "K" }
+                ]
+            },
+            {
+                id: 8,
+                text: "تود أن تخبر شخصاً عن قصة حدثت معك. كيف تفضل ذلك؟",
+                options: [
+                    { text: "تكتبها له في رسالة.", type: "R" },
+                    { text: "تتصل به وتحكيها.", type: "A" },
+                    { text: "تمثل الأحداث بحركات جسمك.", type: "K" },
+                    { text: "تريه صوراً أو فيديو للحدث.", type: "V" }
+                ]
+            },
+            {
+                id: 9,
+                text: "المعلم طلب مشروعاً إضافياً. ماذا تختار؟",
+                options: [
+                    { text: "كتابة مقال أو تقرير.", type: "R" },
+                    { text: "صنع مجسم أو تجربة عملية.", type: "K" },
+                    { text: "تقديم عرض شفهي (إلقاء).", type: "A" },
+                    { text: "تصميم لوحة مليئة بالصور والرسومات.", type: "V" }
+                ]
+            },
+            {
+                id: 10,
+                text: "أنت في مطعم وتختار وجبة. ماذا تفعل؟",
+                options: [
+                    { text: "تختار شيئاً جربته سابقاً وتعرف طعمه.", type: "K" },
+                    { text: "تسأل النادل عما ينصحك به.", type: "A" },
+                    { text: "تختار بناءً على صور الطعام في القائمة.", type: "V" },
+                    { text: "تقرأ مكونات الوجبة المكتوبة.", type: "R" }
+                ]
+            },
+            {
+                id: 11,
+                text: "تفضل المعلم الذي يستخدم:",
+                options: [
+                    { text: "الرحلات الميدانية والنماذج.", type: "K" },
+                    { text: "الكتب والنصوص الموزعة.", type: "R" },
+                    { text: "المناقشات والأسئلة.", type: "A" },
+                    { text: "المخططات والألوان.", type: "V" }
+                ]
+            },
+            {
+                id: 12,
+                text: "لتتذكر معلومة للاختبار، ماذا تفعل؟",
+                options: [
+                    { text: "ترددها بصوت عالٍ.", type: "A" },
+                    { text: "تتذكر مكانها في الصفحة (شكلها).", type: "V" },
+                    { text: "تكتبها عدة مرات.", type: "R" },
+                    { text: "تتذكر المثال العملي الذي قمت به.", type: "K" }
+                ]
+            },
+            {
+                id: 13,
+                text: "ما الذي يشد انتباهك في الفيديو التعليمي؟",
+                options: [
+                    { text: "الجرافيكس والرسوم المتحركة.", type: "V" },
+                    { text: "صوت المعلق والشرح.", type: "A" },
+                    { text: "النصوص المكتوبة على الشاشة.", type: "R" },
+                    { text: "مشاهدة التطبيق العملي باليد.", type: "K" }
+                ]
+            },
+            {
+                id: 14,
+                text: "لديك مجموعة بيانات تريد ترتيبها. كيف تعرضها؟",
+                options: [
+                    { text: "رسوم بيانية (أعمدة ودوائر).", type: "V" },
+                    { text: "تقرير مكتوب.", type: "R" },
+                    { text: "أمثلة واقعية ملموسة.", type: "K" },
+                    { text: "شرح شفهي.", type: "A" }
+                ]
+            },
+            {
+                id: 15,
+                text: "كيف تحب معرفة نتيجتك في المسابقة؟",
+                options: [
+                    { text: "قراءة النتيجة المكتوبة.", type: "R" },
+                    { text: "أن يخبرك الحكم شفهياً.", type: "A" },
+                    { text: "رؤية رسم بياني لمستواك.", type: "V" },
+                    { text: "الحصول على جائزة ملموسة.", type: "K" }
+                ]
+            },
+            {
+                id: 16,
+                text: "تود تعلم مهارة يدوية (كالرسم أو النجارة). ماذا تفضل؟",
+                options: [
+                    { text: "مشاهدة صور للمراحل.", type: "V" },
+                    { text: "البدء بالعمل وتجربة الأدوات.", type: "K" },
+                    { text: "قراءة كتاب تعليمي.", type: "R" },
+                    { text: "الاستماع لنصائح خبير.", type: "A" }
+                ]
+            }
+        ];
+
+        // === 2. قاعدة البيانات: النصوص والتوصيات ===
+        const stylesInfo = {
+            "V": {
+                name: "النمط البصري (Visual)",
+                desc: "أنت تتعلم بعينيك! تحب الألوان، الصور، والخرائط الذهنية. الكلمات الكثيرة قد تسبب لك الملل.",
+                tips: [
+                    "استخدم الأقلام الملونة (Highlighters) لتحديد العناوين.",
+                    "حول المعلومات النصية إلى خرائط ذهنية ورسومات.",
+                    "شاهد فيديوهات يوتيوب تشرح الدرس بالصور.",
+                    "في الاختبار، حاول تذكر 'شكل' الصفحة."
+                ]
+            },
+            "A": {
+                name: "النمط السمعي (Aural)",
+                desc: "أذناك هما مفتاح تفوقك. تحب الاستماع للشرح والنقاش مع زملائك. القراءة الصامتة قد لا تكفيك.",
+                tips: [
+                    "سجل شرح المعلم (بعد استئذانه) وأعد سماعه.",
+                    "ناقش الدروس مع زملائك واشرح لهم.",
+                    "اقرأ ملخصاتك بصوت عالٍ.",
+                    "تجنب المذاكرة في الأماكن المزعجة."
+                ]
+            },
+            "R": {
+                name: "النمط القرائي/الكتابي (Read/Write)",
+                desc: "صديق الكتاب والقلم! أنت منظم وتحب التلخيص والقوائم. تفهم بشكل أفضل عندما تقرأ وتكتب بنفسك.",
+                tips: [
+                    "لخص الدروس بأسلوبك وأعد كتابتها.",
+                    "استخدم القوائم والنقاط (1، 2، 3) لترتيب أفكارك.",
+                    "اقرأ الكتاب المدرسي بعناية.",
+                    "حول الرسومات والمخططات إلى كلمات تصفها."
+                ]
+            },
+            "K": {
+                name: "النمط الحركي (Kinesthetic)",
+                desc: "أنت لا تحب الجلوس طويلاً! تتعلم بيديك ومن خلال التجربة والممارسة. الواقع هو أفضل معلم لك.",
+                tips: [
+                    "اربط الدرس بمثال واقعي من حياتك.",
+                    "تحرك أثناء الحفظ (امشِ في الغرفة).",
+                    "قم بعمل تجارب أو نماذج بيدك.",
+                    "حل نماذج اختبارات سابقة بيدك كتدريب عملي."
+                ]
+            },
+            "Multi": {
+                name: "متعدد الأنماط (Multimodal)",
+                desc: "أنت طالب مرن! تمتلك ميزة رائعة وهي القدرة على التنقل بين الأساليب المختلفة حسب المادة والموقف.",
+                tips: [
+                    "لا تحصر نفسك في طريقة واحدة.",
+                    "إذا استصعبت الحفظ، جرب الكتابة، وإذا مللت، جرب الرسم.",
+                    "نوع مصادرك: كتب، فيديوهات، وتجارب عملية."
+                ]
+            }
+        };
+
+        // === 3. دوال التشغيل ===
+        function init() {
+            const container = document.getElementById('questions-container');
+            
+            questionsDB.forEach(q => {
+                const card = document.createElement('div');
+                card.className = "bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all";
+                
+                // خلط ترتيب الخيارات عشوائياً لعدم التحيز (اختياري، هنا تركناها ثابتة للترتيب المنطقي)
+                
+                let optionsHTML = q.options.map(opt => `
+                    <label class="option-label block group relative">
+                        <input type="checkbox" name="q${q.id}" value="${opt.type}" class="option-input sr-only">
+                        <div class="option-content p-4 rounded-xl border border-gray-200 mt-3 flex items-center justify-between hover:bg-gray-50">
+                            <span class="text-gray-700 font-medium select-none">${opt.text}</span>
+                            <div class="check-icon w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center transition-all duration-200 bg-white">
+                                <i class="fas fa-check text-xs opacity-100"></i>
+                            </div>
+                        </div>
+                    </label>
+                `).join('');
+
+                card.innerHTML = `
+                    <div class="flex gap-4 mb-2">
+                        <span class="flex-shrink-0 bg-blue-100 text-blue-700 font-bold w-8 h-8 rounded-full flex items-center justify-center">${q.id}</span>
+                        <h3 class="text-lg font-bold text-gray-800 pt-1">${q.text}</h3>
+                    </div>
+                    <div class="pr-12 grid grid-cols-1 md:grid-cols-2 gap-3">
+                        ${optionsHTML}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function calculateResults() {
+            const scores = { V: 0, A: 0, R: 0, K: 0 };
+            let answered = 0;
+
+            questionsDB.forEach(q => {
+                const checked = document.querySelectorAll(`input[name="q${q.id}"]:checked`);
+                if (checked.length > 0) answered++;
+                checked.forEach(input => scores[input.value]++);
+            });
+
+            if (answered === 0) {
+                alert("يرجى الإجابة على الأسئلة أولاً!");
+                return;
+            }
+
+            // إظهار التقرير
+            document.getElementById('quiz-view').classList.add('hidden');
+            document.getElementById('report-view').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            // تعبئة البيانات
+            const name = document.getElementById('username').value || "طالب مجتهد";
+            document.getElementById('report-name').innerText = name;
+
+            // تحديث الأرقام والبارات
+            const total = (scores.V + scores.A + scores.R + scores.K) || 1;
+            
+            updateStat('v', scores.V, total);
+            updateStat('a', scores.A, total);
+            updateStat('r', scores.R, total);
+            updateStat('k', scores.K, total);
+
+            // تحديد النمط السائد
+            const maxVal = Math.max(scores.V, scores.A, scores.R, scores.K);
+            const winners = Object.keys(scores).filter(k => scores[k] === maxVal);
+            
+            let resultKey = (winners.length > 1 || (maxVal - getSecondMax(scores)) <= 2) ? "Multi" : winners[0];
+            
+            // في حالة المتعدد، نختار "Multi" إلا لو كان الفرق كبير جداً
+            // هنا بسطنا المنطق: إذا كان هناك تعادل في القمة فهو متعدد
+            
+            const info = stylesInfo[resultKey];
+            document.getElementById('dominant-title').innerText = info.name;
+            document.getElementById('dominant-desc').innerText = info.desc;
+
+            // تعبئة النصائح
+            const tipsList = document.getElementById('tips-list');
+            tipsList.innerHTML = "";
+            
+            if (resultKey === "Multi") {
+                 info.tips.forEach(t => addTip(t, tipsList));
+                 // إضافة نصيحة من أقوى نمطين
+                 winners.forEach(w => {
+                     addTip(`نصيحة إضافية (${stylesInfo[w].name}): ${stylesInfo[w].tips[0]}`, tipsList);
+                 });
+            } else {
+                info.tips.forEach(t => addTip(t, tipsList));
+            }
+        }
+
+        function getSecondMax(scores) {
+            const values = Object.values(scores).sort((a,b) => b-a);
+            return values[1] || 0;
+        }
+
+        function updateStat(key, val, total) {
+            document.getElementById(`score-${key}`).innerText = val;
+            setTimeout(() => {
+                document.getElementById(`bar-${key}`).style.width = Math.round((val/total)*100) + "%";
+            }, 300);
+        }
+
+        function addTip(text, list) {
+            const li = document.createElement('li');
+            li.innerHTML = `<i class="fas fa-check-circle text-green-500 ml-2"></i> ${text}`;
+            li.className = "flex items-start";
+            list.appendChild(li);
+        }
+
+        // بدء التطبيق
+        init();
+    </script>
+</body>
+</html>
