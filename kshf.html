@@ -3,64 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>كشف المتابعة الذكي | أ. محمد مجممي</title>
+    <title>تطبيق المتابعة الذكي | أ. محمد مجممي</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary: #0f172a; --accent: #3b82f6; --success: #10b981;
-            --warning: #f59e0b; --danger: #ef4444; --bg: #f1f5f9;
+            --primary: #1e3a8a; --accent: #3b82f6; --success: #10b981;
+            --warning: #f59e0b; --danger: #ef4444; --bg: #f8fafc;
         }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding-bottom: 100px; color: #1e293b; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding-bottom: 100px; color: #1e293b; -webkit-tap-highlight-color: transparent; }
         
         /* الهيدر ومركز النسخ الاحتياطي */
-        header { 
-            background: var(--primary); color: white; padding: 15px; 
-            text-align: center; border-radius: 0 0 20px 20px;
-        }
-        .backup-zone {
-            display: flex; justify-content: space-around; background: #1e293b;
-            padding: 10px; margin-top: 10px; border-radius: 10px; font-size: 0.8em;
-        }
-        .btn-backup { background: #334155; color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; }
+        header { background: var(--primary); color: white; padding: 15px; text-align: center; border-radius: 0 0 20px 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .backup-zone { display: flex; justify-content: center; gap: 10px; background: rgba(255,255,255,0.1); padding: 10px; margin-top: 10px; border-radius: 12px; }
+        .btn-backup { background: white; color: var(--primary); border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 0.8em; font-weight: bold; }
 
-        /* التحكم */
+        /* التحكم العلوي */
         .sticky-nav { position: sticky; top: 0; background: var(--bg); padding: 10px; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; }
-        select { padding: 12px; border-radius: 12px; border: 1px solid #cbd5e1; font-weight: bold; background: white; font-size: 0.85em; }
+        select { padding: 12px; border-radius: 12px; border: 2.5px solid #e2e8f0; font-weight: bold; background: white; font-size: 0.85em; outline: none; transition: 0.3s; }
+        select:focus { border-color: var(--accent); }
 
         /* بطاقة الطالب */
-        .s-card { background: white; margin: 12px; border-radius: 15px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .s-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .s-name { font-weight: 800; font-size: 0.95em; line-height: 1.4; flex: 1; }
+        .s-card { background: white; margin: 12px; border-radius: 18px; padding: 15px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-right: 6px solid var(--primary); }
+        .s-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .s-name { font-weight: 800; font-size: 0.95em; color: #0f172a; flex: 1; margin-left: 10px; }
 
-        /* نمط التعلم - خلية واحدة تتبدل */
-        .style-cell { 
-            padding: 6px 12px; border-radius: 10px; font-size: 0.75em; font-weight: bold; 
-            cursor: pointer; border: 2px solid transparent; min-width: 60px; text-align: center;
-        }
-        .st-none { background: #f8fafc; color: #94a3b8; border-color: #e2e8f0; }
+        /* نمط التعلم التفاعلي */
+        .style-cell { padding: 6px 12px; border-radius: 10px; font-size: 0.75em; font-weight: bold; cursor: pointer; border: 2px solid transparent; min-width: 65px; text-align: center; transition: 0.2s; }
+        .st-none { background: #f1f5f9; color: #64748b; border-color: #e2e8f0; }
         .st-visual { background: #eff6ff; color: #2563eb; border-color: #2563eb; }
         .st-auditory { background: #faf5ff; color: #9333ea; border-color: #9333ea; }
         .st-kinesthetic { background: #fff7ed; color: #ea580c; border-color: #ea580c; }
 
-        /* الحضور */
+        /* أزرار الحضور */
         .att-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-bottom: 15px; }
-        .att-btn { padding: 10px; border-radius: 10px; border: 1px solid #e2e8f0; font-size: 0.8em; font-weight: bold; text-align: center; background: #fff; }
+        .att-btn { padding: 10px; border-radius: 10px; border: 1.5px solid #e2e8f0; font-size: 0.8em; font-weight: bold; text-align: center; background: #fff; color: #64748b; }
         .att-btn.active.P { background: var(--success); color: white; border-color: var(--success); }
         .att-btn.active.L { background: var(--warning); color: black; border-color: var(--warning); }
         .att-btn.active.A { background: var(--danger); color: white; border-color: var(--danger); }
 
-        /* العدادات */
-        .counter-row { display: flex; align-items: center; justify-content: space-between; background: #f8fafc; margin-top: 5px; padding: 8px 12px; border-radius: 12px; }
-        .btn-math { width: 38px; height: 38px; border-radius: 10px; border: none; color: white; display: flex; align-items: center; justify-content: center; font-size: 1.2em; }
+        /* عدادات النقاط (+ / -) */
+        .counter-row { display: flex; align-items: center; justify-content: space-between; background: #f8fafc; margin-top: 6px; padding: 8px 12px; border-radius: 12px; border: 1px solid #f1f5f9; }
+        .math-group { display: flex; align-items: center; gap: 12px; }
+        .btn-math { width: 38px; height: 38px; border-radius: 12px; border: none; color: white; font-size: 1.2em; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .btn-p { background: var(--success); }
         .btn-m { background: var(--danger); }
-        .count-val { font-weight: 800; font-size: 1.1em; min-width: 25px; text-align: center; }
+        .count-val { font-weight: 800; font-size: 1.1em; min-width: 25px; text-align: center; color: #1e293b; }
 
-        /* التنقل السفلي */
-        .b-nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; padding: 12px 0; box-shadow: 0 -5px 20px rgba(0,0,0,0.1); }
-        .nav-item { flex: 1; text-align: center; color: #94a3b8; font-size: 0.75em; border: none; background: none; font-weight: bold; }
+        /* زر التصدير المستقل */
+        .btn-export-ind { width: 100%; margin-top: 12px; padding: 10px; border-radius: 10px; border: 1.5px solid var(--accent); background: #f0f7ff; color: var(--accent); font-weight: bold; font-size: 0.8em; cursor: pointer; }
+
+        /* شريط التنقل السفلي */
+        .b-nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; padding: 12px 0; box-shadow: 0 -5px 20px rgba(0,0,0,0.1); border-top: 1px solid #f1f5f9; }
+        .nav-item { flex: 1; text-align: center; color: #94a3b8; font-size: 0.75em; border: none; background: none; font-weight: bold; outline: none; }
         .nav-item.active { color: var(--accent); }
         .nav-item i { font-size: 1.8em; display: block; margin-bottom: 4px; }
 
@@ -71,12 +67,12 @@
 <body>
 
 <header>
-    <div style="font-weight: bold; font-size: 1.1em;">نظام المتابعة - أ/ محمد مجممي</div>
-    <div style="font-size: 0.8em; opacity: 0.8;">المدير: فهد القحطاني | عام 2026</div>
+    <div style="font-weight: bold; font-size: 1.1em;">كشف المتابعة الإلكتروني - 2026</div>
+    <div style="font-size: 0.8em; opacity: 0.9; margin-top: 5px;">أ/ محمد مجممي <i class="fas fa-arrow-left" style="font-size:0.7em;"></i> م/ فهد القحطاني</div>
     
     <div class="backup-zone">
-        <button class="btn-backup" onclick="exportData()"><i class="fas fa-file-export"></i> تصدير نسخة</button>
-        <button class="btn-backup" onclick="document.getElementById('fileInput').click()"><i class="fas fa-file-import"></i> استيراد نسخة</button>
+        <button class="btn-backup" onclick="exportData()"><i class="fas fa-download"></i> نسخة احتياطية</button>
+        <button class="btn-backup" onclick="document.getElementById('fileInput').click()"><i class="fas fa-upload"></i> استعادة</button>
         <input type="file" id="fileInput" style="display:none" onchange="importData(event)">
     </div>
 </header>
@@ -100,15 +96,15 @@
 
 <div id="stats-page" class="page" style="padding: 10px;">
     <div class="s-card" style="text-align: center;">
-        <h4>انضباط الفصل (تراكمي)</h4>
-        <canvas id="classChart"></canvas>
+        <h4 style="margin-top:0">توزيع انضباط الفصل</h4>
+        <div style="max-width: 250px; margin: 0 auto;"><canvas id="classChart"></canvas></div>
     </div>
     <div id="indStats"></div>
 </div>
 
 <nav class="b-nav">
-    <button class="nav-item active" onclick="showPage('track', this)"><i class="fas fa-tasks"></i>الرصد</button>
-    <button class="nav-item" onclick="showPage('stats', this); updateStats();"><i class="fas fa-chart-bar"></i>التقارير</button>
+    <button class="nav-item active" onclick="showPage('track', this)"><i class="fas fa-pencil-alt"></i>الرصد</button>
+    <button class="nav-item" onclick="showPage('stats', this); updateStats();"><i class="fas fa-file-invoice"></i>التقارير</button>
 </nav>
 
 <script>
@@ -118,7 +114,7 @@
         "203": ["أحمد عبدالله ابن عطيه الحصيني","أسامه فهد دخيل الله الزهراني","اصيل ايمن حمدان السريحى","البراء احمد عبدالله القرشي","ايمن خالد مستور الطويرقي","بتال رائد عبدالله الطويرقي","ثامر ابراهيم احمد الثمالي","راكان سعد عيد العصيمي","ريان ماجد ابن علي المالكي","سلطان عبدالحميد عبدالله آل حميدان","سهيل قاسم عبيدالله القرشي","سيف محمد معيش القرشي","طلال علي جمعان الزهراني","عبدالعزيز خلف الله مرزوق القرشي","عبدالعزيز سعود رجاء الحصيني","عبدالله عبدالرحمن دغش القحطاني","عبدالله عبدالعزيز عبيد الدهيسي","عبدالله علي جمعان الزهراني","عصام عواض بن صالح الخديدي","عناد محمد احمد مجرشي","فارس مشرف صالح المالكي","فيصل سليمان بادي الطويرقي","فيصل فهد حمود الطويرقي","مشعل سعد خالد الحارثي","هتان محمد جنيدب القرشي"]
     };
 
-    let db = JSON.parse(localStorage.getItem('teacher_db_2026_pro')) || {};
+    let db = JSON.parse(localStorage.getItem('teacher_db_final')) || {};
 
     const classSel = document.getElementById('classSel');
     for(let c in studentNames) {
@@ -127,7 +123,7 @@
     }
 
     const weekSel = document.getElementById('weekSel');
-    for(let i=1; i<=16; i++) weekSel.innerHTML += `<option value="${i}">أسبوع ${i}</option>`;
+    for(let i=1; i<=16; i++) weekSel.innerHTML += `<option value="${i}">الأسبوع ${i}</option>`;
 
     function render() {
         const cls = classSel.value;
@@ -140,7 +136,6 @@
         db[cls].forEach((s, idx) => {
             if(!s.data[key]) s.data[key] = { att:'', part:0, hw:0, int:0 };
             const d = s.data[key];
-
             const card = document.createElement('div');
             card.className = 's-card';
             card.innerHTML = `
@@ -155,7 +150,7 @@
                 </div>
                 ${createCounter(cls, idx, 'part', 'المشاركة', d.part)}
                 ${createCounter(cls, idx, 'hw', 'الواجبات', d.hw)}
-                ${createCounter(cls, idx, 'int', 'التفاعل', d.int)}
+                ${createCounter(cls, idx, 'int', 'التفاعل الصفي', d.int)}
             `;
             list.appendChild(card);
         });
@@ -164,8 +159,8 @@
     function createCounter(cls, idx, key, label, val) {
         return `
             <div class="counter-row">
-                <span style="font-size:0.85em; font-weight:bold;">${label}</span>
-                <div style="display:flex; align-items:center; gap:12px;">
+                <span style="font-size:0.85em; font-weight:bold; color:#475569;">${label}</span>
+                <div class="math-group">
                     <button class="btn-math btn-m" onclick="updateVal('${cls}',${idx},'${key}',-1)"><i class="fas fa-minus"></i></button>
                     <span class="count-val">${val}</span>
                     <button class="btn-math btn-p" onclick="updateVal('${cls}',${idx},'${key}',1)"><i class="fas fa-plus"></i></button>
@@ -174,8 +169,8 @@
     }
 
     function updateVal(cls, idx, key, delta) {
-        const sessionKey = `${weekSel.value}_${document.getElementById('sessionSel').value}`;
-        db[cls][idx].data[sessionKey][key] += delta;
+        const sKey = `${weekSel.value}_${document.getElementById('sessionSel').value}`;
+        db[cls][idx].data[sKey][key] += delta;
         save(); render();
     }
 
@@ -185,39 +180,28 @@
         save(); render();
     }
 
-    function getStyleAr(s) { return { none:'النمط', visual:'بصري', auditory:'سمعي', kinesthetic:'حركي' }[s]; }
+    function getStyleAr(s) { return { none:'النمط؟', visual:'بصري', auditory:'سمعي', kinesthetic:'حركي' }[s]; }
 
     function setAtt(cls, idx, v) {
-        const sessionKey = `${weekSel.value}_${document.getElementById('sessionSel').value}`;
-        db[cls][idx].data[sessionKey].att = (db[cls][idx].data[sessionKey].att === v) ? '' : v;
+        const sKey = `${weekSel.value}_${document.getElementById('sessionSel').value}`;
+        db[cls][idx].data[sKey].att = (db[cls][idx].data[sKey].att === v) ? '' : v;
         save(); render();
     }
 
-    function save() { localStorage.setItem('teacher_db_2026_pro', JSON.stringify(db)); }
+    function save() { localStorage.setItem('teacher_db_final', JSON.stringify(db)); }
 
     function exportData() {
-        const dataStr = JSON.stringify(db);
-        const blob = new Blob([dataStr], {type: "application/json"});
-        const url = URL.createObjectURL(blob);
+        const blob = new Blob([JSON.stringify(db)], {type: "application/json"});
         const a = document.createElement('a');
-        a.href = url;
-        a.download = `backup_kashf_${new Date().toLocaleDateString()}.json`;
+        a.href = URL.createObjectURL(blob);
+        a.download = `كشف_محمد_مجممي_${new Date().toLocaleDateString()}.json`;
         a.click();
     }
 
     function importData(event) {
-        const file = event.target.files[0];
-        if (!file) return;
         const reader = new FileReader();
-        reader.onload = function(e) {
-            try {
-                const imported = JSON.parse(e.target.result);
-                db = imported;
-                save(); render();
-                alert("تم استيراد البيانات بنجاح!");
-            } catch (err) { alert("ملف غير صالح!"); }
-        };
-        reader.readAsText(file);
+        reader.onload = (e) => { db = JSON.parse(e.target.result); save(); render(); alert("تمت الاستعادة بنجاح!"); };
+        reader.readAsText(event.target.files[0]);
     }
 
     function showPage(p, btn) {
@@ -235,34 +219,83 @@
         area.innerHTML = '';
         let total = { P:0, L:0, A:0 };
 
-        db[cls].forEach(s => {
-            let sum = { p:0, l:0, a:0, pts:0 };
+        db[cls].forEach((s, idx) => {
+            let sum = { p:0, l:0, a:0, part:0, hw:0, int:0 };
             Object.values(s.data).forEach(v => {
                 if(v.att==='P') sum.p++; if(v.att==='L') sum.l++; if(v.att==='A') sum.a++;
-                sum.pts += (v.part + v.hw + v.int);
+                sum.part += v.part; sum.hw += v.hw; sum.int += v.int;
             });
             total.P += sum.p; total.L += sum.l; total.A += sum.a;
+            
             area.innerHTML += `
                 <div class="s-card">
-                    <strong>${s.name}</strong>
-                    <div style="display:grid; grid-template-columns: repeat(4,1fr); gap:5px; margin-top:10px; text-align:center; font-size:0.7em;">
-                        <div style="background:#dcfce7; padding:5px; border-radius:5px">ح:${sum.p}</div>
-                        <div style="background:#fef3c7; padding:5px; border-radius:5px">ت:${sum.l}</div>
-                        <div style="background:#fee2e2; padding:5px; border-radius:5px">غ:${sum.a}</div>
-                        <div style="background:#dbeafe; padding:5px; border-radius:5px">نقاط:${sum.pts}</div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <strong>${s.name}</strong>
+                        <span style="font-size:0.75em; color:var(--accent); font-weight:bold;">${getStyleAr(s.style)}</span>
                     </div>
+                    <div style="display:grid; grid-template-columns: repeat(4,1fr); gap:5px; margin-top:10px; text-align:center; font-size:0.7em; font-weight:bold;">
+                        <div style="background:#dcfce7; padding:5px; border-radius:5px; color:#166534;">ح: ${sum.p}</div>
+                        <div style="background:#fef3c7; padding:5px; border-radius:5px; color:#92400e;">ت: ${sum.l}</div>
+                        <div style="background:#fee2e2; padding:5px; border-radius:5px; color:#991b1b;">غ: ${sum.a}</div>
+                        <div style="background:#e0f2fe; padding:5px; border-radius:5px; color:#075985;">نقاط: ${sum.part+sum.hw+sum.int}</div>
+                    </div>
+                    <button class="btn-export-ind" onclick="exportStudentReport('${cls}', ${idx})">
+                        <i class="fas fa-file-pdf"></i> تصدير تقرير الطالب المستقل
+                    </button>
                 </div>`;
         });
 
         const ctx = document.getElementById('classChart').getContext('2d');
         if(myChart) myChart.destroy();
         myChart = new Chart(ctx, {
-            type: 'pie',
-            data: {
-                labels: ['حاضر', 'متأخر', 'غائب'],
-                datasets: [{ data: [total.P, total.L, total.A], backgroundColor: ['#10b981', '#f59e0b', '#ef4444'] }]
-            }
+            type: 'doughnut',
+            data: { labels:['حاضر','متأخر','غائب'], datasets:[{ data:[total.P, total.L, total.A], backgroundColor:['#10b981','#f59e0b','#ef4444'] }] }
         });
+    }
+
+    function exportStudentReport(cls, idx) {
+        const s = db[cls][idx];
+        let sum = { p:0, l:0, a:0, part:0, hw:0, int:0 };
+        Object.values(s.data).forEach(v => {
+            if(v.att==='P') sum.p++; if(v.att==='L') sum.l++; if(v.att==='A') sum.a++;
+            sum.part += v.part; sum.hw += v.hw; sum.int += v.int;
+        });
+
+        const printWin = window.open('', '', 'width=800,height=900');
+        printWin.document.write(`
+            <div dir="rtl" style="font-family:'Segoe UI', Tahoma; padding:40px; border:10px double #1e3a8a; color:#1e3a8a;">
+                <div style="text-align:center; margin-bottom:30px;">
+                    <h1 style="margin:0;">بطاقة أداء الطالب</h1>
+                    <p style="font-size:1.2em;">الفصل الدراسي - 2026</p>
+                </div>
+                <div style="font-size:1.1em; line-height:2;">
+                    <p><strong>اسم الطالب:</strong> ${s.name}</p>
+                    <p><strong>الفصل:</strong> ${cls} | <strong>نمط التعلم:</strong> ${getStyleAr(s.style)}</p>
+                </div>
+                <table style="width:100%; border-collapse:collapse; margin-top:20px; text-align:center;">
+                    <thead>
+                        <tr style="background:#1e3a8a; color:white;">
+                            <th style="padding:15px; border:1px solid #1e3a8a;">البند</th>
+                            <th style="padding:15px; border:1px solid #1e3a8a;">الإحصائية التراكمية</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td style="padding:12px; border:1px solid #ddd;">أيام الحضور</td><td style="border:1px solid #ddd;">${sum.p}</td></tr>
+                        <tr><td style="padding:12px; border:1px solid #ddd;">مرات التأخير</td><td style="border:1px solid #ddd;">${sum.l}</td></tr>
+                        <tr><td style="padding:12px; border:1px solid #ddd;">مرات الغياب</td><td style="border:1px solid #ddd;">${sum.a}</td></tr>
+                        <tr><td style="padding:12px; border:1px solid #ddd; background:#f8fafc;">نقاط المشاركة والتفاعل</td><td style="border:1px solid #ddd; background:#f8fafc; font-weight:bold;">${sum.part + sum.int}</td></tr>
+                        <tr><td style="padding:12px; border:1px solid #ddd; background:#f8fafc;">نقاط الواجبات</td><td style="border:1px solid #ddd; background:#f8fafc; font-weight:bold;">${sum.hw}</td></tr>
+                    </tbody>
+                </table>
+                <div style="margin-top:50px; display:flex; justify-content:space-between; border-top:2px solid #eee; padding-top:20px;">
+                    <div style="text-align:center;">معلم المادة<br><strong>محمد مجممي</strong></div>
+                    <div style="text-align:center;">مدير المدرسة<br><strong>فهد القحطاني</strong></div>
+                </div>
+                <div style="text-align:center; margin-top:40px; font-size:0.8em; color:#666;">تم إنشاء هذا التقرير إلكترونياً</div>
+            </div>
+        `);
+        printWin.document.close();
+        printWin.print();
     }
 
     render();
