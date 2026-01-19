@@ -3,98 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>تطبيق تتيع دخول الحصص - ثانوية دار التوحيد</title>
+    <title>تطبيق ثانوية دار التوحيد</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap');
-        body { font-family: 'Tajawal', sans-serif; background-color: #f3f4f6; overflow-x: hidden; }
+        body { font-family: 'Tajawal', sans-serif; background-color: #f0f2f5; }
         
-        .sticky-name { position: sticky; right: 0; background: white; z-index: 20; border-left: 2px solid #e5e7eb; box-shadow: -2px 0 5px rgba(0,0,0,0.05); }
+        /* تثبيت عمود الاسم للجوال */
+        .sticky-col { position: sticky; right: 0; background: white; z-index: 20; border-left: 2px solid #ddd; }
         
-        /* ألوان الحالات */
-        .s-0 { background-color: #f9fafb; color: #9ca3af; }
-        .s-1 { background-color: #10b981 !important; color: white !important; } /* أخضر */
+        /* حالات الحصص */
+        .s-0 { background-color: #f8fafc; color: #94a3b8; }
+        .s-1 { background-color: #22c55e !important; color: white !important; } /* أخضر */
         .s-2 { background-color: #f59e0b !important; color: white !important; } /* برتقالي */
         .s-3 { background-color: #ef4444 !important; color: white !important; } /* أحمر */
-        .s-4 { background-color: #111827 !important; color: white !important; } /* X أسود */
+        .s-4 { background-color: #000 !important; color: white !important; } /* X غياب */
 
         @media print {
             .no-print { display: none !important; }
-            .print-only { display: block !important; }
             body { background: white; padding: 0; }
-            .sticky-name { position: static !important; box-shadow: none !important; }
-            table { width: 100% !important; border-collapse: collapse !important; border: 1px solid #000 !important; }
-            th, td { border: 1px solid #000 !important; -webkit-print-color-adjust: exact; font-size: 12px !important; }
-            .report-header { background: #1e3a8a !important; color: white !important; -webkit-print-color-adjust: exact; padding: 15px; border-radius: 5px; margin-bottom: 10px; }
+            .sticky-col { position: static !important; border: 1px solid #000 !important; }
+            table { width: 100% !important; border-collapse: collapse !important; }
+            th, td { border: 1px solid #000 !important; padding: 8px !important; font-size: 11px !important; }
         }
     </style>
 </head>
 <body class="pb-24">
 
-    <div class="no-print bg-blue-900 text-white p-4 sticky top-0 z-50 shadow-lg">
-        <div class="flex justify-between items-center max-w-4xl mx-auto">
-            <div>
-                <h1 class="text-lg font-bold">ثانوية دار التوحيد</h1>
-                <p class="text-[10px] text-blue-200">الوكيل: سلطان الخديدي | المدير: فهد القحطاني</p>
+    <div class="no-print bg-blue-900 text-white p-4 sticky top-0 z-50 shadow-md">
+        <div class="flex justify-between items-center max-w-5xl mx-auto">
+            <div class="text-right">
+                <h1 class="text-lg font-bold italic underline decoration-yellow-500">ثانوية دار التوحيد</h1>
+                <p class="text-[10px] text-blue-300">نظام الرصد الذكي - نسخة 2026</p>
             </div>
-            <div class="flex gap-2">
-                <button onclick="window.print()" class="bg-blue-600 px-3 py-1 rounded text-xs font-bold shadow"><i class="fas fa-file-pdf"></i> تصدير</button>
+            <div class="text-left text-[10px] leading-tight text-blue-100">
+                وكيل المدرسة: سلطان الخديدي<br>مدير المدرسة: فهد القحطاني
             </div>
         </div>
-        <div class="mt-3 flex gap-2">
-            <input type="text" id="searchInput" onkeyup="filterTeachers()" placeholder="بحث عن معلم..." class="flex-1 p-2 rounded text-black text-sm outline-none">
-            <select id="daySelect" class="p-2 rounded text-black text-sm font-bold">
+        <div class="mt-4 flex gap-2">
+            <div class="relative flex-1">
+                <i class="fas fa-search absolute right-3 top-3 text-gray-400"></i>
+                <input type="text" id="searchBox" onkeyup="doSearch()" placeholder="ابحث عن معلم..." class="w-full p-2 pr-10 rounded-lg text-black text-sm outline-none focus:ring-2 focus:ring-yellow-500">
+            </div>
+            <select id="dayPicker" class="p-2 rounded-lg text-black text-sm font-bold bg-white">
                 <option>الأحد</option><option>الاثنين</option><option>الثلاثاء</option><option>الأربعاء</option><option>الخميس</option>
             </select>
         </div>
     </div>
 
-    <div class="no-print overflow-x-auto">
-        <table class="w-full text-right border-collapse bg-white">
-            <thead class="bg-gray-800 text-white text-[10px]">
+    <div class="no-print overflow-x-auto mt-2">
+        <table class="w-full bg-white text-right border-collapse min-w-[700px]">
+            <thead class="bg-slate-700 text-white text-[10px]">
                 <tr>
-                    <th class="p-3 sticky-name">اسم المعلم</th>
-                    <th class="p-2 text-center">ح1</th><th class="p-2 text-center">ح2</th><th class="p-2 text-center">ح3</th>
-                    <th class="p-2 text-center">ح4</th><th class="p-2 text-center">ح5</th><th class="p-2 text-center">ح6</th>
-                    <th class="p-2 text-center">ح7</th><th class="p-2 text-center min-w-[100px]">المناوبة</th>
+                    <th class="p-3 sticky-col">اسم المعلم</th>
+                    <th class="p-1 border text-center">ح1</th><th class="p-1 border text-center">ح2</th><th class="p-1 border text-center">ح3</th>
+                    <th class="p-1 border text-center">ح4</th><th class="p-1 border text-center">ح5</th><th class="p-1 border text-center">ح6</th>
+                    <th class="p-1 border text-center">ح7</th><th class="p-1 border text-center min-w-[120px]">المناوبة/الإشراف</th>
+                    <th class="p-1 border text-center">بطاقة</th>
                 </tr>
             </thead>
-            <tbody id="teacherRows">
+            <tbody id="mainRows">
                 </tbody>
         </table>
     </div>
 
-    <div class="hidden print:block p-4">
-        <div class="report-header flex justify-between items-center mb-6">
-            <div class="text-xs">المملكة العربية السعودية<br>وزارة التعليم<br>ثانوية دار التوحيد</div>
-            <div class="text-center font-bold">تقرير رصد الحصص اليومي<br><span id="printDate"></span></div>
-            <div class="text-left text-xs">إدارة المدرسة</div>
+    <div class="no-print fixed bottom-0 inset-x-0 bg-white border-t border-gray-200 p-3 flex justify-around items-center shadow-[0_-5px_15px_rgba(0,0,0,0.1)] z-50">
+        <button onclick="addNewTeacher()" class="flex flex-col items-center group">
+            <div class="p-2 bg-emerald-100 rounded-full group-active:scale-90 transition"><i class="fas fa-user-plus text-emerald-600 text-lg"></i></div>
+            <span class="text-[10px] font-bold mt-1">إضافة</span>
+        </button>
+        <div class="text-center bg-blue-50 px-4 py-1 rounded-2xl border border-blue-100">
+            <p id="todayDate" class="text-xs font-bold text-blue-900"></p>
         </div>
-        <table id="printTable" class="w-full text-center border">
-            </table>
-        <div class="flex justify-around mt-10 text-center font-bold">
-            <div>وكيل المدرسة<br>سلطان الخديدي<br>__________</div>
-            <div>مدير المدرسة<br>فهد القحطاني<br>__________</div>
-        </div>
+        <button onclick="window.print()" class="flex flex-col items-center group">
+            <div class="p-2 bg-blue-100 rounded-full group-active:scale-90 transition"><i class="fas fa-print text-blue-600 text-lg"></i></div>
+            <span class="text-[10px] font-bold mt-1">تقرير عام</span>
+        </button>
     </div>
 
-    <div class="no-print fixed bottom-0 left-0 right-0 bg-white border-t p-3 flex justify-around shadow-2xl z-50">
-        <button onclick="addNewTeacher()" class="flex flex-col items-center text-blue-900">
-            <i class="fas fa-plus-circle text-xl"></i><span class="text-[10px] font-bold">إضافة معلم</span>
-        </button>
-        <div class="flex flex-col items-center text-gray-400">
-            <i class="fas fa-calendar-day text-xl text-blue-900"></i><span id="dateDisplay" class="text-[10px] font-bold text-blue-900"></span>
-        </div>
-        <button onclick="window.print()" class="flex flex-col items-center text-blue-900">
-            <i class="fas fa-print text-xl"></i><span class="text-[10px] font-bold">التقرير العام</span>
-        </button>
-    </div>
+    <div id="printContainer" class="hidden print:block p-6 bg-white"></div>
 
     <script>
         // قائمة المعلمين الكاملة
-        let teachers = [
+        const initialTeachers = [
             "علي محمد القرني", "سعيد احمد يحيى الزهراني", "يحيى إبراهيم يحيى دغريري",
             "احمد عابد الرقيب", "مشاري خالد ريحان الحارثي", "ضيف الله أحمد محمد النمري",
             "عبد الله صايل خليوي الحارثي", "سعود دخيل الله هلال القرشي", "سعيد عبدالله الحوتاني",
@@ -108,77 +101,168 @@
             "سلطان هلال الثبيتي", "محمد سعد عبدالصمد الوقداني"
         ];
 
-        const states = [
-            {l: "-", c: "s-0"}, {l: "✓", c: "s-1"}, {l: "10د", c: "s-2"}, {l: "10+", c: "s-3"}, {l: "X", c: "s-4"}
+        const pStates = [
+            {l: "-", c: "s-0"}, {l: "✓", c: "s-1"}, {l: "10د", c: "s-2"}, {l: "+10", c: "s-3"}, {l: "X", c: "s-4"}
         ];
         
-        const duties = [
+        const dStates = [
             {l: "غير مكلف اليوم", c: "bg-gray-100 text-gray-500"},
-            {l: "مناوب ✅", c: "bg-green-100 text-green-700 font-bold"},
-            {l: "مشرف 🛡️", c: "bg-blue-100 text-blue-700 font-bold"}
+            {l: "حضر المناوبة ✅", c: "bg-blue-600 text-white font-bold"},
+            {l: "مشرف اليوم 🛡️", c: "bg-purple-600 text-white font-bold"}
         ];
 
-        function init() {
-            const container = document.getElementById('teacherRows');
-            container.innerHTML = '';
-            teachers.forEach((name, idx) => {
-                let row = `<tr class="border-b">
-                    <td class="p-3 sticky-name font-bold text-xs whitespace-nowrap">${name}</td>
-                    ${Array(7).fill().map(() => `<td onclick="changeS(this)" class="p-1 border text-center cursor-pointer s-0 font-bold text-[10px] w-9 h-11" data-s="0">-</td>`).join('')}
-                    <td class="p-1 border text-center">
-                        <button onclick="changeD(this)" data-d="0" class="text-[9px] w-full py-2 rounded bg-gray-100">غير مكلف اليوم</button>
-                    </td>
-                </tr>`;
-                container.innerHTML += row;
+        function buildTable() {
+            const body = document.getElementById('mainRows');
+            body.innerHTML = '';
+            initialTeachers.forEach((name, i) => {
+                let row = `
+                    <tr class="border-b">
+                        <td class="p-3 sticky-col font-bold text-[11px] whitespace-nowrap shadow-sm bg-white">${name}</td>
+                        ${Array(7).fill().map(() => `<td onclick="toggleState(this)" class="p-1 border text-center cursor-pointer s-0 font-bold text-[10px] w-10 h-12" data-s="0">-</td>`).join('')}
+                        <td class="p-1 border text-center">
+                            <button onclick="toggleDuty(this)" data-d="0" class="text-[9px] w-full py-2 px-1 rounded bg-gray-100 font-bold">غير مكلف اليوم</button>
+                        </td>
+                        <td class="p-1 border text-center">
+                            <button onclick="exportSingleCard('${name}', this)" class="text-blue-500 hover:text-blue-800"><i class="fas fa-id-card text-xl"></i></button>
+                        </td>
+                    </tr>`;
+                body.innerHTML += row;
             });
-            let today = new Date();
-            document.getElementById('dateDisplay').innerText = today.toLocaleDateString('ar-SA');
-            document.getElementById('printDate').innerText = "يوم: " + document.getElementById('daySelect').value + " | " + today.toLocaleDateString('ar-SA');
+            document.getElementById('todayDate').innerText = new Date().toLocaleDateString('ar-SA');
         }
 
-        function changeS(el) {
-            let s = (parseInt(el.dataset.s) + 1) % states.length;
+        function toggleState(el) {
+            let s = (parseInt(el.dataset.s) + 1) % pStates.length;
             el.dataset.s = s;
-            el.innerText = states[s].l;
-            el.className = `p-1 border text-center cursor-pointer font-bold text-[10px] w-9 h-11 ${states[s].c}`;
+            el.innerText = pStates[s].l;
+            el.className = `p-1 border text-center cursor-pointer font-bold text-[10px] w-10 h-12 ${pStates[s].c}`;
         }
 
-        function changeD(btn) {
-            let d = (parseInt(btn.dataset.d) + 1) % duties.length;
+        function toggleDuty(btn) {
+            let d = (parseInt(btn.dataset.d) + 1) % dStates.length;
             btn.dataset.d = d;
-            btn.innerText = duties[d].l;
-            btn.className = `text-[9px] w-full py-2 rounded ${duties[d].c}`;
+            btn.innerText = dStates[d].l;
+            btn.className = `text-[9px] w-full py-2 px-1 rounded font-bold transition-all ${dStates[d].c}`;
         }
 
-        function filterTeachers() {
-            let q = document.getElementById('searchInput').value;
-            let rows = document.getElementById('teacherRows').querySelectorAll('tr');
-            rows.forEach(r => {
-                r.style.display = r.innerText.includes(q) ? '' : 'none';
-            });
+        function doSearch() {
+            let q = document.getElementById('searchBox').value;
+            let rows = document.querySelectorAll('#mainRows tr');
+            rows.forEach(r => r.style.display = r.innerText.includes(q) ? '' : 'none');
         }
 
         async function addNewTeacher() {
-            const { value: name } = await Swal.fire({ title: 'اسم المعلم الجديد', input: 'text', confirmButtonText: 'إضافة' });
-            if (name) { teachers.unshift(name); init(); }
+            const { value: name } = await Swal.fire({ title: 'إضافة معلم جديد', input: 'text', confirmButtonText: 'إضافة', confirmButtonColor: '#1e3a8a' });
+            if (name) { initialTeachers.unshift(name); buildTable(); }
         }
 
+        // إعداد تقرير المدرسة الكامل للطباعة
         window.onbeforeprint = () => {
-            const printTable = document.getElementById('printTable');
-            printTable.innerHTML = `<tr><th>اسم المعلم</th><th>ح1</th><th>ح2</th><th>ح3</th><th>ح4</th><th>ح5</th><th>ح6</th><th>ح7</th><th>الحالة</th></tr>`;
-            document.querySelectorAll('#teacherRows tr').forEach(r => {
+            const container = document.getElementById('printContainer');
+            const day = document.getElementById('dayPicker').value;
+            const date = document.getElementById('todayDate').innerText;
+            
+            let html = `
+                <div style="border:3px solid #1e3a8a; padding:15px; border-radius:10px; margin-bottom:20px; background:#f0f7ff;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div style="font-size:12px;">المملكة العربية السعودية<br>وزارة التعليم<br>ثانوية دار التوحيد</div>
+                        <div style="text-align:center;">
+                            <h1 style="margin:0; color:#1e3a8a;">كشف رصد الحصص اليومي الشامل</h1>
+                            <p style="font-weight:bold;">يوم: ${day} | التاريخ: ${date}</p>
+                        </div>
+                        <div style="width:100px;"></div>
+                    </div>
+                </div>
+                <table style="width:100%; border-collapse:collapse; text-align:center;">
+                    <thead style="background:#1e3a8a; color:#fff;">
+                        <tr><th>م</th><th>اسم المعلم</th><th>ح1</th><th>ح2</th><th>ح3</th><th>ح4</th><th>ح5</th><th>ح6</th><th>ح7</th><th>الحالة الإشرافية</th></tr>
+                    </thead>
+                    <tbody>`;
+            
+            document.querySelectorAll('#mainRows tr').forEach((r, i) => {
                 let cells = r.querySelectorAll('td');
-                let rowHtml = `<tr>
-                    <td style="text-align:right; padding:5px;">${cells[0].innerText}</td>
+                html += `<tr>
+                    <td>${i+1}</td><td style="text-align:right; font-weight:bold;">${cells[0].innerText}</td>
                     <td>${cells[1].innerText}</td><td>${cells[2].innerText}</td><td>${cells[3].innerText}</td>
                     <td>${cells[4].innerText}</td><td>${cells[5].innerText}</td><td>${cells[6].innerText}</td>
                     <td>${cells[7].innerText}</td><td>${cells[8].innerText}</td>
                 </tr>`;
-                printTable.innerHTML += rowHtml;
             });
+
+            html += `</tbody></table>
+                <div style="display:flex; justify-content:space-around; margin-top:40px; text-align:center; font-weight:bold;">
+                    <div>وكيل المدرسة<br>سلطان الخديدي<br>________________</div>
+                    <div>مدير المدرسة<br>فهد القحطاني<br>________________</div>
+                </div>
+                <div style="text-align:center; font-size:10px; margin-top:30px; color:#666;">فكرة وتنفيذ: سلطان الخديدي | ثانوية دار التوحيد</div>
+            `;
+            container.innerHTML = html;
         };
 
-        init();
+        // تصدير بطاقة فردية ملونة للمعلم
+        function exportSingleCard(name, btn) {
+            const row = btn.closest('tr');
+            const cells = row.querySelectorAll('td');
+            const day = document.getElementById('dayPicker').value;
+            const date = document.getElementById('todayDate').innerText;
+
+            let cardHtml = `
+                <div style="direction:rtl; padding:30px; border:15px double #1e3a8a; font-family:'Tajawal', sans-serif; background:white;">
+                    <div style="display:flex; justify-content:space-between; border-bottom:4px solid #1e3a8a; padding-bottom:15px; margin-bottom:25px;">
+                        <div style="font-weight:bold; color:#1e3a8a; font-size:14px;">ثانوية دار التوحيد</div>
+                        <div style="text-align:center;">
+                            <h1 style="margin:0; color:#1e3a8a; font-size:24px;">بطاقة أداء معلم يومية</h1>
+                            <span style="background:#eab308; color:#000; padding:2px 20px; border-radius:20px; font-weight:bold; font-size:12px;">تقرير رسمي معتمد</span>
+                        </div>
+                        <div style="width:100px;"></div>
+                    </div>
+                    
+                    <div style="background:#f8fafc; padding:20px; border-radius:12px; border:1px solid #e2e8f0; margin-bottom:30px;">
+                        <p style="font-size:1.5rem; margin:0;">اسم المعلم: <span style="color:#1e3a8a; font-weight:bold;">${name}</span></p>
+                        <p style="margin-top:10px; font-size:1.1rem;">يوم: <b>${day}</b> | تاريخ: <b>${date}</b></p>
+                    </div>
+
+                    <table style="width:100%; border-collapse:collapse; text-align:center; border:2px solid #1e3a8a; font-size:1.2rem;">
+                        <tr style="background:#1e3a8a; color:white;">
+                            <th style="padding:15px; border:1px solid white;">الحصة</th>
+                            <th style="border:1px solid white;">1</th><th style="border:1px solid white;">2</th><th style="border:1px solid white;">3</th>
+                            <th style="border:1px solid white;">4</th><th style="border:1px solid white;">5</th><th style="border:1px solid white;">6</th><th style="border:1px solid white;">7</th>
+                        </tr>
+                        <tr style="font-weight:bold;">
+                            <td style="padding:20px; border:1px solid #1e3a8a; background:#f0f9ff;">حالة الدخول</td>
+                            <td style="border:1px solid #1e3a8a;">${cells[1].innerText}</td><td style="border:1px solid #1e3a8a;">${cells[2].innerText}</td>
+                            <td style="border:1px solid #1e3a8a;">${cells[3].innerText}</td><td style="border:1px solid #1e3a8a;">${cells[4].innerText}</td>
+                            <td style="border:1px solid #1e3a8a;">${cells[5].innerText}</td><td style="border:1px solid #1e3a8a;">${cells[6].innerText}</td>
+                            <td style="border:1px solid #1e3a8a;">${cells[7].innerText}</td>
+                        </tr>
+                    </table>
+
+                    <div style="margin-top:30px; border-right:8px solid #3b82f6; padding-right:15px; font-size:1.2rem;">
+                        <p><b>حالة الإشراف والمناوبة:</b> <span style="color:#3b82f6;">${cells[8].innerText}</span></p>
+                    </div>
+
+                    <div style="margin-top:60px; display:flex; justify-content:space-around; text-align:center;">
+                        <div>
+                            <p style="margin-bottom:40px;">وكيل المدرسة</p>
+                            <b style="font-size:1.2rem;">سلطان الخديدي</b><br>________________
+                        </div>
+                        <div>
+                            <p style="margin-bottom:40px;">مدير المدرسة</p>
+                            <b style="font-size:1.2rem;">فهد القحطاني</b><br>________________
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            const win = window.open('', '', 'height=900,width=1000');
+            win.document.write('<html><head><title>بطاقة أداء - ' + name + '</title>');
+            win.document.write('<style>@import url("https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap"); body{margin:0; font-family:"Tajawal", sans-serif;}</style></head><body>');
+            win.document.write(cardHtml + '</body></html>');
+            win.document.close();
+            setTimeout(() => win.print(), 500);
+        }
+
+        buildTable();
     </script>
 </body>
 </html>
