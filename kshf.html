@@ -3,268 +3,787 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>نظام التقارير الذكي | أ. محمد مجممي</title>
+    <meta name="theme-color" content="#1e3a8a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>متابعة الطلاب - أ/ محمد مجممي</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --p: #1e3a8a; --s: #3b82f6; --ok: #10b981; --warn: #f59e0b; --err: #ef4444; --bg: #f8fafc; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding-bottom: 80px; }
-        
-        /* الهيدر */
-        header { background: var(--p); color: white; padding: 15px; text-align: center; border-radius: 0 0 20px 20px; }
-        .backup-btn { background: rgba(255,255,255,0.2); color: white; border: none; padding: 6px 12px; border-radius: 8px; font-size: 0.7em; cursor: pointer; margin-top: 10px; }
-
-        /* التنقل */
-        .nav-sticky { position: sticky; top: 0; background: var(--bg); padding: 10px; z-index: 100; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        select { padding: 12px; border-radius: 12px; border: 2px solid #e2e8f0; font-weight: bold; background: white; font-size: 0.8em; }
-
-        /* بطاقة الطالب في الرصد */
-        .card { background: white; margin: 10px; border-radius: 15px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-right: 5px solid var(--p); }
-        .card-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .style-tag { padding: 4px 10px; border-radius: 8px; font-size: 0.7em; font-weight: bold; cursor: pointer; border: 1px solid #ddd; }
-        .st-none { background: #eee; } .st-visual { background: #dbeafe; color: #1e40af; } .st-auditory { background: #f3e8ff; color: #7e22ce; } .st-kinesthetic { background: #ffedd5; color: #c2410c; }
-
-        /* أزرار الحضور والعدادات */
-        .btn-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-bottom: 10px; }
-        .a-btn { padding: 8px; border-radius: 8px; border: 1px solid #eee; font-size: 0.8em; font-weight: bold; text-align: center; background: white; }
-        .a-btn.active.P { background: var(--ok); color: white; } .a-btn.active.L { background: var(--warn); color: black; } .a-btn.active.A { background: var(--err); color: white; }
-        
-        .counter { display: flex; align-items: center; justify-content: space-between; background: #f1f5f9; padding: 8px; border-radius: 10px; margin-top: 5px; }
-        .m-btn { width: 35px; height: 35px; border-radius: 8px; border: none; color: white; font-size: 1.2em; }
-
-        /* شريط التنقل السفلي */
-        .bottom-bar { position: fixed; bottom: 0; width: 100%; background: white; display: flex; padding: 10px 0; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); }
-        .tab { flex: 1; border: none; background: none; color: #94a3b8; font-size: 0.75em; font-weight: bold; }
-        .tab.active { color: var(--s); }
-        .tab i { font-size: 1.6em; display: block; margin-bottom: 4px; }
-
-        /* صفحة التقارير */
-        .report-section { display: none; padding: 15px; }
-        .report-section.active { display: block; }
-        .rep-btn { width: 100%; padding: 15px; border-radius: 12px; border: none; color: white; font-weight: bold; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; }
-
-        /* تنسيق الطباعة والتقارير */
-        #print-area { display: none; background: white; padding: 20px; }
-        @media print {
-            body * { display: none; }
-            #print-area { display: block !important; width: 100%; }
-            .page-break { page-break-after: always; }
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #3b82f6;
+            --bg: #f1f5f9;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --border-radius: 12px;
         }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.9em; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-        th { background: #f1f5f9; }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg);
+            margin: 0;
+            padding-bottom: 100px; /* Space for bottom nav */
+            color: var(--text);
+            overscroll-behavior-y: none; /* Prevent pull-to-refresh on mobile */
+        }
+
+        /* Header Area */
+        header {
+            background: linear-gradient(135deg, var(--primary), #1e40af);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 50;
+        }
+        
+        header h1 { margin: 0; font-size: 1.2rem; font-weight: 700; }
+        header p { margin: 5px 0 0; font-size: 0.8rem; opacity: 0.9; }
+
+        .backup-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .btn-header {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-header:active { background: rgba(255,255,255,0.4); }
+
+        /* Sticky Filter Bar */
+        .filters {
+            position: sticky;
+            top: 0;
+            background: rgba(241, 245, 249, 0.95);
+            backdrop-filter: blur(5px);
+            padding: 10px;
+            z-index: 40;
+            display: grid;
+            grid-template-columns: 1.2fr 0.9fr 0.9fr;
+            gap: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid #cbd5e1;
+            background: white;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--primary);
+            outline: none;
+        }
+
+        /* Student Card */
+        .card {
+            background: var(--card-bg);
+            margin: 15px 10px;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-right: 5px solid var(--primary);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .student-name {
+            font-weight: 800;
+            font-size: 1rem;
+            color: #0f172a;
+            line-height: 1.4;
+        }
+
+        .style-badge {
+            font-size: 0.7rem;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            white-space: nowrap;
+            display: inline-block;
+            margin-top: 5px;
+            border: 1px solid transparent;
+        }
+
+        /* Learning Styles */
+        .style-none { background: #f1f5f9; color: #64748b; border-color: #e2e8f0; }
+        .style-visual { background: #dbeafe; color: #1e40af; border-color: #bfdbfe; }
+        .style-auditory { background: #f3e8ff; color: #7e22ce; border-color: #e9d5ff; }
+        .style-kinesthetic { background: #ffedd5; color: #c2410c; border-color: #fed7aa; }
+
+        /* Attendance Buttons */
+        .att-group {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
+            background: #f8fafc;
+            padding: 5px;
+            border-radius: 12px;
+        }
+
+        .att-btn {
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 0.85rem;
+            cursor: pointer;
+            background: white;
+            color: #64748b;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            transition: all 0.2s;
+        }
+
+        .att-btn.active { transform: scale(0.98); color: white; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
+        .att-btn.active.p { background: var(--success); }
+        .att-btn.active.l { background: var(--warning); color: black; }
+        .att-btn.active.a { background: var(--danger); }
+
+        /* Metrics Rows */
+        .metric-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f8fafc;
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            border-radius: 10px;
+            border: 1px solid #f1f5f9;
+        }
+
+        .metric-label { font-size: 0.85rem; font-weight: 600; color: #475569; }
+
+        .counter {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn-count {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            cursor: pointer;
+            color: white;
+            touch-action: manipulation;
+        }
+        .btn-plus { background: var(--success); }
+        .btn-minus { background: #cbd5e1; color: #475569; }
+        
+        .count-val { font-weight: 800; font-size: 1.1rem; min-width: 25px; text-align: center; }
+
+        /* Bottom Navigation */
+        .nav-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0 15px; /* Extra padding for iPhone home indicator */
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+            z-index: 100;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .nav-item {
+            border: none;
+            background: none;
+            color: #94a3b8;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            width: 50%;
+            cursor: pointer;
+        }
+
+        .nav-item i { font-size: 1.4rem; transition: transform 0.2s; }
+        .nav-item.active { color: var(--primary); }
+        .nav-item.active i { transform: translateY(-2px); }
+
+        /* Pages */
+        .page { display: none; padding-bottom: 20px; }
+        .page.active { display: block; }
+
+        /* Report Styles */
+        .report-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            padding: 10px;
+        }
+        
+        .student-btn {
+            background: white;
+            border: 1px solid #e2e8f0;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: #334155;
+            text-align: center;
+            cursor: pointer;
+        }
+        
+        .main-action-btn {
+            width: 95%;
+            margin: 10px auto;
+            display: block;
+            padding: 15px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(30, 58, 138, 0.2);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            border-radius: 16px;
+            padding: 20px;
+            overflow-y: auto;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .preview-area {
+            background: #fff;
+            padding: 10px;
+            border: 1px dashed #cbd5e1;
+            margin: 15px 0;
+            border-radius: 8px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: auto;
+        }
+        .btn-modal { flex: 1; padding: 12px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
+        .btn-print { background: var(--primary); color: white; }
+        .btn-close { background: #f1f5f9; color: #64748b; }
+
+        /* Print Specifics */
+        @media print {
+            body * { visibility: hidden; }
+            #print-container, #print-container * { visibility: visible; }
+            #print-container {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+                background: white;
+                direction: rtl;
+            }
+            .print-page { page-break-after: always; padding: 40px; }
+            .print-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 12pt; }
+            .print-table th, .print-table td { border: 1px solid #000; padding: 8px; text-align: center; }
+            .print-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
+            
+            /* Hide non-print elements */
+            header, .filters, .nav-bar, .modal-overlay, .page { display: none !important; }
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-<header id="header">
-    <h3 style="margin:0;">كشف المتابعة الإلكتروني</h3>
-    <div style="font-size:0.8em; opacity:0.9;">أ/ محمد مجممي - م/ فهد القحطاني</div>
-    <button class="backup-btn" onclick="exportJSON()"><i class="fas fa-save"></i> نسخة احتياطية (JSON)</button>
+<header>
+    <h1>تطبيق المتابعة الذكي</h1>
+    <p>أ/ محمد مجممي | 1447 هـ</p>
+    <div class="backup-controls">
+        <button class="btn-header" onclick="exportData()"><i class="fas fa-download"></i> تصدير بيانات</button>
+        <button class="btn-header" onclick="document.getElementById('fIn').click()"><i class="fas fa-upload"></i> استيراد</button>
+        <input type="file" id="fIn" style="display:none" onchange="importData(event)">
+    </div>
 </header>
 
-<div id="nav-tools" class="nav-sticky">
-    <select id="cls"><option value="201">201</option><option value="202">202</option><option value="203">203</option></select>
-    <select id="wk"></select>
-    <select id="ls"><option value="1">حصة 1</option><option value="2">حصة 2</option><option value="3">حصة 3</option><option value="4">حصة 4</option></select>
+<div class="filters">
+    <select id="cSel" onchange="render()"></select>
+    <select id="wSel" onchange="render()"></select>
+    <select id="sSel" onchange="render()">
+        <option value="1">حصة 1</option>
+        <option value="2">حصة 2</option>
+        <option value="3">حصة 3</option>
+        <option value="4">حصة 4</option>
+        <option value="5">حصة 5</option>
+        <option value="6">حصة 6</option>
+    </select>
 </div>
 
-<div id="track-page" class="report-section active">
-    <div id="list"></div>
+<!-- صفحة الرصد -->
+<div id="track-page" class="page active">
+    <div id="student-list"></div>
 </div>
 
-<div id="export-page" class="report-section">
-    <button class="rep-btn" style="background: #1e293b;" onclick="genClassReport()">
-        <i class="fas fa-table"></i> تصدير إحصاء الفصل (جدول)
+<!-- صفحة التقارير -->
+<div id="stats-page" class="page">
+    <div class="card" style="text-align:center">
+        <h4 style="margin-top:0">ملخص الحضور والغياب للفصل</h4>
+        <div style="max-width:250px; margin:0 auto"><canvas id="classChart"></canvas></div>
+    </div>
+
+    <button class="main-action-btn" onclick="previewClassReport()">
+        <i class="fas fa-table"></i> عرض تقرير الفصل الشامل
     </button>
-    <button class="rep-btn" style="background: #0891b2;" onclick="genAllCards()">
-        <i class="fas fa-id-card"></i> تصدير جميع بطاقات الطلاب (جماعي)
+    <button class="main-action-btn" style="background:#0891b2" onclick="previewAllCards()">
+        <i class="fas fa-print"></i> طباعة جميع البطاقات
     </button>
-    <hr>
-    <h4>تقارير فردية:</h4>
-    <div id="ind-list"></div>
+
+    <h4 style="padding-right: 15px; margin-bottom: 5px;">بطاقات فردية:</h4>
+    <div id="student-buttons" class="report-grid"></div>
 </div>
 
-<div id="print-area"></div>
-
-<nav id="bottom-nav" class="bottom-bar">
-    <button class="tab active" onclick="showP('track', this)"><i class="fas fa-edit"></i>الرصد</button>
-    <button class="tab" onclick="showP('export', this); renderIndList();"><i class="fas fa-file-export"></i>التصدير</button>
+<!-- شريط التنقل السفلي -->
+<nav class="nav-bar">
+    <button class="nav-item active" onclick="switchPage('track', this)">
+        <i class="fas fa-user-check"></i>
+        <span>الرصد</span>
+    </button>
+    <button class="nav-item" onclick="switchPage('stats', this)">
+        <i class="fas fa-chart-pie"></i>
+        <span>التقارير</span>
+    </button>
 </nav>
 
+<!-- نافذة المعاينة والطباعة -->
+<div id="modal" class="modal-overlay">
+    <div class="modal-content">
+        <h3 style="margin-top:0; text-align:center">معاينة قبل الطباعة</h3>
+        <div id="modal-preview" class="preview-area"></div>
+        <div class="modal-actions">
+            <button class="btn-modal btn-close" onclick="closeModal()">إغلاق</button>
+            <button class="btn-modal btn-print" onclick="printFromModal()">طباعة <i class="fas fa-print"></i></button>
+        </div>
+    </div>
+</div>
+
+<!-- حاوية الطباعة المخفية -->
+<div id="print-container"></div>
+
 <script>
-    const names = {
+    // ------------------- البيانات والإعدادات -------------------
+    const NAMES = {
         "201": ["أديب اكرم بن ابراهيم الخديدي","البراء رانى احمد السليماني","الوليد احمد بطي الزايدي","اياد حمزه خضر القرشي","باسل ياسر احمد هوساوى","حمزه عبدالرحمن امين نظيف","خالد ايمن محمد سعيد ششه","سطام فهد عايض الحارثي","شايق سامى مرزوق الطويرقي","طلال احمد مرزوق القرشي","طلال وجدي محمد الغريبي","عبدالعزيز فهد محمد الثمالي","عبدالكريم محمد عبدالكريم القرشي","عبدالله طلال ابن عبدالله المالكي","عبدالله عبدالهادي قليل الخديدي","عبدالله فهد عبدالله المالكي","عبدالمجيد عبدالله حميدان الحارثي","عبدالملك عمر صالح العتيبي","عزام عبدالله ابن سعيد الثبيتي","علي حسن صالح الفته","فهد عبدالملك ساعد النفيعي","فيصل عبدالبديع خلف الله القرشي","محمد حسن محمد الطويرقي","محمد خلف الله ابن سالم الشريف","مستور محمد مستور الحارثي","يزن محمد عبدالله الضويحي","يزيد ابن عبداللطيف ابن عمر الطلحي"],
         "202": ["احمد عبدالرزاق احمد المالكي","احمد عبده علي الشدادي","أسامة عويش محمد القرشي","الوليد خالد بخيت العتيبي","تميم عبدالرزاق احمد المالكي","تميم عبدالمنعم ابن محمد الاسمرى","حسن شاكر حسن شبيلي","سلطان علي سليم القرشي","سلطان ماجد عيد المالكي","عبدالعزيز احمد سلمان الدعجاني","عبدالله محمد عبدالله الحمياني","فهد ابراهيم فرحان الجعيد","فهد ماجد مسفر النفيعي","فهد هلال هليل الثبيتي","فيصل بندر بن فايت الحارثي","قصي محمد مشعل سوادي","محمد تركي ابن عمر الهذلي","محمد ماجد محمد ال ابراهيم","مراد عبدالرحيم محمدعلي الثبيتي","مشعل متعب عواض الجعيد","مهند عبدالرزاق احمد المالكي","مؤيد مرزوق عواض النفيعي","هاشم فهد وصل الله القرشي","وسام عبدالله احمد الفيفي","ياسر بن عبدالله بن عمر الحميدي","ياسر دخيل الله حمدان المالكي"],
         "203": ["أحمد عبدالله ابن عطيه الحصيني","أسامه فهد دخيل الله الزهراني","اصيل ايمن حمدان السريحى","البراء احمد عبدالله القرشي","ايمن خالد مستور الطويرقي","بتال رائد عبدالله الطويرقي","ثامر ابراهيم احمد الثمالي","راكان سعد عيد العصيمي","ريان ماجد ابن علي المالكي","سلطان عبدالحميد عبدالله آل حميدان","سهيل قاسم عبيدالله القرشي","سيف محمد معيش القرشي","طلال علي جمعان الزهراني","عبدالعزيز خلف الله مرزوق القرشي","عبدالعزيز سعود رجاء الحصيني","عبدالله عبدالرحمن دغش القحطاني","عبدالله عبدالعزيز عبيد الدهيسي","عبدالله علي جمعان الزهراني","عصام عواض بن صالح الخديدي","عناد محمد احمد مجرشي","فارس مشرف صالح المالكي","فيصل سليمان بادي الطويرقي","فيصل فهد حمود الطويرقي","مشعل سعد خالد الحارثي","هتان محمد جنيدب القرشي"]
     };
 
-    let db = JSON.parse(localStorage.getItem('final_v3')) || {};
-    
+    let db = JSON.parse(localStorage.getItem('edu_db_2026_FINAL')) || {};
+
     // تهيئة القوائم
-    const wkS = document.getElementById('wk');
-    for(let i=1; i<=16; i++) wkS.innerHTML += `<option value="${i}">أسبوع ${i}</option>`;
+    const cSel = document.getElementById('cSel');
+    const wSel = document.getElementById('wSel');
     
-    for(let c in names) {
-        if(!db[c]) db[c] = names[c].map(n => ({ name: n, style: 'none', sessions: {} }));
+    // إعداد الأسابيع والفصول
+    for(let i=1; i<=13; i++) wSel.innerHTML += `<option value="${i}">الأسبوع ${i}</option>`;
+    
+    for(let c in NAMES) {
+        cSel.innerHTML += `<option value="${c}">فصل ${c}</option>`;
+        // تهيئة قاعدة البيانات إذا كانت جديدة
+        if(!db[c]) {
+            db[c] = NAMES[c].map(n => ({ 
+                name: n, 
+                style: 'none', // none, visual, auditory, kinesthetic
+                sessions: {} 
+            }));
+        }
     }
 
+    // ------------------- دوال الرصد والعرض -------------------
     function render() {
-        const c = document.getElementById('cls').value;
-        const w = wkS.value;
-        const l = document.getElementById('ls').value;
-        const key = `${w}_${l}`;
-        const container = document.getElementById('list');
+        const c = cSel.value;
+        const w = wSel.value;
+        const s = document.getElementById('sSel').value;
+        const sessionKey = `${w}_${s}`;
+        const container = document.getElementById('student-list');
+        
         container.innerHTML = '';
 
-        db[c].forEach((s, idx) => {
-            if(!s.sessions[key]) s.sessions[key] = { att:'', part:0, hw:0, int:0 };
-            const cur = s.sessions[key];
-            container.innerHTML += `
+        db[c].forEach((st, idx) => {
+            // ضمان وجود كائن للحصة الحالية
+            if(!st.sessions[sessionKey]) {
+                st.sessions[sessionKey] = { att: '', part: 0, hw: 0, int: 0 };
+            }
+            const cur = st.sessions[sessionKey];
+
+            // نصوص الأنماط
+            const styleLabels = {
+                'none': '<i class="far fa-circle"></i> تحديد النمط',
+                'visual': '<i class="fas fa-eye"></i> بصري',
+                'auditory': '<i class="fas fa-ear-listen"></i> سمعي',
+                'kinesthetic': '<i class="fas fa-hands-clapping"></i> حركي'
+            };
+
+            const html = `
                 <div class="card">
-                    <div class="card-h">
-                        <div style="font-weight:bold">${s.name}</div>
-                        <div class="style-tag st-${s.style}" onclick="cycStyle('${c}',${idx})">${getS(s.style)}</div>
+                    <div class="card-header">
+                        <div>
+                            <div class="student-name">${st.name}</div>
+                            <div class="style-badge style-${st.style}" onclick="toggleStyle('${c}', ${idx})">
+                                ${styleLabels[st.style]}
+                            </div>
+                        </div>
                     </div>
-                    <div class="btn-group">
-                        <button class="a-btn ${cur.att==='P'?'active':''} P" onclick="setA('${c}',${idx},'P')">حاضر</button>
-                        <button class="a-btn ${cur.att==='L'?'active':''} L" onclick="setA('${c}',${idx},'L')">تأخر</button>
-                        <button class="a-btn ${cur.att==='A'?'active':''} A" onclick="setA('${c}',${idx},'A')">غائب</button>
+
+                    <div class="att-group">
+                        <button class="att-btn ${cur.att==='P'?'active p':''}" onclick="setAtt('${c}',${idx},'P')">
+                            <i class="fas fa-check"></i> حاضر
+                        </button>
+                        <button class="att-btn ${cur.att==='L'?'active l':''}" onclick="setAtt('${c}',${idx},'L')">
+                            <i class="fas fa-clock"></i> تأخر
+                        </button>
+                        <button class="att-btn ${cur.att==='A'?'active a':''}" onclick="setAtt('${c}',${idx},'A')">
+                            <i class="fas fa-times"></i> غائب
+                        </button>
                     </div>
-                    ${drawC(c, idx, 'part', 'مشاركة', cur.part)}
-                    ${drawC(c, idx, 'hw', 'واجب', cur.hw)}
-                    ${drawC(c, idx, 'int', 'تفاعل', cur.int)}
-                </div>`;
+
+                    ${renderMetricRow(c, idx, 'part', 'المشاركة الصفيّة', cur.part)}
+                    ${renderMetricRow(c, idx, 'hw', 'الواجبات والمهام', cur.hw)}
+                    ${renderMetricRow(c, idx, 'int', 'التفاعل والسلوك', cur.int)}
+                </div>
+            `;
+            container.innerHTML += html;
         });
-        save();
+
+        // تحديث أزرار الطلبة في صفحة التقارير أيضاً
+        if(document.getElementById('stats-page').classList.contains('active')){
+            updateStatsUI();
+        }
+        
+        saveData();
     }
 
-    function drawC(c, idx, k, label, val) {
-        return `<div class="counter"><span>${label}</span><div>
-            <button class="m-btn" style="background:var(--err)" onclick="updVal('${c}',${idx},'${k}',-1)">-</button>
-            <span style="margin:0 15px; font-weight:bold">${val}</span>
-            <button class="m-btn" style="background:var(--ok)" onclick="updVal('${c}',${idx},'${k}',1)">+</button>
-        </div></div>`;
+    function renderMetricRow(c, idx, key, label, val) {
+        return `
+            <div class="metric-row">
+                <span class="metric-label">${label}</span>
+                <div class="counter">
+                    <button class="btn-count btn-minus" onclick="updateVal('${c}',${idx},'${key}',-1)">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <span class="count-val">${val}</span>
+                    <button class="btn-count btn-plus" onclick="updateVal('${c}',${idx},'${key}',1)">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+        `;
     }
 
-    function updVal(c, idx, k, d) {
-        const key = `${wkS.value}_${document.getElementById('ls').value}`;
-        db[c][idx].sessions[key][k] += d; render();
+    // ------------------- منطق البيانات -------------------
+    function updateVal(c, idx, key, delta) {
+        const sessionKey = `${wSel.value}_${document.getElementById('sSel').value}`;
+        const currentVal = db[c][idx].sessions[sessionKey][key];
+        
+        // منع القيم السالبة
+        if (currentVal + delta >= 0) {
+            db[c][idx].sessions[sessionKey][key] += delta;
+            render();
+        }
     }
 
-    function cycStyle(c, idx) {
-        const sts = ['none', 'visual', 'auditory', 'kinesthetic'];
-        db[c][idx].style = sts[(sts.indexOf(db[c][idx].style)+1)%4]; render();
+    function setAtt(c, idx, status) {
+        const sessionKey = `${wSel.value}_${document.getElementById('sSel').value}`;
+        const currentStatus = db[c][idx].sessions[sessionKey].att;
+        // إلغاء التحديد إذا ضغطنا على نفس الزر
+        db[c][idx].sessions[sessionKey].att = (currentStatus === status) ? '' : status;
+        render();
     }
 
-    function getS(s) { return {none:'النمط', visual:'بصري', auditory:'سمعي', kinesthetic:'حركي'}[s]; }
-    function setA(c, idx, v) {
-        const key = `${wkS.value}_${document.getElementById('ls').value}`;
-        db[c][idx].sessions[key].att = (db[c][idx].sessions[key].att === v) ? '' : v; render();
-    }
-    function save() { localStorage.setItem('final_v3', JSON.stringify(db)); }
-    function showP(p, b) {
-        document.querySelectorAll('.report-section').forEach(s => s.classList.remove('active'));
-        document.getElementById(p + '-page').classList.add('active');
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        b.classList.add('active'); window.scrollTo(0,0);
+    function toggleStyle(c, idx) {
+        const styles = ['none', 'visual', 'auditory', 'kinesthetic'];
+        const currentIdx = styles.indexOf(db[c][idx].style);
+        db[c][idx].style = styles[(currentIdx + 1) % styles.length];
+        render();
     }
 
-    // تقارير الطباعة
-    function genClassReport() {
-        const c = document.getElementById('cls').value;
-        let html = `<h2>تقرير إحصائي للفصل ${c}</h2><table><tr><th>الطالب</th><th>النمط</th><th>حضور</th><th>تأخر</th><th>غياب</th><th>نقاط</th></tr>`;
-        db[c].forEach(s => {
-            let p=0, l=0, a=0, pts=0;
-            Object.values(s.sessions).forEach(v => {
-                if(v.att==='P') p++; if(v.att==='L') l++; if(v.att==='A') a++;
-                pts += (v.part + v.hw + v.int);
-            });
-            html += `<tr><td>${s.name}</td><td>${getS(s.style)}</td><td>${p}</td><td>${l}</td><td>${a}</td><td>${pts}</td></tr>`;
+    function saveData() {
+        localStorage.setItem('edu_db_2026_FINAL', JSON.stringify(db));
+    }
+
+    // ------------------- التنقل والصفحات -------------------
+    function switchPage(pageId, btn) {
+        // تبديل الصفحات
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(pageId + '-page').classList.add('active');
+        
+        // تبديل الأزرار النشطة
+        document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        if(pageId === 'stats') {
+            updateStatsUI();
+        }
+        window.scrollTo(0, 0);
+    }
+
+    // ------------------- التقارير والطباعة -------------------
+    function getStudentSummary(student) {
+        let sum = { p:0, l:0, a:0, part:0, hw:0, int:0 };
+        Object.values(student.sessions).forEach(sess => {
+            if(sess.att === 'P') sum.p++;
+            if(sess.att === 'L') sum.l++;
+            if(sess.att === 'A') sum.a++;
+            sum.part += (parseInt(sess.part) || 0);
+            sum.hw += (parseInt(sess.hw) || 0);
+            sum.int += (parseInt(sess.int) || 0);
         });
-        html += `</table><p>معلم المادة: محمد مجممي | مدير المدرسة: فهد القحطاني</p>`;
-        doPrint(html);
+        sum.totalPoints = sum.part + sum.hw + sum.int;
+        return sum;
     }
 
-    function genSingleCard(idx) {
-        const c = document.getElementById('cls').value;
+    let chartInstance = null;
+
+    function updateStatsUI() {
+        const c = cSel.value;
+        const students = db[c];
+        
+        // 1. تحديث الرسم البياني
+        let totals = { P:0, L:0, A:0 };
+        students.forEach(s => {
+            const sum = getStudentSummary(s);
+            totals.P += sum.p;
+            totals.L += sum.l;
+            totals.A += sum.a;
+        });
+
+        const ctx = document.getElementById('classChart').getContext('2d');
+        if(chartInstance) chartInstance.destroy();
+        
+        chartInstance = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['حضور', 'تأخر', 'غياب'],
+                datasets: [{
+                    data: [totals.P, totals.L, totals.A],
+                    backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+                    borderWidth: 0
+                }]
+            },
+            options: { 
+                responsive: true, 
+                plugins: { legend: { position: 'bottom', labels: { font: { family: 'Tahoma' } } } } 
+            }
+        });
+
+        // 2. تحديث قائمة الأزرار الفردية
+        const btnContainer = document.getElementById('student-buttons');
+        btnContainer.innerHTML = '';
+        students.forEach((s, idx) => {
+            btnContainer.innerHTML += `
+                <div class="student-btn" onclick="previewStudentCard(${idx})">
+                    ${s.name}
+                </div>
+            `;
+        });
+    }
+
+    // --- منطقة المعاينة (Modals) ---
+
+    // 1. معاينة تقرير الفصل
+    function previewClassReport() {
+        const c = cSel.value;
+        let html = `
+            <div class="print-header">
+                <h2>تقرير فصل ${c} التراكمي</h2>
+                <p>المعلم: محمد مجممي | المدير: فهد القحطاني</p>
+            </div>
+            <table class="print-table" dir="rtl">
+                <thead>
+                    <tr style="background:#eee;">
+                        <th>م</th><th>الطالب</th><th>حضور</th><th>تأخر</th><th>غياب</th><th>النقاط</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+        
+        db[c].forEach((s, i) => {
+            const sum = getStudentSummary(s);
+            html += `
+                <tr>
+                    <td>${i+1}</td>
+                    <td style="text-align:right; font-weight:bold">${s.name}</td>
+                    <td>${sum.p}</td>
+                    <td>${sum.l}</td>
+                    <td>${sum.a}</td>
+                    <td>${sum.totalPoints}</td>
+                </tr>`;
+        });
+        html += `</tbody></table>`;
+        
+        showModal(html);
+    }
+
+    // 2. معاينة بطاقة طالب
+    function previewStudentCard(idx) {
+        const c = cSel.value;
         const s = db[c][idx];
-        let p=0, l=0, a=0, part=0, hw=0, int=0;
-        Object.values(s.sessions).forEach(v => {
-            if(v.att==='P') p++; if(v.att==='L') l++; if(v.att==='A') a++;
-            part+=v.part; hw+=v.hw; int+=v.int;
-        });
+        const sum = getStudentSummary(s);
+        const styleName = {none:'غير محدد', visual:'بصري', auditory:'سمعي', kinesthetic:'حركي'}[s.style];
+
         const html = `
-            <div style="border:5px double var(--p); padding:30px; text-align:center;">
-                <h3>بطاقة متابعة طالب</h3>
-                <hr>
-                <div style="text-align:right">
-                    <p>اسم الطالب: <b>${s.name}</b></p>
-                    <p>الفصل: <b>${c}</b> | النمط: <b>${getS(s.style)}</b></p>
-                </div>
-                <table>
-                    <tr><th>المجال</th><th>الإحصائية التراكمية</th></tr>
-                    <tr><td>الحضور</td><td>${p}</td></tr>
-                    <tr><td>التأخر</td><td>${l}</td></tr>
-                    <tr><td>الغياب</td><td>${a}</td></tr>
-                    <tr><td>المشاركة والتفاعل</td><td>${part + int}</td></tr>
-                    <tr><td>الواجبات</td><td>${hw}</td></tr>
+            <div class="print-page" style="border: 4px double #1e3a8a; padding: 20px; border-radius: 15px; text-align: center;">
+                <h2 style="color:#1e3a8a; margin-bottom: 5px;">بطاقة متابعة طالب</h2>
+                <div style="width: 100px; height: 3px; background:#f59e0b; margin: 10px auto;"></div>
+                
+                <h3 style="margin: 15px 0;">${s.name}</h3>
+                <p><strong>الفصل:</strong> ${c} &nbsp; | &nbsp; <strong>النمط:</strong> ${styleName}</p>
+                
+                <table class="print-table" style="margin-top: 20px;">
+                    <tr style="background:#f1f5f9">
+                        <th>المجال</th>
+                        <th>النتيجة التراكمية</th>
+                    </tr>
+                    <tr><td>عدد أيام الحضور</td><td style="color:green; font-weight:bold">${sum.p}</td></tr>
+                    <tr><td>عدد أيام التأخر</td><td style="color:orange; font-weight:bold">${sum.l}</td></tr>
+                    <tr><td>عدد أيام الغياب</td><td style="color:red; font-weight:bold">${sum.a}</td></tr>
+                    <tr><td>مجموع المشاركة والتفاعل</td><td style="color:#1e3a8a; font-weight:bold">${sum.part + sum.int}</td></tr>
+                    <tr><td>مجموع الواجبات</td><td style="color:#1e3a8a; font-weight:bold">${sum.hw}</td></tr>
+                    <tr style="background:#e0f2fe"><td><strong>إجمالي النقاط</strong></td><td><strong>${sum.totalPoints}</strong></td></tr>
                 </table>
-                <br><br>
-                <div style="display:flex; justify-content:space-between">
-                    <span>المعلم: محمد مجممي</span>
-                    <span>المدير: فهد القحطاني</span>
+
+                <div style="margin-top: 40px; display: flex; justify-content: space-between; font-size: 0.9em;">
+                    <div><strong>توقيع المعلم:</strong><br>محمد مجممي</div>
+                    <div><strong>توقيع المدير:</strong><br>فهد القحطاني</div>
                 </div>
-            </div>`;
-        doPrint(html);
+            </div>
+        `;
+        showModal(html);
     }
 
-    function genAllCards() {
-        const c = document.getElementById('cls').value;
+    // 3. معاينة الكل (للطباعة المباشرة)
+    function previewAllCards() {
+        const c = cSel.value;
         let html = '';
         db[c].forEach((s, idx) => {
-            let p=0, l=0, a=0, pts=0;
-            Object.values(s.sessions).forEach(v => {
-                if(v.att==='P') p++; if(v.att==='L') l++; if(v.att==='A') a++;
-                pts += (v.part + v.hw + v.int);
-            });
-            html += `<div class="page-break" style="border:2px solid #000; padding:20px; margin-bottom:20px;">
-                <h3 style="text-align:center">بطاقة أداء الطالب: ${s.name}</h3>
-                <p>الفصل: ${c} | النمط: ${getS(s.style)}</p>
-                <p>الحضور: ${p} | التأخر: ${l} | الغياب: ${a}</p>
-                <p>إجمالي نقاط التميز: ${pts}</p>
-                <p style="font-size:0.8em; text-align:left">توقيع المعلم: محمد مجممي</p>
-            </div>`;
+             const sum = getStudentSummary(s);
+             html += `
+                <div class="print-page" style="border: 2px solid #000; margin-bottom: 20px;">
+                    <h3 style="text-align:center">${s.name} - فصل ${c}</h3>
+                    <table class="print-table">
+                        <tr><th>حضور</th><th>تأخر</th><th>غياب</th><th>نقاط</th></tr>
+                        <tr><td>${sum.p}</td><td>${sum.l}</td><td>${sum.a}</td><td>${sum.totalPoints}</td></tr>
+                    </table>
+                </div>
+             `;
         });
-        doPrint(html);
-    }
-
-    function doPrint(content) {
-        const area = document.getElementById('print-area');
-        area.innerHTML = content;
+        // لا نظهر هذا في المودال لأنه طويل جداً، نذهب للطباعة مباشرة
+        document.getElementById('print-container').innerHTML = html;
         window.print();
     }
 
-    function renderIndList() {
-        const c = document.getElementById('cls').value;
-        const container = document.getElementById('ind-list');
-        container.innerHTML = '';
-        db[c].forEach((s, idx) => {
-            container.innerHTML += `<button class="a-btn" style="width:100%; margin-bottom:5px; text-align:right" onclick="genSingleCard(${idx})">${s.name}</button>`;
-        });
+    // دوال المودال
+    function showModal(content) {
+        document.getElementById('modal-preview').innerHTML = content;
+        document.getElementById('modal').classList.add('open');
+    }
+    
+    function closeModal() {
+        document.getElementById('modal').classList.remove('open');
     }
 
-    function exportJSON() {
-        const blob = new Blob([JSON.stringify(db)], {type: "application/json"});
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = `backup_majmani_${new Date().toLocaleDateString()}.json`;
-        a.click();
+    function printFromModal() {
+        // ننسخ محتوى المودال إلى حاوية الطباعة
+        const content = document.getElementById('modal-preview').innerHTML;
+        document.getElementById('print-container').innerHTML = content;
+        window.print();
     }
 
-    document.getElementById('cls').onchange = render;
-    wkS.onchange = render;
-    document.getElementById('ls').onchange = render;
+    // ------------------- الاستيراد والتصدير -------------------
+    function exportData() {
+        const dataStr = JSON.stringify(db);
+        const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+        
+        const exportFileDefaultName = 'بيانات_الطلاب_' + new Date().toISOString().slice(0,10) + '.json';
+        
+        const linkElement = document.createElement('a');
+        linkElement.setAttribute('href', dataUri);
+        linkElement.setAttribute('download', exportFileDefaultName);
+        linkElement.click();
+    }
+
+    function importData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const importedDb = JSON.parse(e.target.result);
+                if (confirm('سيتم استبدال البيانات الحالية بالبيانات الجديدة. هل أنت متأكد؟')) {
+                    db = importedDb;
+                    saveData();
+                    render();
+                    alert('تم استيراد البيانات بنجاح!');
+                }
+            } catch (err) {
+                alert('حدث خطأ في قراءة الملف. تأكد من صحة الملف.');
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    // التشغيل الأولي
     render();
 </script>
 </body>
