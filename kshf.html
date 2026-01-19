@@ -3,301 +3,268 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>تطبيق المتابعة الذكي | أ. محمد مجممي</title>
+    <title>نظام التقارير الذكي | أ. محمد مجممي</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --primary: #1e3a8a; --accent: #3b82f6; --success: #10b981;
-            --warning: #f59e0b; --danger: #ef4444; --bg: #f8fafc;
-        }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding-bottom: 100px; color: #1e293b; -webkit-tap-highlight-color: transparent; }
+        :root { --p: #1e3a8a; --s: #3b82f6; --ok: #10b981; --warn: #f59e0b; --err: #ef4444; --bg: #f8fafc; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding-bottom: 80px; }
         
-        /* الهيدر ومركز النسخ الاحتياطي */
-        header { background: var(--primary); color: white; padding: 15px; text-align: center; border-radius: 0 0 20px 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .backup-zone { display: flex; justify-content: center; gap: 10px; background: rgba(255,255,255,0.1); padding: 10px; margin-top: 10px; border-radius: 12px; }
-        .btn-backup { background: white; color: var(--primary); border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 0.8em; font-weight: bold; }
+        /* الهيدر */
+        header { background: var(--p); color: white; padding: 15px; text-align: center; border-radius: 0 0 20px 20px; }
+        .backup-btn { background: rgba(255,255,255,0.2); color: white; border: none; padding: 6px 12px; border-radius: 8px; font-size: 0.7em; cursor: pointer; margin-top: 10px; }
 
-        /* التحكم العلوي */
-        .sticky-nav { position: sticky; top: 0; background: var(--bg); padding: 10px; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; }
-        select { padding: 12px; border-radius: 12px; border: 2.5px solid #e2e8f0; font-weight: bold; background: white; font-size: 0.85em; outline: none; transition: 0.3s; }
-        select:focus { border-color: var(--accent); }
+        /* التنقل */
+        .nav-sticky { position: sticky; top: 0; background: var(--bg); padding: 10px; z-index: 100; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        select { padding: 12px; border-radius: 12px; border: 2px solid #e2e8f0; font-weight: bold; background: white; font-size: 0.8em; }
 
-        /* بطاقة الطالب */
-        .s-card { background: white; margin: 12px; border-radius: 18px; padding: 15px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-right: 6px solid var(--primary); }
-        .s-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .s-name { font-weight: 800; font-size: 0.95em; color: #0f172a; flex: 1; margin-left: 10px; }
+        /* بطاقة الطالب في الرصد */
+        .card { background: white; margin: 10px; border-radius: 15px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-right: 5px solid var(--p); }
+        .card-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .style-tag { padding: 4px 10px; border-radius: 8px; font-size: 0.7em; font-weight: bold; cursor: pointer; border: 1px solid #ddd; }
+        .st-none { background: #eee; } .st-visual { background: #dbeafe; color: #1e40af; } .st-auditory { background: #f3e8ff; color: #7e22ce; } .st-kinesthetic { background: #ffedd5; color: #c2410c; }
 
-        /* نمط التعلم التفاعلي */
-        .style-cell { padding: 6px 12px; border-radius: 10px; font-size: 0.75em; font-weight: bold; cursor: pointer; border: 2px solid transparent; min-width: 65px; text-align: center; transition: 0.2s; }
-        .st-none { background: #f1f5f9; color: #64748b; border-color: #e2e8f0; }
-        .st-visual { background: #eff6ff; color: #2563eb; border-color: #2563eb; }
-        .st-auditory { background: #faf5ff; color: #9333ea; border-color: #9333ea; }
-        .st-kinesthetic { background: #fff7ed; color: #ea580c; border-color: #ea580c; }
-
-        /* أزرار الحضور */
-        .att-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-bottom: 15px; }
-        .att-btn { padding: 10px; border-radius: 10px; border: 1.5px solid #e2e8f0; font-size: 0.8em; font-weight: bold; text-align: center; background: #fff; color: #64748b; }
-        .att-btn.active.P { background: var(--success); color: white; border-color: var(--success); }
-        .att-btn.active.L { background: var(--warning); color: black; border-color: var(--warning); }
-        .att-btn.active.A { background: var(--danger); color: white; border-color: var(--danger); }
-
-        /* عدادات النقاط (+ / -) */
-        .counter-row { display: flex; align-items: center; justify-content: space-between; background: #f8fafc; margin-top: 6px; padding: 8px 12px; border-radius: 12px; border: 1px solid #f1f5f9; }
-        .math-group { display: flex; align-items: center; gap: 12px; }
-        .btn-math { width: 38px; height: 38px; border-radius: 12px; border: none; color: white; font-size: 1.2em; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .btn-p { background: var(--success); }
-        .btn-m { background: var(--danger); }
-        .count-val { font-weight: 800; font-size: 1.1em; min-width: 25px; text-align: center; color: #1e293b; }
-
-        /* زر التصدير المستقل */
-        .btn-export-ind { width: 100%; margin-top: 12px; padding: 10px; border-radius: 10px; border: 1.5px solid var(--accent); background: #f0f7ff; color: var(--accent); font-weight: bold; font-size: 0.8em; cursor: pointer; }
+        /* أزرار الحضور والعدادات */
+        .btn-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-bottom: 10px; }
+        .a-btn { padding: 8px; border-radius: 8px; border: 1px solid #eee; font-size: 0.8em; font-weight: bold; text-align: center; background: white; }
+        .a-btn.active.P { background: var(--ok); color: white; } .a-btn.active.L { background: var(--warn); color: black; } .a-btn.active.A { background: var(--err); color: white; }
+        
+        .counter { display: flex; align-items: center; justify-content: space-between; background: #f1f5f9; padding: 8px; border-radius: 10px; margin-top: 5px; }
+        .m-btn { width: 35px; height: 35px; border-radius: 8px; border: none; color: white; font-size: 1.2em; }
 
         /* شريط التنقل السفلي */
-        .b-nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; padding: 12px 0; box-shadow: 0 -5px 20px rgba(0,0,0,0.1); border-top: 1px solid #f1f5f9; }
-        .nav-item { flex: 1; text-align: center; color: #94a3b8; font-size: 0.75em; border: none; background: none; font-weight: bold; outline: none; }
-        .nav-item.active { color: var(--accent); }
-        .nav-item i { font-size: 1.8em; display: block; margin-bottom: 4px; }
+        .bottom-bar { position: fixed; bottom: 0; width: 100%; background: white; display: flex; padding: 10px 0; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); }
+        .tab { flex: 1; border: none; background: none; color: #94a3b8; font-size: 0.75em; font-weight: bold; }
+        .tab.active { color: var(--s); }
+        .tab i { font-size: 1.6em; display: block; margin-bottom: 4px; }
 
-        .page { display: none; }
-        .page.active { display: block; }
+        /* صفحة التقارير */
+        .report-section { display: none; padding: 15px; }
+        .report-section.active { display: block; }
+        .rep-btn { width: 100%; padding: 15px; border-radius: 12px; border: none; color: white; font-weight: bold; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+
+        /* تنسيق الطباعة والتقارير */
+        #print-area { display: none; background: white; padding: 20px; }
+        @media print {
+            body * { display: none; }
+            #print-area { display: block !important; width: 100%; }
+            .page-break { page-break-after: always; }
+        }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.9em; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        th { background: #f1f5f9; }
     </style>
 </head>
 <body>
 
-<header>
-    <div style="font-weight: bold; font-size: 1.1em;">كشف المتابعة الإلكتروني - 2026</div>
-    <div style="font-size: 0.8em; opacity: 0.9; margin-top: 5px;">أ/ محمد مجممي <i class="fas fa-arrow-left" style="font-size:0.7em;"></i> م/ فهد القحطاني</div>
-    
-    <div class="backup-zone">
-        <button class="btn-backup" onclick="exportData()"><i class="fas fa-download"></i> نسخة احتياطية</button>
-        <button class="btn-backup" onclick="document.getElementById('fileInput').click()"><i class="fas fa-upload"></i> استعادة</button>
-        <input type="file" id="fileInput" style="display:none" onchange="importData(event)">
-    </div>
+<header id="header">
+    <h3 style="margin:0;">كشف المتابعة الإلكتروني</h3>
+    <div style="font-size:0.8em; opacity:0.9;">أ/ محمد مجممي - م/ فهد القحطاني</div>
+    <button class="backup-btn" onclick="exportJSON()"><i class="fas fa-save"></i> نسخة احتياطية (JSON)</button>
 </header>
 
-<div class="sticky-nav">
-    <div class="grid-3">
-        <select id="classSel" onchange="render()"></select>
-        <select id="weekSel" onchange="render()"></select>
-        <select id="sessionSel" onchange="render()">
-            <option value="1">حصة 1</option>
-            <option value="2">حصة 2</option>
-            <option value="3">حصة 3</option>
-            <option value="4">حصة 4</option>
-        </select>
-    </div>
+<div id="nav-tools" class="nav-sticky">
+    <select id="cls"><option value="201">201</option><option value="202">202</option><option value="203">203</option></select>
+    <select id="wk"></select>
+    <select id="ls"><option value="1">حصة 1</option><option value="2">حصة 2</option><option value="3">حصة 3</option><option value="4">حصة 4</option></select>
 </div>
 
-<div id="track-page" class="page active">
-    <div id="studentsList"></div>
+<div id="track-page" class="report-section active">
+    <div id="list"></div>
 </div>
 
-<div id="stats-page" class="page" style="padding: 10px;">
-    <div class="s-card" style="text-align: center;">
-        <h4 style="margin-top:0">توزيع انضباط الفصل</h4>
-        <div style="max-width: 250px; margin: 0 auto;"><canvas id="classChart"></canvas></div>
-    </div>
-    <div id="indStats"></div>
+<div id="export-page" class="report-section">
+    <button class="rep-btn" style="background: #1e293b;" onclick="genClassReport()">
+        <i class="fas fa-table"></i> تصدير إحصاء الفصل (جدول)
+    </button>
+    <button class="rep-btn" style="background: #0891b2;" onclick="genAllCards()">
+        <i class="fas fa-id-card"></i> تصدير جميع بطاقات الطلاب (جماعي)
+    </button>
+    <hr>
+    <h4>تقارير فردية:</h4>
+    <div id="ind-list"></div>
 </div>
 
-<nav class="b-nav">
-    <button class="nav-item active" onclick="showPage('track', this)"><i class="fas fa-pencil-alt"></i>الرصد</button>
-    <button class="nav-item" onclick="showPage('stats', this); updateStats();"><i class="fas fa-file-invoice"></i>التقارير</button>
+<div id="print-area"></div>
+
+<nav id="bottom-nav" class="bottom-bar">
+    <button class="tab active" onclick="showP('track', this)"><i class="fas fa-edit"></i>الرصد</button>
+    <button class="tab" onclick="showP('export', this); renderIndList();"><i class="fas fa-file-export"></i>التصدير</button>
 </nav>
 
 <script>
-    const studentNames = {
+    const names = {
         "201": ["أديب اكرم بن ابراهيم الخديدي","البراء رانى احمد السليماني","الوليد احمد بطي الزايدي","اياد حمزه خضر القرشي","باسل ياسر احمد هوساوى","حمزه عبدالرحمن امين نظيف","خالد ايمن محمد سعيد ششه","سطام فهد عايض الحارثي","شايق سامى مرزوق الطويرقي","طلال احمد مرزوق القرشي","طلال وجدي محمد الغريبي","عبدالعزيز فهد محمد الثمالي","عبدالكريم محمد عبدالكريم القرشي","عبدالله طلال ابن عبدالله المالكي","عبدالله عبدالهادي قليل الخديدي","عبدالله فهد عبدالله المالكي","عبدالمجيد عبدالله حميدان الحارثي","عبدالملك عمر صالح العتيبي","عزام عبدالله ابن سعيد الثبيتي","علي حسن صالح الفته","فهد عبدالملك ساعد النفيعي","فيصل عبدالبديع خلف الله القرشي","محمد حسن محمد الطويرقي","محمد خلف الله ابن سالم الشريف","مستور محمد مستور الحارثي","يزن محمد عبدالله الضويحي","يزيد ابن عبداللطيف ابن عمر الطلحي"],
         "202": ["احمد عبدالرزاق احمد المالكي","احمد عبده علي الشدادي","أسامة عويش محمد القرشي","الوليد خالد بخيت العتيبي","تميم عبدالرزاق احمد المالكي","تميم عبدالمنعم ابن محمد الاسمرى","حسن شاكر حسن شبيلي","سلطان علي سليم القرشي","سلطان ماجد عيد المالكي","عبدالعزيز احمد سلمان الدعجاني","عبدالله محمد عبدالله الحمياني","فهد ابراهيم فرحان الجعيد","فهد ماجد مسفر النفيعي","فهد هلال هليل الثبيتي","فيصل بندر بن فايت الحارثي","قصي محمد مشعل سوادي","محمد تركي ابن عمر الهذلي","محمد ماجد محمد ال ابراهيم","مراد عبدالرحيم محمدعلي الثبيتي","مشعل متعب عواض الجعيد","مهند عبدالرزاق احمد المالكي","مؤيد مرزوق عواض النفيعي","هاشم فهد وصل الله القرشي","وسام عبدالله احمد الفيفي","ياسر بن عبدالله بن عمر الحميدي","ياسر دخيل الله حمدان المالكي"],
         "203": ["أحمد عبدالله ابن عطيه الحصيني","أسامه فهد دخيل الله الزهراني","اصيل ايمن حمدان السريحى","البراء احمد عبدالله القرشي","ايمن خالد مستور الطويرقي","بتال رائد عبدالله الطويرقي","ثامر ابراهيم احمد الثمالي","راكان سعد عيد العصيمي","ريان ماجد ابن علي المالكي","سلطان عبدالحميد عبدالله آل حميدان","سهيل قاسم عبيدالله القرشي","سيف محمد معيش القرشي","طلال علي جمعان الزهراني","عبدالعزيز خلف الله مرزوق القرشي","عبدالعزيز سعود رجاء الحصيني","عبدالله عبدالرحمن دغش القحطاني","عبدالله عبدالعزيز عبيد الدهيسي","عبدالله علي جمعان الزهراني","عصام عواض بن صالح الخديدي","عناد محمد احمد مجرشي","فارس مشرف صالح المالكي","فيصل سليمان بادي الطويرقي","فيصل فهد حمود الطويرقي","مشعل سعد خالد الحارثي","هتان محمد جنيدب القرشي"]
     };
 
-    let db = JSON.parse(localStorage.getItem('teacher_db_final')) || {};
-
-    const classSel = document.getElementById('classSel');
-    for(let c in studentNames) {
-        classSel.innerHTML += `<option value="${c}">فصل ${c}</option>`;
-        if(!db[c]) db[c] = studentNames[c].map(n => ({ name: n, style: 'none', data: {} }));
+    let db = JSON.parse(localStorage.getItem('final_v3')) || {};
+    
+    // تهيئة القوائم
+    const wkS = document.getElementById('wk');
+    for(let i=1; i<=16; i++) wkS.innerHTML += `<option value="${i}">أسبوع ${i}</option>`;
+    
+    for(let c in names) {
+        if(!db[c]) db[c] = names[c].map(n => ({ name: n, style: 'none', sessions: {} }));
     }
 
-    const weekSel = document.getElementById('weekSel');
-    for(let i=1; i<=16; i++) weekSel.innerHTML += `<option value="${i}">الأسبوع ${i}</option>`;
-
     function render() {
-        const cls = classSel.value;
-        const wk = weekSel.value;
-        const ses = document.getElementById('sessionSel').value;
-        const key = `${wk}_${ses}`;
-        const list = document.getElementById('studentsList');
-        list.innerHTML = '';
+        const c = document.getElementById('cls').value;
+        const w = wkS.value;
+        const l = document.getElementById('ls').value;
+        const key = `${w}_${l}`;
+        const container = document.getElementById('list');
+        container.innerHTML = '';
 
-        db[cls].forEach((s, idx) => {
-            if(!s.data[key]) s.data[key] = { att:'', part:0, hw:0, int:0 };
-            const d = s.data[key];
-            const card = document.createElement('div');
-            card.className = 's-card';
-            card.innerHTML = `
-                <div class="s-header">
-                    <div class="s-name">${s.name}</div>
-                    <div class="style-cell st-${s.style}" onclick="toggleStyle('${cls}',${idx})">${getStyleAr(s.style)}</div>
+        db[c].forEach((s, idx) => {
+            if(!s.sessions[key]) s.sessions[key] = { att:'', part:0, hw:0, int:0 };
+            const cur = s.sessions[key];
+            container.innerHTML += `
+                <div class="card">
+                    <div class="card-h">
+                        <div style="font-weight:bold">${s.name}</div>
+                        <div class="style-tag st-${s.style}" onclick="cycStyle('${c}',${idx})">${getS(s.style)}</div>
+                    </div>
+                    <div class="btn-group">
+                        <button class="a-btn ${cur.att==='P'?'active':''} P" onclick="setA('${c}',${idx},'P')">حاضر</button>
+                        <button class="a-btn ${cur.att==='L'?'active':''} L" onclick="setA('${c}',${idx},'L')">تأخر</button>
+                        <button class="a-btn ${cur.att==='A'?'active':''} A" onclick="setA('${c}',${idx},'A')">غائب</button>
+                    </div>
+                    ${drawC(c, idx, 'part', 'مشاركة', cur.part)}
+                    ${drawC(c, idx, 'hw', 'واجب', cur.hw)}
+                    ${drawC(c, idx, 'int', 'تفاعل', cur.int)}
+                </div>`;
+        });
+        save();
+    }
+
+    function drawC(c, idx, k, label, val) {
+        return `<div class="counter"><span>${label}</span><div>
+            <button class="m-btn" style="background:var(--err)" onclick="updVal('${c}',${idx},'${k}',-1)">-</button>
+            <span style="margin:0 15px; font-weight:bold">${val}</span>
+            <button class="m-btn" style="background:var(--ok)" onclick="updVal('${c}',${idx},'${k}',1)">+</button>
+        </div></div>`;
+    }
+
+    function updVal(c, idx, k, d) {
+        const key = `${wkS.value}_${document.getElementById('ls').value}`;
+        db[c][idx].sessions[key][k] += d; render();
+    }
+
+    function cycStyle(c, idx) {
+        const sts = ['none', 'visual', 'auditory', 'kinesthetic'];
+        db[c][idx].style = sts[(sts.indexOf(db[c][idx].style)+1)%4]; render();
+    }
+
+    function getS(s) { return {none:'النمط', visual:'بصري', auditory:'سمعي', kinesthetic:'حركي'}[s]; }
+    function setA(c, idx, v) {
+        const key = `${wkS.value}_${document.getElementById('ls').value}`;
+        db[c][idx].sessions[key].att = (db[c][idx].sessions[key].att === v) ? '' : v; render();
+    }
+    function save() { localStorage.setItem('final_v3', JSON.stringify(db)); }
+    function showP(p, b) {
+        document.querySelectorAll('.report-section').forEach(s => s.classList.remove('active'));
+        document.getElementById(p + '-page').classList.add('active');
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        b.classList.add('active'); window.scrollTo(0,0);
+    }
+
+    // تقارير الطباعة
+    function genClassReport() {
+        const c = document.getElementById('cls').value;
+        let html = `<h2>تقرير إحصائي للفصل ${c}</h2><table><tr><th>الطالب</th><th>النمط</th><th>حضور</th><th>تأخر</th><th>غياب</th><th>نقاط</th></tr>`;
+        db[c].forEach(s => {
+            let p=0, l=0, a=0, pts=0;
+            Object.values(s.sessions).forEach(v => {
+                if(v.att==='P') p++; if(v.att==='L') l++; if(v.att==='A') a++;
+                pts += (v.part + v.hw + v.int);
+            });
+            html += `<tr><td>${s.name}</td><td>${getS(s.style)}</td><td>${p}</td><td>${l}</td><td>${a}</td><td>${pts}</td></tr>`;
+        });
+        html += `</table><p>معلم المادة: محمد مجممي | مدير المدرسة: فهد القحطاني</p>`;
+        doPrint(html);
+    }
+
+    function genSingleCard(idx) {
+        const c = document.getElementById('cls').value;
+        const s = db[c][idx];
+        let p=0, l=0, a=0, part=0, hw=0, int=0;
+        Object.values(s.sessions).forEach(v => {
+            if(v.att==='P') p++; if(v.att==='L') l++; if(v.att==='A') a++;
+            part+=v.part; hw+=v.hw; int+=v.int;
+        });
+        const html = `
+            <div style="border:5px double var(--p); padding:30px; text-align:center;">
+                <h3>بطاقة متابعة طالب</h3>
+                <hr>
+                <div style="text-align:right">
+                    <p>اسم الطالب: <b>${s.name}</b></p>
+                    <p>الفصل: <b>${c}</b> | النمط: <b>${getS(s.style)}</b></p>
                 </div>
-                <div class="att-row">
-                    <div class="att-btn P ${d.att==='P'?'active':''}" onclick="setAtt('${cls}',${idx},'P')">حاضر</div>
-                    <div class="att-btn L ${d.att==='L'?'active':''}" onclick="setAtt('${cls}',${idx},'L')">تأخر</div>
-                    <div class="att-btn A ${d.att==='A'?'active':''}" onclick="setAtt('${cls}',${idx},'A')">غائب</div>
+                <table>
+                    <tr><th>المجال</th><th>الإحصائية التراكمية</th></tr>
+                    <tr><td>الحضور</td><td>${p}</td></tr>
+                    <tr><td>التأخر</td><td>${l}</td></tr>
+                    <tr><td>الغياب</td><td>${a}</td></tr>
+                    <tr><td>المشاركة والتفاعل</td><td>${part + int}</td></tr>
+                    <tr><td>الواجبات</td><td>${hw}</td></tr>
+                </table>
+                <br><br>
+                <div style="display:flex; justify-content:space-between">
+                    <span>المعلم: محمد مجممي</span>
+                    <span>المدير: فهد القحطاني</span>
                 </div>
-                ${createCounter(cls, idx, 'part', 'المشاركة', d.part)}
-                ${createCounter(cls, idx, 'hw', 'الواجبات', d.hw)}
-                ${createCounter(cls, idx, 'int', 'التفاعل الصفي', d.int)}
-            `;
-            list.appendChild(card);
+            </div>`;
+        doPrint(html);
+    }
+
+    function genAllCards() {
+        const c = document.getElementById('cls').value;
+        let html = '';
+        db[c].forEach((s, idx) => {
+            let p=0, l=0, a=0, pts=0;
+            Object.values(s.sessions).forEach(v => {
+                if(v.att==='P') p++; if(v.att==='L') l++; if(v.att==='A') a++;
+                pts += (v.part + v.hw + v.int);
+            });
+            html += `<div class="page-break" style="border:2px solid #000; padding:20px; margin-bottom:20px;">
+                <h3 style="text-align:center">بطاقة أداء الطالب: ${s.name}</h3>
+                <p>الفصل: ${c} | النمط: ${getS(s.style)}</p>
+                <p>الحضور: ${p} | التأخر: ${l} | الغياب: ${a}</p>
+                <p>إجمالي نقاط التميز: ${pts}</p>
+                <p style="font-size:0.8em; text-align:left">توقيع المعلم: محمد مجممي</p>
+            </div>`;
+        });
+        doPrint(html);
+    }
+
+    function doPrint(content) {
+        const area = document.getElementById('print-area');
+        area.innerHTML = content;
+        window.print();
+    }
+
+    function renderIndList() {
+        const c = document.getElementById('cls').value;
+        const container = document.getElementById('ind-list');
+        container.innerHTML = '';
+        db[c].forEach((s, idx) => {
+            container.innerHTML += `<button class="a-btn" style="width:100%; margin-bottom:5px; text-align:right" onclick="genSingleCard(${idx})">${s.name}</button>`;
         });
     }
 
-    function createCounter(cls, idx, key, label, val) {
-        return `
-            <div class="counter-row">
-                <span style="font-size:0.85em; font-weight:bold; color:#475569;">${label}</span>
-                <div class="math-group">
-                    <button class="btn-math btn-m" onclick="updateVal('${cls}',${idx},'${key}',-1)"><i class="fas fa-minus"></i></button>
-                    <span class="count-val">${val}</span>
-                    <button class="btn-math btn-p" onclick="updateVal('${cls}',${idx},'${key}',1)"><i class="fas fa-plus"></i></button>
-                </div>
-            </div>`;
-    }
-
-    function updateVal(cls, idx, key, delta) {
-        const sKey = `${weekSel.value}_${document.getElementById('sessionSel').value}`;
-        db[cls][idx].data[sKey][key] += delta;
-        save(); render();
-    }
-
-    function toggleStyle(cls, idx) {
-        const sts = ['none', 'visual', 'auditory', 'kinesthetic'];
-        db[cls][idx].style = sts[(sts.indexOf(db[cls][idx].style)+1)%4];
-        save(); render();
-    }
-
-    function getStyleAr(s) { return { none:'النمط؟', visual:'بصري', auditory:'سمعي', kinesthetic:'حركي' }[s]; }
-
-    function setAtt(cls, idx, v) {
-        const sKey = `${weekSel.value}_${document.getElementById('sessionSel').value}`;
-        db[cls][idx].data[sKey].att = (db[cls][idx].data[sKey].att === v) ? '' : v;
-        save(); render();
-    }
-
-    function save() { localStorage.setItem('teacher_db_final', JSON.stringify(db)); }
-
-    function exportData() {
+    function exportJSON() {
         const blob = new Blob([JSON.stringify(db)], {type: "application/json"});
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = `كشف_محمد_مجممي_${new Date().toLocaleDateString()}.json`;
+        a.download = `backup_majmani_${new Date().toLocaleDateString()}.json`;
         a.click();
     }
 
-    function importData(event) {
-        const reader = new FileReader();
-        reader.onload = (e) => { db = JSON.parse(e.target.result); save(); render(); alert("تمت الاستعادة بنجاح!"); };
-        reader.readAsText(event.target.files[0]);
-    }
-
-    function showPage(p, btn) {
-        document.querySelectorAll('.page').forEach(pg => pg.classList.remove('active'));
-        document.getElementById(p + '-page').classList.add('active');
-        document.querySelectorAll('.nav-item').forEach(t => t.classList.remove('active'));
-        btn.classList.add('active');
-        window.scrollTo(0,0);
-    }
-
-    let myChart;
-    function updateStats() {
-        const cls = classSel.value;
-        const area = document.getElementById('indStats');
-        area.innerHTML = '';
-        let total = { P:0, L:0, A:0 };
-
-        db[cls].forEach((s, idx) => {
-            let sum = { p:0, l:0, a:0, part:0, hw:0, int:0 };
-            Object.values(s.data).forEach(v => {
-                if(v.att==='P') sum.p++; if(v.att==='L') sum.l++; if(v.att==='A') sum.a++;
-                sum.part += v.part; sum.hw += v.hw; sum.int += v.int;
-            });
-            total.P += sum.p; total.L += sum.l; total.A += sum.a;
-            
-            area.innerHTML += `
-                <div class="s-card">
-                    <div style="display:flex; justify-content:space-between;">
-                        <strong>${s.name}</strong>
-                        <span style="font-size:0.75em; color:var(--accent); font-weight:bold;">${getStyleAr(s.style)}</span>
-                    </div>
-                    <div style="display:grid; grid-template-columns: repeat(4,1fr); gap:5px; margin-top:10px; text-align:center; font-size:0.7em; font-weight:bold;">
-                        <div style="background:#dcfce7; padding:5px; border-radius:5px; color:#166534;">ح: ${sum.p}</div>
-                        <div style="background:#fef3c7; padding:5px; border-radius:5px; color:#92400e;">ت: ${sum.l}</div>
-                        <div style="background:#fee2e2; padding:5px; border-radius:5px; color:#991b1b;">غ: ${sum.a}</div>
-                        <div style="background:#e0f2fe; padding:5px; border-radius:5px; color:#075985;">نقاط: ${sum.part+sum.hw+sum.int}</div>
-                    </div>
-                    <button class="btn-export-ind" onclick="exportStudentReport('${cls}', ${idx})">
-                        <i class="fas fa-file-pdf"></i> تصدير تقرير الطالب المستقل
-                    </button>
-                </div>`;
-        });
-
-        const ctx = document.getElementById('classChart').getContext('2d');
-        if(myChart) myChart.destroy();
-        myChart = new Chart(ctx, {
-            type: 'doughnut',
-            data: { labels:['حاضر','متأخر','غائب'], datasets:[{ data:[total.P, total.L, total.A], backgroundColor:['#10b981','#f59e0b','#ef4444'] }] }
-        });
-    }
-
-    function exportStudentReport(cls, idx) {
-        const s = db[cls][idx];
-        let sum = { p:0, l:0, a:0, part:0, hw:0, int:0 };
-        Object.values(s.data).forEach(v => {
-            if(v.att==='P') sum.p++; if(v.att==='L') sum.l++; if(v.att==='A') sum.a++;
-            sum.part += v.part; sum.hw += v.hw; sum.int += v.int;
-        });
-
-        const printWin = window.open('', '', 'width=800,height=900');
-        printWin.document.write(`
-            <div dir="rtl" style="font-family:'Segoe UI', Tahoma; padding:40px; border:10px double #1e3a8a; color:#1e3a8a;">
-                <div style="text-align:center; margin-bottom:30px;">
-                    <h1 style="margin:0;">بطاقة أداء الطالب</h1>
-                    <p style="font-size:1.2em;">الفصل الدراسي - 2026</p>
-                </div>
-                <div style="font-size:1.1em; line-height:2;">
-                    <p><strong>اسم الطالب:</strong> ${s.name}</p>
-                    <p><strong>الفصل:</strong> ${cls} | <strong>نمط التعلم:</strong> ${getStyleAr(s.style)}</p>
-                </div>
-                <table style="width:100%; border-collapse:collapse; margin-top:20px; text-align:center;">
-                    <thead>
-                        <tr style="background:#1e3a8a; color:white;">
-                            <th style="padding:15px; border:1px solid #1e3a8a;">البند</th>
-                            <th style="padding:15px; border:1px solid #1e3a8a;">الإحصائية التراكمية</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr><td style="padding:12px; border:1px solid #ddd;">أيام الحضور</td><td style="border:1px solid #ddd;">${sum.p}</td></tr>
-                        <tr><td style="padding:12px; border:1px solid #ddd;">مرات التأخير</td><td style="border:1px solid #ddd;">${sum.l}</td></tr>
-                        <tr><td style="padding:12px; border:1px solid #ddd;">مرات الغياب</td><td style="border:1px solid #ddd;">${sum.a}</td></tr>
-                        <tr><td style="padding:12px; border:1px solid #ddd; background:#f8fafc;">نقاط المشاركة والتفاعل</td><td style="border:1px solid #ddd; background:#f8fafc; font-weight:bold;">${sum.part + sum.int}</td></tr>
-                        <tr><td style="padding:12px; border:1px solid #ddd; background:#f8fafc;">نقاط الواجبات</td><td style="border:1px solid #ddd; background:#f8fafc; font-weight:bold;">${sum.hw}</td></tr>
-                    </tbody>
-                </table>
-                <div style="margin-top:50px; display:flex; justify-content:space-between; border-top:2px solid #eee; padding-top:20px;">
-                    <div style="text-align:center;">معلم المادة<br><strong>محمد مجممي</strong></div>
-                    <div style="text-align:center;">مدير المدرسة<br><strong>فهد القحطاني</strong></div>
-                </div>
-                <div style="text-align:center; margin-top:40px; font-size:0.8em; color:#666;">تم إنشاء هذا التقرير إلكترونياً</div>
-            </div>
-        `);
-        printWin.document.close();
-        printWin.print();
-    }
-
+    document.getElementById('cls').onchange = render;
+    wkS.onchange = render;
+    document.getElementById('ls').onchange = render;
     render();
 </script>
 </body>
