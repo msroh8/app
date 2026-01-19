@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>نظام المتابعة الذكي | أ. محمد مجممي</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2563eb; --secondary: #1e40af; --accent: #06b6d4;
+            --success: #22c55e; --warning: #eab308; --danger: #ef4444;
+            --bg: #f8fafc; --card: #ffffff;
+        }
+
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); margin: 0; padding-bottom: 90px; color: #1e293b; }
+        
+        /* الهيدر */
+        header { 
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white; padding: 20px 15px; border-radius: 0 0 25px 25px;
+            text-align: center; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+        }
+
+        /* شريط التحكم */
+        .sticky-tools { 
+            position: sticky; top: 0; background: var(--bg); z-index: 100;
+            padding: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+        }
+        select { 
+            width: 100%; padding: 12px; border-radius: 12px; border: 2px solid #e2e8f0;
+            background: white; font-weight: bold; font-size: 0.9em; outline: none;
+        }
+
+        /* بطاقة الطالب */
+        .s-card {
+            background: var(--card); margin: 12px; border-radius: 20px; padding: 15px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #f1f5f9;
+        }
+        .s-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        .s-name { font-weight: 800; font-size: 1.05em; color: #0f172a; line-height: 1.4; flex: 1; padding-left: 10px; }
+        
+        /* خلية النمط التفاعلية */
+        .style-box {
+            padding: 6px 12px; border-radius: 10px; font-size: 0.75em; font-weight: 800;
+            cursor: pointer; text-align: center; min-width: 65px; border: 2px solid transparent;
+        }
+        .st-none { background: #f1f5f9; color: #64748b; }
+        .st-visual { background: #dbeafe; color: #2563eb; border-color: #2563eb; }
+        .st-auditory { background: #f3e8ff; color: #9333ea; border-color: #9333ea; }
+        .st-kinesthetic { background: #ffedd5; color: #ea580c; border-color: #ea580c; }
+
+        /* الحضور */
+        .att-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 15px; }
+        .att-btn { 
+            padding: 10px; border-radius: 10px; border: 1px solid #e2e8f0; 
+            font-size: 0.8em; font-weight: bold; text-align: center; background: #fff; transition: 0.2s;
+        }
+        .att-btn.active.P { background: var(--success); color: white; border-color: var(--success); }
+        .att-btn.active.L { background: var(--warning); color: black; border-color: var(--warning); }
+        .att-btn.active.A { background: var(--danger); color: white; border-color: var(--danger); }
+
+        /* العدادات ذو الأزرار الكبيرة للجوال */
+        .counter-row { 
+            display: flex; align-items: center; justify-content: space-between; 
+            background: #f1f5f9; margin-top: 6px; padding: 8px 12px; border-radius: 12px;
+        }
+        .label-box { font-size: 0.85em; font-weight: bold; color: #475569; }
+        .controls-box { display: flex; align-items: center; gap: 15px; }
+        .btn-act { 
+            width: 38px; height: 38px; border-radius: 12px; border: none; 
+            color: white; font-size: 1.2em; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); active: transform: scale(0.9);
+        }
+        .btn-p { background: var(--success); }
+        .btn-m { background: var(--danger); }
+        .val-text { font-weight: 800; font-size: 1.1em; min-width: 25px; text-align: center; }
+
+        /* التقارير */
+        .report-card { background: white; margin: 10px; padding: 15px; border-radius: 15px; border: 1px solid #ddd; }
+        .report-header { border-bottom: 2px solid var(--primary); padding-bottom: 5px; margin-bottom: 10px; }
+
+        /* شريط التنقل */
+        .b-nav {
+            position: fixed; bottom: 0; width: 100%; background: white; 
+            display: flex; border-top: 1px solid #e2e8f0; padding: 10px 0;
+            box-shadow: 0 -10px 15px -3px rgba(0,0,0,0.05);
+        }
+        .nav-tab { flex: 1; border: none; background: none; color: #94a3b8; font-size: 0.7em; font-weight: bold; }
+        .nav-tab i { font-size: 1.8em; display: block; margin-bottom: 4px; }
+        .nav-tab.active { color: var(--primary); }
+
+        .page { display: none; }
+        .page.active { display: block; }
+
+        @media print {
+            .b-nav, .sticky-tools, .btn-act, header { display: none !important; }
+            .report-card { border: 1px solid #000; break-inside: avoid; }
+            .page { display: block !important; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h2 style="margin:0; font-size: 1.3em;">كشف المتابعة الإلكتروني 2026</h2>
+    <div style="font-size: 0.8em; margin-top: 8px; opacity: 0.9;">
+        أ/ محمد مجممي <i class="fas fa-chevron-left" style="font-size: 0.7em; margin: 0 5px;"></i> م/ فهد القحطاني
+    </div>
+</header>
+
+<div class="sticky-tools">
+    <select id="classSelector" onchange="render()"></select>
+    <select id="weekSelector" onchange="render()"></select>
+</div>
+
+<div id="track-page" class="page active">
+    <div id="studentsList"></div>
+</div>
+
+<div id="stats-page" class="page" style="padding: 10px;">
+    <div class="s-card" style="text-align:center;">
+        <h4 style="margin-top:0;">إحصائية الفصل التراكمية</h4>
+        <div style="max-width: 250px; margin: 0 auto;">
+            <canvas id="classChart"></canvas>
+        </div>
+        <button onclick="window.print()" style="margin-top:15px; width:100%; padding:12px; background:var(--primary); color:white; border:none; border-radius:10px; font-weight:bold;">
+            <i class="fas fa-print"></i> طباعة تقرير الفصل كاملاً
+        </button>
+    </div>
+    <div id="individualReports"></div>
+</div>
+
+<nav class="b-nav">
+    <button class="nav-tab active" onclick="showPage('track', this)">
+        <i class="fas fa-clipboard-check"></i> الرصد
+    </button>
+    <button class="nav-tab" onclick="showPage('stats', this); updateStats();">
+        <i class="fas fa-chart-bar"></i> التقارير
+    </button>
+</nav>
+
+<script>
+    // بيانات الطلاب المحدثة
+    const rawData = {
+        "201": ["أديب اكرم بن ابراهيم الخديدي","البراء رانى احمد السليماني","الوليد احمد بطي الزايدي","اياد حمزه خضر القرشي","باسل ياسر احمد هوساوى","حمزه عبدالرحمن امين نظيف","خالد ايمن محمد سعيد ششه","سطام فهد عايض الحارثي","شايق سامى مرزوق الطويرقي","طلال احمد مرزوق القرشي","طلال وجدي محمد الغريبي","عبدالعزيز فهد محمد الثمالي","عبدالكريم محمد عبدالكريم القرشي","عبدالله طلال ابن عبدالله المالكي","عبدالله عبدالهادي قليل الخديدي","عبدالله فهد عبدالله المالكي","عبدالمجيد عبدالله حميدان الحارثي","عبدالملك عمر صالح العتيبي","عزام عبدالله ابن سعيد الثبيتي","علي حسن صالح الفته","فهد عبدالملك ساعد النفيعي","فيصل عبدالبديع خلف الله القرشي","محمد حسن محمد الطويرقي","محمد خلف الله ابن سالم الشريف","مستور محمد مستور الحارثي","يزن محمد عبدالله الضويحي","يزيد ابن عبداللطيف ابن عمر الطلحي"],
+        "202": ["احمد عبدالرزاق احمد المالكي","احمد عبده علي الشدادي","أسامة عويش محمد القرشي","الوليد خالد بخيت العتيبي","تميم عبدالرزاق احمد المالكي","تميم عبدالمنعم ابن محمد الاسمرى","حسن شاكر حسن شبيلي","سلطان علي سليم القرشي","سلطان ماجد عيد المالكي","عبدالعزيز احمد سلمان الدعجاني","عبدالله محمد عبدالله الحمياني","فهد ابراهيم فرحان الجعيد","فهد ماجد مسفر النفيعي","فهد هلال هليل الثبيتي","فيصل بندر بن فايت الحارثي","قصي محمد مشعل سوادي","محمد تركي ابن عمر الهذلي","محمد ماجد محمد ال ابراهيم","مراد عبدالرحيم محمدعلي الثبيتي","مشعل متعب عواض الجعيد","مهند عبدالرزاق احمد المالكي","مؤيد مرزوق عواض النفيعي","هاشم فهد وصل الله القرشي","وسام عبدالله احمد الفيفي","ياسر بن عبدالله بن عمر الحميدي","ياسر دخيل الله حمدان المالكي"],
+        "203": ["أحمد عبدالله ابن عطيه الحصيني","أسامه فهد دخيل الله الزهراني","اصيل ايمن حمدان السريحى","البراء احمد عبدالله القرشي","ايمن خالد مستور الطويرقي","بتال رائد عبدالله الطويرقي","ثامر ابراهيم احمد الثمالي","راكان سعد عيد العصيمي","ريان ماجد ابن علي المالكي","سلطان عبدالحميد عبدالله آل حميدان","سهيل قاسم عبيدالله القرشي","سيف محمد معيش القرشي","طلال علي جمعان الزهراني","عبدالعزيز خلف الله مرزوق القرشي","عبدالعزيز سعود رجاء الحصيني","عبدالله عبدالرحمن دغش القحطاني","عبدالله عبدالعزيز عبيد الدهيسي","عبدالله علي جمعان الزهراني","عصام عواض بن صالح الخديدي","عناد محمد احمد مجرشي","فارس مشرف صالح المالكي","فيصل سليمان بادي الطويرقي","فيصل فهد حمود الطويرقي","مشعل سعد خالد الحارثي","هتان محمد جنيدب القرشي"]
+    };
+
+    let db = JSON.parse(localStorage.getItem('edu_tracker_2026')) || {};
+
+    // تهيئة
+    const classSel = document.getElementById('classSelector');
+    for(let c in rawData) {
+        classSel.innerHTML += `<option value="${c}">فصل ${c}</option>`;
+        if(!db[c]) db[c] = rawData[c].map(n => ({ name: n, style: 'none', weeks: {} }));
+    }
+
+    const weekSel = document.getElementById('weekSelector');
+    for(let i=1; i<=16; i++) weekSel.innerHTML += `<option value="${i}">الأسبوع ${i}</option>`;
+
+    function render() {
+        const cls = classSel.value;
+        const wk = weekSel.value;
+        const list = document.getElementById('studentsList');
+        list.innerHTML = '';
+
+        db[cls].forEach((s, idx) => {
+            if(!s.weeks[wk]) s.weeks[wk] = { att:'', part:0, hw:0, int:0 };
+            const w = s.weeks[wk];
+
+            const card = document.createElement('div');
+            card.className = 's-card';
+            card.innerHTML = `
+                <div class="s-header">
+                    <div class="s-name">${s.name}</div>
+                    <div class="style-box st-${s.style}" onclick="toggleStyle('${cls}',${idx})">${getStyleAr(s.style)}</div>
+                </div>
+                <div class="att-grid">
+                    <div class="att-btn P ${w.att==='P'?'active':''}" onclick="setAtt('${cls}',${idx},'P')">حاضر</div>
+                    <div class="att-btn L ${w.att==='L'?'active':''}" onclick="setAtt('${cls}',${idx},'L')">تأخر</div>
+                    <div class="att-btn A ${w.att==='A'?'active':''}" onclick="setAtt('${cls}',${idx},'A')">غائب</div>
+                </div>
+                ${drawCounter(cls, idx, 'part', 'المشاركة', w.part)}
+                ${drawCounter(cls, idx, 'hw', 'الواجبات', w.hw)}
+                ${drawCounter(cls, idx, 'int', 'التفاعل', w.int)}
+            `;
+            list.appendChild(card);
+        });
+    }
+
+    function drawCounter(cls, idx, key, label, val) {
+        return `
+            <div class="counter-row">
+                <span class="label-box">${label}</span>
+                <div class="controls-box">
+                    <button class="btn-act btn-m" onclick="mod('${cls}',${idx},'${key}',-1)"><i class="fas fa-minus"></i></button>
+                    <span class="val-text">${val}</span>
+                    <button class="btn-act btn-p" onclick="mod('${cls}',${idx},'${key}',1)"><i class="fas fa-plus"></i></button>
+                </div>
+            </div>`;
+    }
+
+    function mod(cls, idx, key, delta) {
+        db[cls][idx].weeks[weekSel.value][key] += delta;
+        save(); render();
+    }
+
+    function toggleStyle(cls, idx) {
+        const sts = ['none', 'visual', 'auditory', 'kinesthetic'];
+        db[cls][idx].style = sts[(sts.indexOf(db[cls][idx].style)+1)%4];
+        save(); render();
+    }
+
+    function getStyleAr(s) {
+        return { none:'النمط', visual:'بصري', auditory:'سمعي', kinesthetic:'حركي' }[s];
+    }
+
+    function setAtt(cls, idx, v) {
+        const wk = weekSel.value;
+        db[cls][idx].weeks[wk].att = (db[cls][idx].weeks[wk].att === v) ? '' : v;
+        save(); render();
+    }
+
+    function save() { localStorage.setItem('edu_tracker_2026', JSON.stringify(db)); }
+
+    function showPage(p, btn) {
+        document.querySelectorAll('.page').forEach(pg => pg.classList.remove('active'));
+        document.getElementById(p + '-page').classList.add('active');
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+        window.scrollTo(0,0);
+    }
+
+    let mainChart;
+    function updateStats() {
+        const cls = classSel.value;
+        const reportArea = document.getElementById('individualReports');
+        reportArea.innerHTML = '';
+        let t = { P:0, L:0, A:0 };
+
+        db[cls].forEach((s, idx) => {
+            let sum = { p:0, l:0, a:0, pts:0 };
+            Object.values(s.weeks).forEach(w => {
+                if(w.att==='P') sum.p++; if(w.att==='L') sum.l++; if(w.att==='A') sum.a++;
+                sum.pts += (w.part + w.hw + w.int);
+            });
+            t.P += sum.p; t.L += sum.l; t.A += sum.a;
+
+            reportArea.innerHTML += `
+                <div class="report-card">
+                    <div class="report-header">
+                        <strong>${s.name}</strong> 
+                        <span style="float:left; font-size:0.8em; color:var(--primary)">${getStyleAr(s.style)}</span>
+                    </div>
+                    <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:5px; text-align:center; font-size:0.8em;">
+                        <div style="background:#eefdf3; padding:5px; border-radius:5px">ح:${sum.p}</div>
+                        <div style="background:#fff9e6; padding:5px; border-radius:5px">ت:${sum.l}</div>
+                        <div style="background:#fff5f5; padding:5px; border-radius:5px">غ:${sum.a}</div>
+                        <div style="background:#eef2ff; padding:5px; border-radius:5px">نقاط:${sum.pts}</div>
+                    </div>
+                    <button onclick="printSingle(${idx})" style="width:100%; margin-top:8px; font-size:0.7em; background:none; border:1px solid #ccc; border-radius:5px; cursor:pointer;">تصدير تقرير الطالب</button>
+                </div>`;
+        });
+
+        const ctx = document.getElementById('classChart').getContext('2d');
+        if(mainChart) mainChart.destroy();
+        mainChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['حضور', 'تأخر', 'غياب'],
+                datasets: [{ data: [t.P, t.L, t.A], backgroundColor: ['#22c55e', '#eab308', '#ef4444'] }]
+            },
+            options: { plugins: { legend: { position: 'bottom' } } }
+        });
+    }
+
+    function printSingle(idx) {
+        const cls = classSel.value;
+        const s = db[cls][idx];
+        let sum = { p:0, l:0, a:0, part:0, hw:0, int:0 };
+        Object.values(s.weeks).forEach(w => {
+            if(w.att==='P') sum.p++; if(w.att==='L') sum.l++; if(w.att==='A') sum.a++;
+            sum.part += w.part; sum.hw += w.hw; sum.int += w.int;
+        });
+
+        const printWin = window.open('', '', 'width=600,height=600');
+        printWin.document.write(`
+            <div dir="rtl" style="font-family:sans-serif; padding:30px; border:5px solid #2563eb;">
+                <h2 style="text-align:center; color:#2563eb;">تقرير أداء الطالب</h2>
+                <hr>
+                <p><strong>اسم الطالب:</strong> ${s.name}</p>
+                <p><strong>الفصل:</strong> ${cls} | <strong>النمط:</strong> ${getStyleAr(s.style)}</p>
+                <table border="1" style="width:100%; text-align:center; border-collapse:collapse; margin-top:20px;">
+                    <tr style="background:#f1f5f9;"><th>البند</th><th>المجموع التراكمي</th></tr>
+                    <tr><td>الحضور</td><td>${sum.p}</td></tr>
+                    <tr><td>التأخر</td><td>${sum.l}</td></tr>
+                    <tr><td>الغياب</td><td>${sum.a}</td></tr>
+                    <tr><td>نقاط المشاركة</td><td>${sum.part}</td></tr>
+                    <tr><td>الواجبات</td><td>${sum.hw}</td></tr>
+                    <tr><td>التفاعل الصفي</td><td>${sum.int}</td></tr>
+                </table>
+                <div style="margin-top:50px; display:flex; justify-content:space-between;">
+                    <div>معلم المادة: محمد مجممي</div>
+                    <div>مدير المدرسة: فهد القحطاني</div>
+                </div>
+            </div>
+        `);
+        printWin.document.close();
+        printWin.print();
+    }
+
+    render();
+</script>
+</body>
+</html>
