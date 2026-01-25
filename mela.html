@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مشروع الطالبة: ميلا محمد بوقري | متجر عطور</title>
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        body { font-family: 'Cairo', sans-serif; background-color: #fdfaf7; color: #444; }
+        
+        /* Custom Colors */
+        :root { --gold: #b38b4d; --dark-bg: #1a1a1a; }
+
+        .navbar-brand { font-weight: 700; color: var(--gold) !important; font-size: 1.5rem; }
+        
+        /* Hero Section */
+        .hero { 
+            height: 75vh; 
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1595428707305-ec0866033423?auto=format&fit=crop&w=1500&q=80');
+            background-size: cover; background-position: center;
+            display: flex; align-items: center; justify-content: center; color: white;
+            border-bottom: 5px solid var(--gold);
+        }
+
+        .student-info-card {
+            background: white;
+            border-right: 5px solid var(--gold);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            margin-top: 50px;
+        }
+
+        .product-card { 
+            border: none; border-radius: 20px; overflow: hidden; transition: 0.4s; 
+            background: #fff; box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        }
+        .product-card:hover { transform: scale(1.03); box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
+        
+        .btn-mila { background: var(--gold); color: white; border-radius: 50px; padding: 12px 25px; border: none; font-weight: bold; }
+        .btn-mila:hover { background: #8e6d3a; color: white; }
+
+        .payment-icon { font-size: 2.2rem; margin: 10px; color: #888; }
+        .cart-badge { background: var(--gold); color: white; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="#">MILA | ميلا محمد بوقري</a>
+            <div class="d-flex align-items-center">
+                <button class="btn position-relative me-3" data-bs-toggle="modal" data-bs-target="#cartModal">
+                    <i class="fas fa-shopping-bag fa-lg"></i>
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill cart-badge" id="cartCount">0</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <section class="hero text-center">
+        <div data-aos="zoom-in" data-aos-duration="1200">
+            <h1 class="display-3 fw-bold">عطور ميلا بوقري</h1>
+            <p class="fs-4">مجموعة حصرية تعكس الرقي والأصالة</p>
+            <a href="#shop" class="btn btn-mila mt-3 px-5">ابدأ التسوق</a>
+        </div>
+    </section>
+
+    <div class="container mt-5">
+        <div class="student-info-card" data-aos="fade-left">
+            <h5 class="fw-bold text-dark">معلومات المشروع:</h5>
+            <p class="mb-1"><strong>اسم الطالبة:</strong> ميلا محمد بوقري</p>
+            <p class="mb-1"><strong>المادة:</strong> المهارات الرقمية / تقنية المعلومات</p>
+            <p class="mb-0"><strong>موضوع المشروع:</strong> تصميم متجر إلكتروني متكامل للهوية البصرية</p>
+        </div>
+    </div>
+
+    <section id="shop" class="py-5 container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">تشكيلة شتاء 2026</h2>
+            <div style="width: 80px; height: 3px; background: var(--gold); margin: 10px auto;"></div>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4" data-aos="fade-up">
+                <div class="product-card p-4 text-center">
+                    <img src="https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=400&q=80" class="img-fluid rounded mb-3" style="height: 250px; object-fit: cover;">
+                    <h4 class="fw-bold">ميلا بلو (Mila Blue)</h4>
+                    <p class="text-muted">انتعاش البحر مع لمسة صندل</p>
+                    <h5 class="text-dark fw-bold mb-3">210 ر.س</h5>
+                    <button class="btn btn-mila w-100" onclick="addToCart('ميلا بلو', 210)">إضافة للسلة</button>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="product-card p-4 text-center">
+                    <img src="https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=400&q=80" class="img-fluid rounded mb-3" style="height: 250px; object-fit: cover;">
+                    <h4 class="fw-bold">ميلا رويال (Royal)</h4>
+                    <p class="text-muted">العود الملكي الأصيل</p>
+                    <h5 class="text-dark fw-bold mb-3">350 ر.س</h5>
+                    <button class="btn btn-mila w-100" onclick="addToCart('ميلا رويال', 350)">إضافة للسلة</button>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="product-card p-4 text-center">
+                    <img src="https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=400&q=80" class="img-fluid rounded mb-3" style="height: 250px; object-fit: cover;">
+                    <h4 class="fw-bold">ميلا لافندر</h4>
+                    <p class="text-muted">هدوء اللافندر الفرنسي</p>
+                    <h5 class="text-dark fw-bold mb-3">180 ر.س</h5>
+                    <button class="btn btn-mila w-100" onclick="addToCart('ميلا لافندر', 180)">إضافة للسلة</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="bg-white py-4 border-top border-bottom">
+        <div class="container text-center">
+            <p class="text-muted small mb-3">نقبل جميع طرق الدفع الآمنة</p>
+            <div class="d-flex justify-content-center align-items-center flex-wrap gap-4">
+                <i class="fab fa-apple-pay payment-icon"></i>
+                <i class="fab fa-cc-visa payment-icon"></i>
+                <i class="fab fa-cc-mastercard payment-icon"></i>
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Mada_Logo.svg/1200px-Mada_Logo.svg.png" style="height: 30px; opacity: 0.6;">
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-dark text-white py-5">
+        <div class="container text-center">
+            <h4 class="fw-bold" style="color: var(--gold);">ميلا محمد بوقري</h4>
+            <p>مشروع مدرسي تعليمي لعام 2026</p>
+            <hr class="w-25 mx-auto bg-secondary">
+            <small class="text-secondary">تم التطوير باستخدام HTML, CSS, & JS</small>
+        </div>
+    </footer>
+
+    <div class="modal fade" id="cartModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">سلة التسوق - متجر ميلا</h5>
+                    <button type="button" class="btn-close ms-0 me-auto" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="cartContent">
+                    <p class="text-center">السلة فارغة، ابدأ باختيار عطورك المفضلة!</p>
+                </div>
+                <div class="modal-footer flex-column">
+                    <div class="d-flex justify-content-between w-100 mb-3">
+                        <span class="fw-bold">الإجمالي:</span>
+                        <span class="fw-bold text-success" id="totalPrice">0</span><span> ر.س</span>
+                    </div>
+                    <button class="btn btn-mila w-100" onclick="processPayment()">إتمام عملية الشراء</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        AOS.init();
+        let cart = [];
+        let total = 0;
+
+        function addToCart(name, price) {
+            cart.push({name, price});
+            total += price;
+            updateUI();
+            Swal.fire({
+                icon: 'success',
+                title: 'تمت الإضافة!',
+                text: `تم إضافة ${name} لسلتك بنجاح`,
+                confirmButtonColor: '#b38b4d',
+                timer: 1500
+            });
+        }
+
+        function updateUI() {
+            document.getElementById('cartCount').innerText = cart.length;
+            document.getElementById('totalPrice').innerText = total;
+            const content = document.getElementById('cartContent');
+            if(cart.length > 0) {
+                content.innerHTML = cart.map(i => `<div class="d-flex justify-content-between border-bottom py-2"><span>${i.name}</span><strong>${i.price} ر.س</strong></div>`).join('');
+            }
+        }
+
+        function processPayment() {
+            if(cart.length === 0) return Swal.fire('تنبيه', 'سلتك فارغة!', 'info');
+            
+            Swal.fire({
+                title: 'بوابة دفع ميلا بوقري',
+                html: `<p>سيتم الخصم من البطاقة: <br> <b>**** **** **** 2026</b></p>`,
+                showCancelButton: true,
+                confirmButtonText: 'تأكيد الدفع الآن',
+                confirmButtonColor: '#28a745'
+            }).then((res) => {
+                if(res.isConfirmed) {
+                    Swal.fire('تمت العملية!', 'شكراً لشرائك من متجر الطالبة ميلا بوقري', 'success');
+                    cart = []; total = 0; updateUI();
+                    bootstrap.Modal.getInstance(document.getElementById('cartModal')).hide();
+                }
+            });
+        }
+    </script>
+</body>
+</html>
