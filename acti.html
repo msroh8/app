@@ -4,411 +4,451 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>حقيبة الأنشطة الصفية - المعلمة حياة الغامدي</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Tajawal', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#1e3a8a',
+                        secondary: '#1d4ed8',
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
-        body { font-family: 'Tajawal', sans-serif; background-color: #f0f2f5; }
-        .gradient-header { background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%); }
-        .activity-card { transition: all 0.3s ease; border: 1px solid #e5e7eb; }
-        .activity-card:hover { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); border-color: #3b82f6; }
-        .procedural-step { position: relative; padding-right: 20px; }
-        .procedural-step::before { content: '•'; position: absolute; right: 0; color: #3b82f6; font-weight: bold; }
-        input[type="date"], input[type="text"] { border: 2px solid #d1d5db; transition: border-color 0.3s; }
-        input[type="date"]:focus, input[type="text"]:focus { border-color: #3b82f6; outline: none; }
+        body { font-family: 'Tajawal', sans-serif; background-color: #f3f4f6; overflow-x: hidden; }
+        
+        /* شاشة التحميل */
+        #loader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #fff; z-index: 9999; display: flex;
+            justify-content: center; align-items: center; flex-direction: column;
+        }
+        
+        .header-bg { background: linear-gradient(120deg, #1e3a8a, #1e40af, #2563eb); }
+        
+        .activity-card { 
+            background: white; border-radius: 1.5rem; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid #e5e7eb;
+            overflow: hidden;
+        }
+        .activity-card:hover { transform: translateY(-5px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+        
+        /* تنسيق القوائم */
+        .step-item { position: relative; padding-right: 1.5rem; margin-bottom: 0.75rem; }
+        .step-item::before { 
+            content: '✔'; position: absolute; right: 0; top: 0; 
+            color: #10b981; font-weight: bold; 
+        }
+
+        /* أزرار وتفاعلات */
+        .btn-action { transition: all 0.2s; }
+        .btn-action:active { transform: scale(0.98); }
+
+        /* منطقة رفع الصور */
+        .upload-area {
+            border: 2px dashed #cbd5e1; border-radius: 0.75rem;
+            background: #f8fafc; cursor: pointer;
+            transition: 0.3s; position: relative;
+            min-height: 120px; display: flex; align-items: center; justify-content: center;
+        }
+        .upload-area:hover { border-color: #3b82f6; background: #eff6ff; }
+        .upload-area img { max-height: 200px; width: auto; max-width: 100%; border-radius: 0.5rem; }
+
+        /* زر تعديل الصورة الأساسية */
+        .edit-main-img {
+            position: absolute; top: 1rem; left: 1rem;
+            background: rgba(0,0,0,0.7); color: white;
+            padding: 0.5rem 1rem; border-radius: 0.5rem;
+            font-size: 0.875rem; cursor: pointer; z-index: 10;
+        }
+        .edit-main-img:hover { background: rgba(0,0,0,0.9); }
     </style>
 </head>
-<body class="text-gray-800">
+<body class="text-gray-800" onload="hideLoader()">
 
-    <header class="gradient-header text-white shadow-2xl sticky top-0 z-50">
-        <div class="container mx-auto px-6 py-4 flex flex-col md:flex-row justify-between items-center">
-            <div class="flex items-center space-x-4 space-x-reverse mb-4 md:mb-0">
-                <i class="fas fa-chalkboard-teacher text-4xl animate__animated animate__pulse animate__infinite"></i>
-                <div>
-                    <h1 class="text-3xl font-extrabold">حقيبة الأنشطة الصفية التفاعلية</h1>
-                    <p class="text-blue-200 opacity-90">منصة العرض والتقييم داخل الحصة</p>
+    <div id="loader">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-600 mb-4"></div>
+        <p class="text-xl font-bold text-gray-700">جاري تجهيز الحقيبة...</p>
+    </div>
+
+    <header class="header-bg text-white shadow-lg sticky top-0 z-40">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="flex items-center gap-4 text-center md:text-right">
+                    <div class="bg-white/20 p-3 rounded-full">
+                        <i class="fas fa-chalkboard-teacher text-3xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl md:text-3xl font-bold">حقيبة الأنشطة الصفية</h1>
+                        <p class="text-blue-200 text-sm">منصة التوثيق والعرض التفاعلي</p>
+                    </div>
                 </div>
-            </div>
-            <div class="bg-white/10 backdrop-blur-md px-6 py-3 rounded-2xl flex items-center gap-4 border border-white/20">
-                <i class="fas fa-trophy text-yellow-400 text-2xl"></i>
-                <div class="text-center">
-                    <span class="block text-sm text-blue-200">مجموع نقاط الفصل</span>
-                    <span id="pointsDisplay" class="text-3xl font-bold text-yellow-300">0</span>
+                
+                <div class="flex gap-3 items-center">
+                    <button onclick="resetData()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-bold transition flex items-center gap-2">
+                        <i class="fas fa-trash"></i> تصفير
+                    </button>
+                    <div class="bg-black/20 px-4 py-2 rounded-lg text-center min-w-[120px]">
+                        <span class="block text-xs text-blue-200">نقاط الفصل</span>
+                        <span id="pointsDisplay" class="text-2xl font-bold text-yellow-400">0</span>
+                    </div>
                 </div>
             </div>
         </div>
     </header>
 
-    <main class="container mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8">
+    <div class="container mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8">
         
-        <aside class="lg:w-1/5 hidden lg:block">
-            <div class="bg-white rounded-2xl shadow-lg p-6 sticky top-28">
-                <h3 class="font-bold text-xl mb-6 text-gray-700 flex items-center gap-2">
-                    <i class="fas fa-list-ul"></i> فهرس الوحدات
+        <aside class="lg:w-1/4 hidden lg:block">
+            <div class="bg-white rounded-2xl shadow-md p-6 sticky top-28">
+                <h3 class="font-bold text-lg mb-4 text-gray-700 border-b pb-2">
+                    <i class="fas fa-list text-blue-600 ml-2"></i> الوحدات الدراسية
                 </h3>
-                <nav class="space-y-2">
-                    <a href="#section-space" class="flex items-center gap-3 p-3 rounded-lg hover:bg-orange-50 text-gray-700 hover:text-orange-600 transition-all group">
-                        <i class="fas fa-rocket group-hover:rotate-12 transition-transform"></i> الوحدة 4: الفضاء
-                    </a>
-                    <a href="#section-matter" class="flex items-center gap-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition-all group">
-                        <i class="fas fa-flask group-hover:rotate-12 transition-transform"></i> الوحدة 5: المادة
-                    </a>
-                    <a href="#section-forces" class="flex items-center gap-3 p-3 rounded-lg hover:bg-cyan-50 text-gray-700 hover:text-cyan-600 transition-all group">
-                        <i class="fas fa-bolt group-hover:rotate-12 transition-transform"></i> الوحدة 6: القوى والطاقة
-                    </a>
-                </nav>
-                <button onclick="exportToPDF()" class="mt-8 w-full bg-green-600 text-white py-3 rounded-xl hover:bg-green-700 flex items-center justify-center gap-2 transition shadow-md hover:shadow-lg">
-                    <i class="fas fa-file-pdf text-xl"></i> تصدير سجل الحصة (PDF)
-                </button>
+                <nav class="space-y-2 mb-6" id="nav-links">
+                    </nav>
+                
+                <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 text-center">
+                    <p class="text-sm text-gray-600 mb-3"><i class="fas fa-save ml-1"></i> الحفظ تلقائي في جهازك</p>
+                    <button onclick="exportToPDF()" class="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-bold shadow transition flex justify-center items-center gap-2">
+                        <i class="fas fa-file-pdf"></i> تصدير PDF
+                    </button>
+                </div>
             </div>
         </aside>
 
-        <section id="mainContent" class="lg:w-4/5 space-y-16">
-            </section>
-    </main>
+        <main id="mainContent" class="lg:w-3/4 w-full space-y-12 pb-20">
+            </main>
+    </div>
 
-    <footer class="bg-gray-800 text-gray-300 py-8 mt-20 relative overflow-hidden">
-        <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
-        <div class="container mx-auto px-6 text-center relative z-10">
-            <h2 class="text-2xl font-bold text-white mb-2">المملكة العربية السعودية - وزارة التعليم</h2>
-            <p class="text-lg mb-4">حقيبة الأنشطة الصفية والإثرائية - لمادة العلوم</p>
-            <div class="inline-block bg-blue-900/50 px-6 py-3 rounded-full border border-blue-500/30">
-                 <p class="text-blue-300 font-bold text-xl flex items-center justify-center gap-3">
-                    <i class="fas fa-user-tie"></i> إعداد وتنفيذ المعلمة: حياة الغامدي
+    <footer class="bg-gray-800 text-white py-8 mt-12 text-center">
+        <div class="container mx-auto px-4">
+            <h2 class="text-xl font-bold mb-2">وزارة التعليم - المملكة العربية السعودية</h2>
+            <div class="inline-block bg-white/10 px-6 py-2 rounded-full mt-2">
+                <p class="font-bold text-blue-200 flex items-center justify-center gap-2">
+                    <i class="fas fa-user-circle"></i> المعلمة: حياة الغامدي
                 </p>
             </div>
-            <p class="text-sm mt-6 opacity-60">جميع الحقوق محفوظة &copy; 2024</p>
         </div>
     </footer>
 
     <script>
-        // --- Data Structure for Activities ---
+        // إخفاء شاشة التحميل
+        function hideLoader() {
+            setTimeout(() => {
+                document.getElementById('loader').style.display = 'none';
+            }, 1000);
+        }
+
+        // --- البيانات ---
         const activitiesData = [
             {
-                id: 'section-space',
-                title: 'الوحدة الرابعة: الفضاء',
-                themeColor: 'orange',
+                id: 'unit-space',
+                title: 'الوحدة 4: الفضاء',
+                color: 'orange', // tailwind colors names
                 icon: 'fa-rocket',
                 activities: [
                     {
-                        id: 'act-space-1',
-                        title: 'نمذجة تعاقب الليل والنهار',
-                        icon: 'fa-globe-africa',
-                        image: 'https://images.unsplash.com/photo-1614732414444-096e6f655b56?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-                        procedure: [
-                            'استخدام مجسم للكرة الأرضية ومصباح يدوي (يمثل الشمس).',
-                            'تظليم الغرفة وتركيز ضوء المصباح على جانب واحد من الكرة.',
-                            'تدوير الكرة الأرضية ببطء عكس عقارب الساعة.',
-                            'مطالبة الطالبات بتحديد المناطق التي تعيش النهار والمناطق التي تعيش الليل أثناء الدوران.'
-                        ],
-                        points: 50
+                        id: 'act1',
+                        title: 'تعاقب الليل والنهار',
+                        points: 50,
+                        img: 'https://images.unsplash.com/photo-1614732414444-096e6f655b56?auto=format&fit=crop&w=800&q=80',
+                        steps: ['تجهيز مجسم الكرة الأرضية ومصدر ضوء.', 'تدوير المجسم وتمثيل دوران الأرض.', 'تحديد مناطق الظل والنور.']
                     },
                     {
-                        id: 'act-space-2',
-                        title: 'محاكاة أطوار القمر (صندوق القمر)',
-                        icon: 'fa-moon',
-                        image: 'https://images.unsplash.com/photo-1532693322450-2cb5c511067d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-                        procedure: [
-                            'استخدام صندوق كرتوني مفتوح من جهة، وكرة بيضاء صغيرة معلقة بداخله.',
-                            'عمل ثقوب في جوانب الصندوق المختلفة للنظر منها.',
-                            'تسليط ضوء مصباح على الكرة من فتحة جانبية ثابتة.',
-                            'جعل الطالبة تنظر من الثقوب المختلفة لرؤية كيف يتغير الجزء المضاء من الكرة (محاكاة الأطوار).'
-                        ],
-                        points: 75
-                    },
-                    {
-                        id: 'act-space-3',
-                        title: 'مقارنة أحجام الكواكب (النموذج السلمي)',
-                        icon: 'fa-solar-system',
-                        image: 'https://images.unsplash.com/photo-1614313511387-1436a4480ebb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-                        procedure: [
-                            'استخدام فواكه أو كرات بأحجام مختلفة لتمثيل الكواكب (مثلاً: بطيخة للمشتري، برتقالة للأرض، عنبة لعطارد).',
-                            'عرض الصور الحقيقية للكواكب بجانب النماذج.',
-                            'مناقشة الفرق الهائل في الحجم بين الكواكب الداخلية والخارجية والشمس.',
-                            'ترتيب النماذج حسب بعدها عن الشمس.'
-                        ],
-                        points: 60
+                        id: 'act2',
+                        title: 'أطوار القمر',
+                        points: 75,
+                        img: 'https://images.unsplash.com/photo-1532693322450-2cb5c511067d?auto=format&fit=crop&w=800&q=80',
+                        steps: ['استخدام صندوق العرض.', 'تحريك الكرة البيضاء داخل الصندوق.', 'رصد الأشكال المختلفة للإضاءة.']
                     }
                 ]
             },
             {
-                id: 'section-matter',
-                title: 'الوحدة الخامسة: المادة',
-                themeColor: 'blue',
+                id: 'unit-matter',
+                title: 'الوحدة 5: المادة',
+                color: 'blue',
                 icon: 'fa-flask',
                 activities: [
                     {
-                        id: 'act-matter-1',
-                        title: 'مختبر الكثافة: برج السوائل الملون',
-                        icon: 'fa-vial',
-                        image: 'https://images.unsplash.com/photo-1626887066721-806e92006867?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-                        procedure: [
-                            'إحضار سوائل مختلفة الكثافة (عسل، صابون سائل ملون، ماء ملون، زيت).',
-                            'سكب السوائل ببطء وحذر شديد في أنبوب زجاجي طويل، بدءاً بالأكثر كثافة (العسل).',
-                            'ملاحظة كيف تطفو السوائل فوق بعضها البعض دون أن تختلط.',
-                            'إسقاط أجسام صغيرة (مسمار، قطعة بلاستيك) وملاحظة أين تستقر.'
-                        ],
-                        points: 80
+                        id: 'act3',
+                        title: 'كثافة السوائل',
+                        points: 80,
+                        img: 'https://images.unsplash.com/photo-1626887066721-806e92006867?auto=format&fit=crop&w=800&q=80',
+                        steps: ['سكب العسل ثم الماء ثم الزيت.', 'ملاحظة عدم الاختلاط.', 'تفسير مفهوم الكثافة.']
                     },
                     {
-                        id: 'act-matter-2',
-                        title: 'فصل المخاليط: تحدي التنقية',
-                        icon: 'fa-filter',
-                        image: 'https://plus.unsplash.com/premium_photo-1676320877930-cfb03c8f1664?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-                        procedure: [
-                            'تجهيز مخلوط معقد (ماء + رمل + ملح + برادة حديد).',
-                            'استخدام المغناطيس أولاً لفصل برادة الحديد.',
-                            'استخدام ورقة الترشيح والقمع لفصل الرمل عن الماء المالح.',
-                            'مناقشة طريقة فصل الملح المذاب (التبخير) كخطوة نظرية أخيرة.'
-                        ],
-                        points: 70
-                    },
-                    {
-                        id: 'act-matter-3',
-                        title: 'دلائل التغير الكيميائي: البالون المنتفخ',
-                        icon: 'fa-bacterium',
-                        image: 'https://images.unsplash.com/photo-1581093588401-fbb62a02f120?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-                        procedure: [
-                            'وضع كمية من بيكربونات الصوديوم داخل بالون غير منفوخ.',
-                            'وضع كمية من الخل في قارورة بلاستيكية فارغة.',
-                            'تثبيت فوهة البالون على فوهة القارورة بحذر.',
-                            'رفع البالون للأعلى ليسقط المسحوق داخل الخل، وملاحظة تصاعد الغاز وانتفاخ البالون كدليل على التغير الكيميائي.'
-                        ],
-                        points: 90
+                        id: 'act4',
+                        title: 'فصل المخاليط',
+                        points: 70,
+                        img: 'https://plus.unsplash.com/premium_photo-1676320877930-cfb03c8f1664?auto=format&fit=crop&w=800&q=80',
+                        steps: ['خلط الرمل والماء وبرادة الحديد.', 'استخدام المغناطيس.', 'استخدام الترشيح.']
                     }
                 ]
             },
             {
-                id: 'section-forces',
-                title: 'الوحدة السادسة: القوى والطاقة',
-                themeColor: 'cyan',
+                id: 'unit-force',
+                title: 'الوحدة 6: القوى',
+                color: 'cyan',
                 icon: 'fa-bolt',
                 activities: [
                     {
-                        id: 'act-force-1',
-                        title: 'تأثير الاحتكاك على الحركة',
-                        icon: 'fa-road',
-                        image: 'https://images.unsplash.com/photo-1598599678963-5f7574863094?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-                        procedure: [
-                            'استخدام سيارة لعبة صغيرة ومنحدر بسيط.',
-                            'تجهيز أسطح مختلفة في نهاية المنحدر (سجادة خشنة، بلاط أملس، ورقة صنفرة).',
-                            'إطلاق السيارة من نفس الارتفاع على كل سطح.',
-                            'قياس المسافة التي تقطعها السيارة في كل مرة ومناقشة دور قوة الاحتكاك في إيقافها.'
-                        ],
-                        points: 65
+                        id: 'act5',
+                        title: 'الاحتكاك والحركة',
+                        points: 65,
+                        img: 'https://images.unsplash.com/photo-1598599678963-5f7574863094?auto=format&fit=crop&w=800&q=80',
+                        steps: ['دحرج السيارة على سطح أملس.', 'دحرج السيارة على سجادة.', 'قياس المسافة ومقارنتها.']
                     },
                     {
-                        id: 'act-force-2',
-                        title: 'بناء دائرة كهربائية (المفتاح الذكي)',
-                        icon: 'fa-lightbulb',
-                        image: 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-                        procedure: [
-                            'توفير بطارية، أسلاك توصيل، مصباح صغير، ومشابك ورق.',
-                            'تحدي الطالبات لبناء دائرة يضيء فيها المصباح.',
-                            'استخدام مشبكي ورق وقطعة كرتون لابتكار "مفتاح كهربائي" بسيط لفتح وإغلاق الدائرة.',
-                            'رسم مخطط للدائرة الكهربائية التي تم تنفيذها.'
-                        ],
-                        points: 100
-                    },
-                    {
-                        id: 'act-force-3',
-                        title: 'المغناطيس الكهربائي (الرافعة القوية)',
-                        icon: 'fa-magnet',
-                        image: 'https://images.unsplash.com/photo-1546625552-5a69a804e937?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-                        procedure: [
-                            'لف سلك نحاسي معزول حول مسمار حديدي كبير عدة لفات.',
-                            'توصيل طرفي السلك ببطارية.',
-                            'تقريب المسمار من مشابك حديدية صغيرة وملاحظة تحوله لمغناطيس.',
-                            'تجربة زيادة عدد اللفات أو استخدام بطارية أقوى وملاحظة تأثير ذلك على قوة الجذب.'
-                        ],
-                        points: 85
+                        id: 'act6',
+                        title: 'الدوائر الكهربائية',
+                        points: 100,
+                        img: 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&w=800&q=80',
+                        steps: ['توصيل البطارية والمصباح.', 'تركيب المفتاح الكهربائي.', 'رسم مخطط الدائرة.']
                     }
                 ]
             }
         ];
 
-        // --- Rendering Logic ---
-        function renderActivities() {
-            const container = document.getElementById('mainContent');
-            let htmlContent = '';
+        // --- بناء الصفحة ---
+        function renderPage() {
+            const mainContainer = document.getElementById('mainContent');
+            const navContainer = document.getElementById('nav-links');
+            let mainHtml = '';
+            let navHtml = '';
 
-            activitiesData.forEach(section => {
-                const bgColor = `bg-${section.themeColor}-100`;
-                const textColor = `text-${section.themeColor}-700`;
-                const borderColor = `border-${section.themeColor}-500`;
+            activitiesData.forEach(unit => {
+                // بناء القائمة الجانبية
+                navHtml += `
+                    <a href="#${unit.id}" class="block p-2 rounded hover:bg-${unit.color}-50 text-gray-700 hover:text-${unit.color}-600 transition flex items-center gap-2">
+                        <i class="fas ${unit.icon}"></i> ${unit.title}
+                    </a>
+                `;
 
-                htmlContent += `
-                    <div id="${section.id}" class="animate__animated animate__fadeIn">
-                        <div class="flex items-center gap-4 mb-8 p-4 rounded-2xl ${bgColor} ${borderColor} border-r-8 shadow-sm">
-                            <div class="bg-white p-3 rounded-full shadow-md">
-                                <i class="fas ${section.icon} fa-2x ${textColor}"></i>
-                            </div>
-                            <h2 class="text-3xl font-bold ${textColor}">${section.title}</h2>
+                // بناء المحتوى الرئيسي
+                mainHtml += `
+                    <div id="${unit.id}" class="mb-12">
+                        <div class="flex items-center gap-3 mb-6 border-r-4 border-${unit.color}-500 pr-4">
+                            <h2 class="text-2xl font-bold text-gray-800">${unit.title}</h2>
                         </div>
                         <div class="grid gap-8">
                 `;
 
-                section.activities.forEach(act => {
-                    htmlContent += `
-                        <div class="activity-card bg-white rounded-3xl overflow-hidden shadow-md" id="${act.id}">
-                            <div class="relative h-72 md:h-96 overflow-hidden">
-                                <img src="${act.image}" alt="${act.title}" class="w-full h-full object-cover transform hover:scale-105 transition-transform duration-700">
-                                <div class="absolute bottom-0 right-0 bg-gradient-to-t from-black/80 to-transparent w-full p-6 pt-20">
-                                    <h3 class="text-2xl md:text-3xl font-bold text-white flex items-center gap-3">
-                                        <i class="fas ${act.icon} text-${section.themeColor}-300"></i> ${act.title}
-                                    </h3>
-                                </div>
-                                <div class="absolute top-4 left-4 bg-yellow-400 text-gray-900 font-bold px-4 py-2 rounded-full shadow-lg">
-                                    ${act.points}+ نقطة
-                                </div>
+                unit.activities.forEach(act => {
+                    mainHtml += `
+                        <div class="activity-card group" id="card-${act.id}">
+                            <div class="relative h-64 overflow-hidden bg-gray-200">
+                                <img src="${act.img}" id="main-img-${act.id}" class="w-full h-full object-cover transition duration-500 group-hover:scale-105">
+                                <label class="edit-main-img" data-html2canvas-ignore="true">
+                                    <i class="fas fa-camera"></i> تغيير الصورة
+                                    <input type="file" accept="image/*" class="hidden" onchange="updateImage(this, 'main-img-${act.id}')">
+                                </label>
+                                <span class="absolute top-4 right-4 bg-yellow-400 text-black font-bold px-3 py-1 rounded-full shadow">
+                                    ${act.points} نقطة
+                                </span>
                             </div>
-                            
-                            <div class="p-6 md:p-8">
-                                <div class="mb-8 bg-gray-50 p-6 rounded-2xl border-r-4 ${borderColor}">
-                                    <h4 class="font-bold text-xl mb-4 text-gray-800 flex items-center gap-2">
-                                        <i class="fas fa-clipboard-list text-${section.themeColor}-600"></i> الوصف الإجرائي للتنفيذ:
-                                    </h4>
-                                    <ul class="space-y-3 text-lg text-gray-700 leading-relaxed">
-                                        ${act.procedure.map(step => `<li class="procedural-step">${step}</li>`).join('')}
+
+                            <div class="p-6">
+                                <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                    <i class="fas ${unit.icon} text-${unit.color}-500"></i> ${act.title}
+                                </h3>
+                                
+                                <div class="bg-gray-50 p-4 rounded-xl mb-6 border border-gray-100">
+                                    <h4 class="font-bold text-sm text-gray-500 mb-2">خطوات العمل:</h4>
+                                    <ul class="text-gray-700">
+                                        ${act.steps.map(s => `<li class="step-item">${s}</li>`).join('')}
                                     </ul>
                                 </div>
 
-                                <div class="bg-blue-50/50 p-6 rounded-2xl border border-blue-100 mb-6 input-area">
-                                    <h4 class="font-bold text-gray-700 mb-4 flex items-center gap-2"><i class="fas fa-user-edit"></i> توثيق التنفيذ:</h4>
+                                <div class="space-y-4" id="inputs-${act.id}">
                                     <div class="grid md:grid-cols-2 gap-4">
                                         <div>
-                                            <label class="block text-sm font-bold text-gray-600 mb-2">تاريخ التنفيذ:</label>
-                                            <input type="date" class="w-full p-3 rounded-xl bg-white shadow-sm date-input">
+                                            <label class="block text-sm font-bold text-gray-600 mb-1">اسم الطالبة/المجموعة:</label>
+                                            <input type="text" id="name-${act.id}" class="w-full border-2 border-gray-200 p-2 rounded-lg focus:border-blue-500 outline-none" placeholder="..." oninput="autoSave()">
                                         </div>
                                         <div>
-                                            <label class="block text-sm font-bold text-gray-600 mb-2">اسم الطالبة / المجموعة المشاركة:</label>
-                                            <input type="text" placeholder="اكتبي الاسم هنا..." class="w-full p-3 rounded-xl bg-white shadow-sm student-input">
+                                            <label class="block text-sm font-bold text-gray-600 mb-1">تاريخ التنفيذ:</label>
+                                            <input type="date" id="date-${act.id}" class="w-full border-2 border-gray-200 p-2 rounded-lg focus:border-blue-500 outline-none" onchange="autoSave()">
                                         </div>
                                     </div>
+
+                                    <div>
+                                        <label class="block text-sm font-bold text-gray-600 mb-1">صورة من تطبيق الطالبة (اختياري):</label>
+                                        <label class="upload-area" id="doc-area-${act.id}">
+                                            <div class="text-center text-gray-400">
+                                                <i class="fas fa-cloud-upload-alt text-2xl mb-1"></i>
+                                                <span class="text-xs block">اضغط لرفع الصورة</span>
+                                            </div>
+                                            <input type="file" accept="image/*" class="hidden" onchange="handleDocUpload(this, '${act.id}')">
+                                        </label>
+                                    </div>
+
+                                    <button onclick="completeActivity('${act.id}', ${act.points})" class="btn-action w-full bg-${unit.color}-600 hover:bg-${unit.color}-700 text-white font-bold py-3 rounded-xl shadow-lg mt-4 flex justify-center items-center gap-2">
+                                        <i class="fas fa-check-circle"></i> رصد الدرجة وإتمام النشاط
+                                    </button>
                                 </div>
 
-                                <button onclick="completeTaskWithDetails(this, ${act.points})" class="complete-btn w-full bg-gradient-to-r from-${section.themeColor}-600 to-${section.themeColor}-500 text-white font-bold text-xl py-4 rounded-2xl hover:shadow-lg hover:from-${section.themeColor}-700 transition-all flex items-center justify-center gap-3">
-                                    <i class="fas fa-check-circle text-2xl"></i> إتمام النشاط ورصد النقاط
-                                </button>
+                                <div id="done-${act.id}" class="hidden bg-green-50 text-green-700 p-4 rounded-xl text-center border border-green-200 mt-4">
+                                    <i class="fas fa-check-double text-2xl mb-2"></i>
+                                    <p class="font-bold">تم إنجاز النشاط وتوثيقه بنجاح</p>
+                                </div>
                             </div>
                         </div>
                     `;
                 });
-
-                htmlContent += `</div></div>`;
+                mainHtml += `</div></div>`;
             });
 
-            container.innerHTML = htmlContent;
-            // Set default date to today for convenience
-            document.querySelectorAll('.date-input').forEach(input => {
-                input.valueAsDate = new Date();
-            });
+            mainContainer.innerHTML = mainHtml;
+            navContainer.innerHTML = navHtml;
+            
+            // ضبط التواريخ لليوم
+            document.querySelectorAll('input[type="date"]').forEach(inp => inp.valueAsDate = new Date());
+            
+            // استرجاع البيانات
+            loadData();
         }
 
-        // --- Gamification & Validation Logic ---
+        // --- الوظائف المنطقية ---
         let totalPoints = 0;
 
-        function completeTaskWithDetails(buttonBtn, points) {
-            const card = buttonBtn.closest('.activity-card');
-            const studentInput = card.querySelector('.student-input');
-            const dateInput = card.querySelector('.date-input');
-            const inputArea = card.querySelector('.input-area');
-            const studentName = studentInput.value.trim();
-            const dateValue = dateInput.value;
-
-            // Validation: Ensure student name is entered
-            if (studentName === "") {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'بيانات ناقصة!',
-                    text: 'الرجاء كتابة اسم الطالبة أو المجموعة قبل رصد النقاط.',
-                    confirmButtonText: 'حسناً',
-                    confirmButtonColor: '#3b82f6'
-                });
-                studentInput.focus();
-                return;
+        function updateImage(input, imgId) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = e => document.getElementById(imgId).src = e.target.result;
+                reader.readAsDataURL(input.files[0]);
             }
+        }
 
-            // Success Flow
+        function handleDocUpload(input, actId) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    const area = document.getElementById(`doc-area-${actId}`);
+                    area.innerHTML = `<img src="${e.target.result}" alt="توثيق">`;
+                    area.style.border = "2px solid #3b82f6";
+                    autoSave(); // ملاحظة: الصور لا تحفظ في التخزين المحلي لتجنب امتلاء الذاكرة، تحفظ فقط للجلسة الحالية
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function completeActivity(id, points) {
+            const name = document.getElementById(`name-${id}`).value;
+            if (!name) return Swal.fire('تنبيه', 'الرجاء كتابة اسم الطالبة', 'warning');
+
+            // تأثير بصري
             totalPoints += points;
-            updatePointsDisplay();
-
-            // UI Feedback
-            buttonBtn.innerHTML = `<i class="fas fa-check-double"></i> تم الرصد بنجاح (${studentName})`;
-            buttonBtn.classList.remove('from-orange-600', 'to-orange-500', 'from-blue-600', 'to-blue-500', 'from-cyan-600', 'to-cyan-500');
-            buttonBtn.classList.add('bg-green-600', 'cursor-not-allowed', 'opacity-90');
-            buttonBtn.disabled = true;
+            document.getElementById('pointsDisplay').innerText = totalPoints;
             
-            // Lock inputs to prevent changes after submission
-            studentInput.disabled = true;
-            dateInput.disabled = true;
-            inputArea.classList.add('opacity-70', 'bg-gray-100');
-
+            // قفل النشاط
+            document.getElementById(`inputs-${id}`).classList.add('hidden');
+            document.getElementById(`done-${id}`).classList.remove('hidden');
+            
             Swal.fire({
                 icon: 'success',
-                title: `أحسنتِ يا ${studentName}!`,
-                html: `تم إنجاز النشاط بتاريخ <span class="font-bold">${dateValue}</span><br>وإضافة <span class="text-yellow-500 font-bold text-xl">${points}+</span> نقطة لرصيد الفصل.`,
-                timer: 3000,
-                timerProgressBar: true,
-                showConfirmButton: false,
-                background: '#f0fdf4'
+                title: 'أحسنت!',
+                text: `تم إضافة ${points} نقطة`,
+                timer: 1500,
+                showConfirmButton: false
             });
-        }
-
-        function updatePointsDisplay() {
-            const pointsElement = document.getElementById('pointsDisplay');
-            pointsElement.innerText = totalPoints;
-            pointsElement.classList.add('animate__animated', 'animate__heartBeat');
-            setTimeout(() => {
-                pointsElement.classList.remove('animate__heartBeat');
-            }, 1000);
-        }
-
-        // --- PDF Export Logic ---
-        function exportToPDF() {
-            // Temporarily show hidden sidebar for PDF print if needed, or focus on main content.
-            // For a clean classroom log, we will export the main content area.
-            const element = document.getElementById('mainContent');
             
-            Swal.fire({
-                title: 'جاري تحضير سجل الحصة...',
-                html: 'يتم الآن إنشاء ملف PDF يحتوي على كافة الأنشطة الموثقة.',
-                timerProgressBar: true,
-                didOpen: () => { Swal.showLoading(); }
-            });
+            autoSave();
+        }
 
+        // --- الحفظ والاسترجاع ---
+        function autoSave() {
+            const data = {
+                points: totalPoints,
+                activities: {}
+            };
+            
+            activitiesData.forEach(unit => {
+                unit.activities.forEach(act => {
+                    const name = document.getElementById(`name-${act.id}`).value;
+                    const date = document.getElementById(`date-${act.id}`).value;
+                    const isDone = document.getElementById(`done-${act.id}`).classList.contains('hidden') === false;
+                    
+                    if (name || isDone) {
+                        data.activities[act.id] = { name, date, isDone };
+                    }
+                });
+            });
+            
+            localStorage.setItem('science_bag_data', JSON.stringify(data));
+        }
+
+        function loadData() {
+            const saved = JSON.parse(localStorage.getItem('science_bag_data'));
+            if (!saved) return;
+
+            totalPoints = saved.points || 0;
+            document.getElementById('pointsDisplay').innerText = totalPoints;
+
+            for (const [id, val] of Object.entries(saved.activities)) {
+                if (document.getElementById(`name-${id}`)) {
+                    document.getElementById(`name-${id}`).value = val.name;
+                    document.getElementById(`date-${id}`).value = val.date;
+                    
+                    if (val.isDone) {
+                        document.getElementById(`inputs-${id}`).classList.add('hidden');
+                        document.getElementById(`done-${id}`).classList.remove('hidden');
+                    }
+                }
+            }
+        }
+
+        function resetData() {
+            if(confirm('هل أنت متأكد من حذف جميع البيانات؟')) {
+                localStorage.removeItem('science_bag_data');
+                location.reload();
+            }
+        }
+
+        // --- التصدير PDF ---
+        function exportToPDF() {
+            // إخفاء الأزرار غير المرغوبة مؤقتاً
+            const buttons = document.querySelectorAll('[data-html2canvas-ignore="true"], .btn-action');
+            buttons.forEach(b => b.style.opacity = '0');
+
+            const element = document.getElementById('mainContent');
             const opt = {
-                margin: [0.5, 0.5, 0.5, 0.5], // top, left, bottom, right
-                filename: `سجل_انشطة_العلوم_${new Date().toLocaleDateString('ar-SA').replace(/\//g, '-')}.pdf`,
+                margin: 0.5,
+                filename: 'سجل_الانجاز_العلوم.pdf',
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { 
-                    scale: 2, // Higher scale for better image quality
-                    useCORS: true, // Important for loading external images
-                    scrollY: 0
-                },
-                jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
-                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] } // Avoid breaking cards across pages
+                html2canvas: { scale: 2, useCORS: true }, // useCORS مهم للصور
+                jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
             };
 
-            // Small delay to ensure UI changes (like disabled inputs) are rendered before capture
-            setTimeout(() => {
-                html2pdf().set(opt).from(element).save().then(() => {
-                    Swal.close();
-                    Swal.fire({
-                        icon:'success',
-                        title:'تم التصدير بنجاح!',
-                        confirmButtonText: 'ممتاز',
-                        confirmButtonColor: '#10b981'
-                    });
-                });
-            }, 500);
+            Swal.fire({ title: 'جاري التصدير...', didOpen: () => Swal.showLoading() });
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                buttons.forEach(b => b.style.opacity = '1');
+                Swal.close();
+            });
         }
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', renderActivities);
+        // تشغيل عند البدء
+        document.addEventListener('DOMContentLoaded', renderPage);
     </script>
 </body>
 </html>
