@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الدوائر المنطقية التجميعية - الدليل الشامل والتفاعلي</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        :root {
+            --line-height: 44px;
+            --primary-bg: #fdfbf7;
+            --primary-text: #334155;
+            --wire-0: #ef4444; /* الأحمر يمثل المنطق 0 */
+            --wire-1: #10b981; /* الأخضر يمثل المنطق 1 */
+        }
+        body { font-family: 'Cairo', sans-serif; background-color: #cbd5e1; margin: 0; padding: 15px; display: flex; justify-content: center; color: var(--primary-text); }
+        
+        .notebook-wrapper { width: 100%; max-width: 1400px; background-color: var(--primary-bg); border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.15); overflow: hidden; position: relative; }
+        .notebook-paper { background-image: linear-gradient(rgba(147, 197, 253, 0.35) 2px, transparent 2px); background-size: 100% var(--line-height); min-height: 900px; position: relative; }
+        .notebook-paper::before { content: ""; position: absolute; top: 0; bottom: 0; right: 60px; width: 2px; background-color: rgba(239, 68, 68, 0.4); z-index: 1; }
+        .notebook-content { position: relative; z-index: 2; padding-right: 90px; padding-left: 30px; padding-top: calc(var(--line-height) * 0.5); padding-bottom: calc(var(--line-height) * 3); }
+
+        .align-lines { line-height: var(--line-height); margin: 0; padding: 0; }
+        
+        .tabs-container { display: flex; flex-wrap: wrap; background-color: #e2e8f0; border-bottom: 2px solid #cbd5e1; position: relative; z-index: 10; }
+        .tab-btn { transition: all 0.3s ease; position: relative; flex-grow: 1; text-align: center; padding: 1.2rem 0.5rem; font-size: 1.1rem; font-weight: 800; color: #64748b; border-top: 4px solid transparent; border-left: 1px solid #cbd5e1; background-color: #f1f5f9; cursor: pointer; }
+        .tab-btn:last-child { border-left: none; }
+        .tab-btn:hover { background-color: #e2e8f0; color: #0284c7; }
+        .tab-btn.active { background-color: var(--primary-bg); color: #0284c7; border-top-color: #0ea5e9; }
+        .tab-btn.active::after { content: ''; position: absolute; bottom: -2px; left: 0; right: 0; height: 4px; background-color: var(--primary-bg); z-index: 10; }
+
+        .fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .sub-nav { display: flex; gap: 10px; margin-bottom: 30px; border-bottom: 2px dashed #cbd5e1; padding-bottom: 15px; overflow-x: auto; scrollbar-width: none; }
+        .sub-nav::-webkit-scrollbar { display: none; }
+        .sub-btn { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 20px; font-weight: 700; color: #475569; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+        .sub-btn:hover { background: #e2e8f0; }
+        .sub-btn.active { background: #0ea5e9; color: white; border-color: #0284c7; box-shadow: 0 4px 6px rgba(14,165,233,0.2); }
+
+        .logic-box { background: rgba(255, 255, 255, 0.95); border: 2px dashed #94a3b8; border-radius: 12px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); margin-bottom: 20px; }
+        .diagram-title { text-align: center; font-weight: 800; color: #475569; margin-bottom: 15px; font-size: 1.1rem; border-bottom: 1px dashed #cbd5e1; padding-bottom: 5px; }
+        
+        .circuit-container { position: relative; width: 100%; display: flex; align-items: center; justify-content: center; background-color: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; padding: 10px; direction: ltr; overflow-x: auto;}
+        .circuit-svg { width: 100%; height: auto; max-width: 600px; max-height: 400px; }
+        
+        .wire-path { fill: none; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; transition: stroke 0.3s ease; }
+        .wire-0 { stroke: var(--wire-0); }
+        .wire-1 { stroke: var(--wire-1); filter: drop-shadow(0 0 3px rgba(16, 185, 129, 0.5)); }
+        .gate-body { fill: white; stroke: #334155; stroke-width: 2.5; stroke-linejoin: round; }
+        .gate-text { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: bold; fill: #1e293b; text-anchor: middle; dominant-baseline: middle; }
+
+        .controls-area { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-top: 15px; padding: 15px; background-color: #f1f5f9; border-radius: 8px; border: 1px solid #cbd5e1; }
+        .input-group { display: flex; align-items: center; gap: 8px; direction: ltr; }
+        .input-label { font-size: 1rem; font-weight: 800; color: #1e293b; font-family: 'JetBrains Mono', monospace; text-align: right; }
+
+        .switch-btn { appearance: none; width: 50px; height: 28px; background-color: #cbd5e1; border-radius: 14px; position: relative; cursor: pointer; outline: none; transition: background-color 0.3s; }
+        .switch-btn::after { content: '0'; position: absolute; top: 2px; left: 2px; width: 24px; height: 24px; background-color: white; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: transform 0.3s; display: flex; align-items: center; justify-content: center; font-family: monospace; font-weight: bold; color: #ef4444; font-size: 0.9rem;}
+        .switch-btn:checked { background-color: var(--wire-1); }
+        .switch-btn:checked::after { content: '1'; transform: translateX(22px); color: var(--wire-1); }
+        
+        .radio-btn { appearance: none; width: 24px; height: 24px; border: 2px solid #94a3b8; border-radius: 50%; cursor: pointer; position: relative; }
+        .radio-btn:checked { border-color: #10b981; background-color: #d1fae5; }
+        .radio-btn:checked::after { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 10px; height: 10px; background-color: #10b981; border-radius: 50%; }
+
+        .result-box { display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: white; border: 2px solid #e2e8f0; border-radius: 8px; direction: ltr; }
+        .result-label { font-weight: 800; color: #334155; font-size: 1rem; }
+        .result-val { font-size: 1.1rem; font-weight: 800; font-family: monospace; padding: 2px 10px; border-radius: 6px; transition: all 0.3s; }
+        .result-val.val-0 { background-color: #fee2e2; color: #b91c1c; }
+        .result-val.val-1 { background-color: #d1fae5; color: #047857; }
+
+        .tracing-panel { background-color: #1e293b; color: #f8fafc; padding: 15px; border-radius: 12px; font-family: 'Cairo', sans-serif; font-size: 1.05rem; line-height: 1.7; margin-top: 15px; width: 100%; border-right: 5px solid #38bdf8; }
+        .tracing-panel .step-title { color: #38bdf8; font-weight: 900; font-size: 1.1rem; margin-bottom: 8px; display: block; border-bottom: 1px solid #334155; padding-bottom: 5px;}
+        .tracing-panel ul { list-style-type: none; padding: 0; margin: 0; }
+        .tracing-panel li { margin-bottom: 8px; padding-right: 20px; position: relative; }
+        .tracing-panel li::before { content: '►'; position: absolute; right: 0; color: #38bdf8; font-size: 0.9rem; top: 4px; }
+        .trace-high-0 { color: #fca5a5; font-weight: bold; font-family: monospace; padding: 0 4px; background: rgba(239, 68, 68, 0.2); border-radius: 4px; }
+        .trace-high-1 { color: #6ee7b7; font-weight: bold; font-family: monospace; padding: 0 4px; background: rgba(16, 185, 129, 0.2); border-radius: 4px; }
+        .trace-gate { color: #fbbf24; font-weight: bold; }
+
+        .info-card { background: #f8fafc; border: 1px solid #cbd5e1; border-right: 5px solid #0ea5e9; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .info-card h4 { color: #0369a1; font-weight: 900; margin-bottom: 8px; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
+        .info-card p { font-size: 1rem; color: #475569; font-weight: 600; line-height: 1.6; margin-bottom: 8px; }
+        
+        .concept-box { background: white; border: 2px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 20px; transition: transform 0.2s; }
+        .concept-box:hover { transform: translateY(-3px); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); }
+    </style>
+</head>
+<body>
+    <canvas id="drawing-canvas" class="absolute top-0 left-0 w-full z-[100] pointer-events-none"></canvas>
+
+    <div id="drawing-toolbar" class="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-[110] bg-white p-2 rounded-full shadow-2xl border-2 border-slate-200 flex gap-2 transition-all duration-300">
+        <button id="btn-toggle-draw" onclick="toggleDrawingMode()" class="w-12 h-12 rounded-full flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 transition" title="تفعيل الشرح الحر">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+        </button>
+        <div id="drawing-tools" class="hidden gap-2 items-center px-2 border-r-2 border-slate-200 mr-2">
+            <button onclick="setPenColor('#ef4444', this)" class="color-btn w-6 h-6 rounded-full bg-red-500 ring-2 ring-red-400 scale-110"></button>
+            <button onclick="setPenColor('#3b82f6', this)" class="color-btn w-6 h-6 rounded-full bg-blue-500"></button>
+            <button onclick="setPenColor('#10b981', this)" class="color-btn w-6 h-6 rounded-full bg-emerald-500"></button>
+            <button onclick="setPenColor('#f59e0b', this)" class="color-btn w-6 h-6 rounded-full bg-amber-500"></button>
+            <button id="btn-eraser" onclick="setEraser()" class="w-8 h-8 rounded-full bg-slate-100 text-center">🧽</button>
+            <button onclick="clearCanvas()" class="w-8 h-8 rounded-full bg-slate-100 hover:text-red-600">🗑️</button>
+        </div>
+    </div>
+
+    <div class="notebook-wrapper">
+        <div class="bg-slate-900 text-white p-6 relative z-10 border-b-4 border-sky-500">
+            <h1 class="text-3xl font-black mb-2 text-center text-sky-400">الدوائر المنطقية التجميعية (المرجع الشامل)</h1>
+            <p class="text-slate-300 text-base text-center font-bold">المفاهيم الأساسية وشرح تفصيلي للدوائر مع نظام التتبع الديناميكي</p>
+        </div>
+
+        <div class="tabs-container">
+            <button onclick="switchMainTab('tab-concept')" id="btn-tab-concept" class="tab-btn active">المفهوم والتصنيف</button>
+            <button onclick="switchMainTab('tab-arithmetic')" id="btn-tab-arithmetic" class="tab-btn">الدوائر الحسابية</button>
+            <button onclick="switchMainTab('tab-routing')" id="btn-tab-routing" class="tab-btn">توجيه البيانات</button>
+            <button onclick="switchMainTab('tab-converters')" id="btn-tab-converters" class="tab-btn">محولات الشفرة</button>
+        </div>
+
+        <div class="notebook-paper">
+            <div class="notebook-content">
+                
+                <!-- ============================================== -->
+                <!-- TAB 0: المفهوم والتصنيف -->
+                <!-- ============================================== -->
+                <div id="tab-concept" class="main-tab-content block fade-in">
+                    <h2 class="text-3xl font-black text-slate-800 align-lines block mb-6 border-b-2 border-slate-200 pb-2">أولاً: المفهوم الأساسي</h2>
+                    <div class="info-card border-r-sky-500 bg-sky-50 mb-8">
+                        <h4><span class="text-2xl">💡</span> ما هي الدائرة المنطقية التجميعية؟</h4>
+                        <p>هي دوائر رقمية يعتمد خرجها (Output) في أي لحظة زمنية <strong>بشكل كلي وحصري</strong> على المدخلات الحالية (Present Inputs) الموجودة في تلك اللحظة فقط.</p>
+                        <p class="text-sky-800 mt-2 bg-sky-100 p-3 rounded-lg border border-sky-200"><strong>القاعدة الذهبية (انعدام الذاكرة):</strong> لا تحتوي هذه الدوائر على عناصر تخزين (قلابات Flip-Flops أو ذاكرة). بمجرد تغير المدخلات، يتغير المخرج فوراً عبر بوابات المنطق دون الرجوع لأي حالة سابقة.</p>
+                    </div>
+
+                    <h2 class="text-3xl font-black text-slate-800 align-lines block mb-6 border-b-2 border-slate-200 pb-2">ثانياً: تصنيف الدوائر التجميعية</h2>
+                    <p class="text-lg text-slate-700 mb-6 font-bold">تُصنف الدوائر التجميعية بناءً على وظيفتها الرئيسية إلى ثلاث فئات أساسية تشكل البنية التحتية لأي معالج (CPU):</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <div class="concept-box border-emerald-300">
+                            <h3 class="text-xl font-black text-emerald-700 mb-3 text-center border-b border-emerald-100 pb-2">1. الدوائر الحسابية</h3>
+                            <p class="text-slate-600 text-sm font-bold mb-3">مسؤولة عن إجراء العمليات الرياضية داخل وحدة الحساب والمنطق (ALU).</p>
+                            <ul class="list-disc list-inside space-y-2 text-slate-800 font-bold">
+                                <li>الجامع النصفي (Half Adder)</li>
+                                <li>الجامع الكامل (Full Adder)</li>
+                                <li>الطارح النصفي (Half Subtractor)</li>
+                                <li>الطارح الكامل (Full Subtractor)</li>
+                            </ul>
+                        </div>
+                        <div class="concept-box border-purple-300">
+                            <h3 class="text-xl font-black text-purple-700 mb-3 text-center border-b border-purple-100 pb-2">2. توجيه البيانات</h3>
+                            <p class="text-slate-600 text-sm font-bold mb-3">تتحكم في مسار سير البيانات والإشارات داخل النظام (مثل نواقل البيانات).</p>
+                            <ul class="list-disc list-inside space-y-2 text-slate-800 font-bold">
+                                <li>منتخب البيانات (MUX)</li>
+                                <li>موزع البيانات (DEMUX)</li>
+                            </ul>
+                        </div>
+                        <div class="concept-box border-pink-300">
+                            <h3 class="text-xl font-black text-pink-700 mb-3 text-center border-b border-pink-100 pb-2">3. محولات الشفرة</h3>
+                            <p class="text-slate-600 text-sm font-bold mb-3">تترجم البيانات بين التنسيقات المختلفة ليفهمها الإنسان أو الآلة.</p>
+                            <ul class="list-disc list-inside space-y-2 text-slate-800 font-bold">
+                                <li>فاك الشفرة (Decoder)</li>
+                                <li>المشفّر (Encoder)</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="text-center mt-4">
+                        <button onclick="switchMainTab('tab-arithmetic')" class="bg-sky-500 hover:bg-sky-600 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform transform hover:scale-105">
+                            البدء في استكشاف الدوائر التفاعلية ←
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ============================================== -->
+                <!-- TAB 1: الدوائر الحسابية -->
+                <!-- ============================================== -->
+                <div id="tab-arithmetic" class="main-tab-content hidden fade-in">
+                    
+                    <div class="sub-nav">
+                        <button onclick="switchSubTab('arith', 'ha')" id="btn-arith-ha" class="sub-btn active">الجامع النصفي (HA)</button>
+                        <button onclick="switchSubTab('arith', 'fa')" id="btn-arith-fa" class="sub-btn">الجامع الكامل (FA)</button>
+                        <button onclick="switchSubTab('arith', 'hs')" id="btn-arith-hs" class="sub-btn">الطارح النصفي (HS)</button>
+                        <button onclick="switchSubTab('arith', 'fs')" id="btn-arith-fs" class="sub-btn">الطارح الكامل (FS)</button>
+                    </div>
+
+                    <!-- 1.1 Half Adder -->
+                    <div id="sub-arith-ha" class="sub-content block fade-in">
+                        <h2 class="text-2xl font-black text-slate-800 align-lines block mb-4 border-b-2 border-slate-200 pb-2">1. الجامع النصفي (Half Adder)</h2>
+                        <div class="info-card border-r-emerald-500 bg-emerald-50">
+                            <h4><span class="text-xl">➕</span> وظيفة الدائرة</h4>
+                            <p>تقوم بجمع <strong>رقمين ثنائيين</strong> (خانة واحدة لكل منهما: A و B). لا تأخذ في الاعتبار أي محمول سابق. تنتج:</p>
+                            <ul class="list-disc list-inside font-bold text-emerald-900">
+                                <li>المجموع (Sum): ناتج الجمع المباشر عبر بوابة XOR.</li>
+                                <li>المحمول (Carry): الفائض (إذا كان A=1 و B=1) عبر بوابة AND.</li>
+                            </ul>
+                        </div>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div class="logic-box">
+                                <div class="diagram-title">المخطط المنطقي التفاعلي</div>
+                                <div class="circuit-container">
+                                    <svg class="circuit-svg" viewBox="0 0 400 200">
+                                        <text x="20" y="50" class="gate-text">A</text>
+                                        <text x="20" y="150" class="gate-text">B</text>
+                                        <path id="ha-wa1" class="wire-path wire-0" d="M 40 50 L 90 50 L 90 40 L 180 40" />
+                                        <path id="ha-wa2" class="wire-path wire-0" d="M 90 50 L 90 130 L 180 130" />
+                                        <circle id="ha-na" cx="90" cy="50" r="4" fill="#ef4444" />
+                                        <path id="ha-wb1" class="wire-path wire-0" d="M 40 150 L 110 150 L 110 70 L 180 70" />
+                                        <path id="ha-wb2" class="wire-path wire-0" d="M 110 150 L 110 170 L 180 170" />
+                                        <circle id="ha-nb" cx="110" cy="150" r="4" fill="#ef4444" />
+                                        <!-- Gates -->
+                                        <path class="gate-body" d="M 190 20 Q 215 55 190 90" fill="none"/>
+                                        <path class="gate-body" d="M 200 20 Q 225 55 200 90 Q 250 90 270 55 Q 250 20 200 20 Z" />
+                                        <text x="230" y="55" class="gate-text" font-size="12">XOR</text>
+                                        <path class="gate-body" d="M 180 110 L 230 110 A 40 40 0 0 1 230 190 L 180 190 Z" />
+                                        <text x="215" y="150" class="gate-text" font-size="12">AND</text>
+                                        <!-- Out wires -->
+                                        <path id="ha-ws" class="wire-path wire-0" d="M 270 55 L 340 55" />
+                                        <path id="ha-wc" class="wire-path wire-0" d="M 270 150 L 340 150" />
+                                        <text x="365" y="55" class="gate-text" fill="#047857">Sum</text>
+                                        <text x="365" y="150" class="gate-text" fill="#b91c1c">Carry</text>
+                                    </svg>
+                                </div>
+                                <div class="controls-area">
+                                    <div class="flex gap-4 border-r-2 border-slate-300 pr-4"><div class="input-group"><span class="input-label">A=</span><input type="checkbox" class="switch-btn" id="ha-a" onchange="updateHA()"></div><div class="input-group"><span class="input-label">B=</span><input type="checkbox" class="switch-btn" id="ha-b" onchange="updateHA()"></div></div>
+                                    <div class="flex gap-3 pl-2"><div class="result-box"><span class="result-label">S=</span><span class="result-val val-0" id="ha-rs">0</span></div><div class="result-box"><span class="result-label">C=</span><span class="result-val val-0" id="ha-rc">0</span></div></div>
+                                </div>
+                            </div>
+                            <div class="logic-box bg-slate-900 border-none p-0 flex flex-col overflow-hidden"><div class="bg-slate-800 text-sky-400 font-bold p-2 text-center border-b border-slate-700">تتبع الجامع النصفي</div><div id="trace-ha" class="tracing-panel mt-0 rounded-none h-full border-none"></div></div>
+                        </div>
+                    </div>
+
+                    <!-- 1.2 Full Adder -->
+                    <div id="sub-arith-fa" class="sub-content hidden fade-in">
+                        <h2 class="text-2xl font-black text-slate-800 align-lines block mb-4 border-b-2 border-slate-200 pb-2">2. الجامع الكامل (Full Adder)</h2>
+                        <div class="info-card border-r-blue-500 bg-blue-50">
+                            <h4><span class="text-xl">➕➕</span> وظيفة الدائرة</h4>
+                            <p>تقوم بجمع <strong>ثلاثة أرقام ثنائية</strong> (A و B، والمحمول القادم Cin). وهي تتكون فعلياً من جامعين نصفيين وبوابة OR. تنتج المجموع (Sum) والمحمول الخارجي (Cout).</p>
+                        </div>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div class="logic-box">
+                                <div class="diagram-title">المخطط المنطقي التفاعلي</div>
+                                <div class="circuit-container">
+                                    <svg class="circuit-svg" viewBox="0 0 500 250">
+                                        <text x="15" y="40" class="gate-text">A</text>
+                                        <text x="15" y="80" class="gate-text">B</text>
+                                        <text x="15" y="160" class="gate-text">Cin</text>
+                                        
+                                        <!-- Inputs -->
+                                        <path id="fa-wa" class="wire-path wire-0" d="M 35 40 L 70 40 L 70 30 L 110 30" />
+                                        <path class="wire-path wire-0" id="fa-wa2" d="M 70 40 L 70 120 L 110 120"/>
+                                        <path id="fa-wb" class="wire-path wire-0" d="M 35 80 L 80 80 L 80 50 L 110 50" />
+                                        <path class="wire-path wire-0" id="fa-wb2" d="M 80 80 L 80 140 L 110 140"/>
+                                        <path id="fa-wcin" class="wire-path wire-0" d="M 35 160 L 200 160 L 200 90 L 230 90" />
+                                        <path class="wire-path wire-0" id="fa-wcin2" d="M 200 160 L 200 200 L 230 200"/>
+
+                                        <!-- HA 1 -->
+                                        <path class="gate-body" d="M 120 15 Q 140 40 120 65" fill="none"/><path class="gate-body" d="M 130 15 Q 150 40 130 65 Q 170 65 190 40 Q 170 15 130 15 Z" />
+                                        <path class="gate-body" d="M 110 100 L 150 100 A 30 30 0 0 1 150 160 L 110 160 Z" />
+                                        <path id="fa-wxor1" class="wire-path wire-0" d="M 190 40 L 210 40 L 210 70 L 230 70" />
+                                        <path id="fa-wxor1_2" class="wire-path wire-0" d="M 210 40 L 210 180 L 230 180" />
+                                        <path id="fa-wand1" class="wire-path wire-0" d="M 180 130 L 330 130 L 330 150" />
+
+                                        <!-- HA 2 -->
+                                        <path class="gate-body" d="M 240 55 Q 260 80 240 105" fill="none"/><path class="gate-body" d="M 250 55 Q 270 80 250 105 Q 290 105 310 80 Q 290 55 250 55 Z" />
+                                        <path class="gate-body" d="M 230 170 L 270 170 A 25 25 0 0 1 270 210 L 230 210 Z" />
+                                        <path id="fa-wand2" class="wire-path wire-0" d="M 295 190 L 330 190 L 330 170" />
+
+                                        <!-- OR Gate -->
+                                        <path class="gate-body" d="M 330 130 Q 350 160 330 190 Q 370 190 410 160 Q 370 130 330 130 Z" />
+
+                                        <!-- Outputs -->
+                                        <path id="fa-ws" class="wire-path wire-0" d="M 310 80 L 440 80" />
+                                        <path id="fa-wco" class="wire-path wire-0" d="M 410 160 L 440 160" />
+                                        <text x="465" y="80" class="gate-text" fill="#047857">Sum</text>
+                                        <text x="465" y="160" class="gate-text" fill="#b91c1c">Cout</text>
+                                    </svg>
+                                </div>
+                                <div class="controls-area">
+                                    <div class="flex gap-4 border-r-2 border-slate-300 pr-4"><div class="input-group"><span class="input-label">A=</span><input type="checkbox" class="switch-btn" id="fa-a" onchange="updateFA()"></div><div class="input-group"><span class="input-label">B=</span><input type="checkbox" class="switch-btn" id="fa-b" onchange="updateFA()"></div><div class="input-group"><span class="input-label">Cin=</span><input type="checkbox" class="switch-btn" id="fa-cin" onchange="updateFA()"></div></div>
+                                    <div class="flex gap-3 pl-2"><div class="result-box"><span class="result-label">S=</span><span class="result-val val-0" id="fa-rs">0</span></div><div class="result-box"><span class="result-label">Cout=</span><span class="result-val val-0" id="fa-rc">0</span></div></div>
+                                </div>
+                            </div>
+                            <div class="logic-box bg-slate-900 border-none p-0 flex flex-col overflow-hidden"><div class="bg-slate-800 text-sky-400 font-bold p-2 text-center border-b border-slate-700">تتبع الجامع الكامل (HA1 + HA2 + OR)</div><div id="trace-fa" class="tracing-panel mt-0 rounded-none h-full border-none"></div></div>
+                        </div>
+                    </div>
+
+                    <!-- 1.3 Half Subtractor -->
+                    <div id="sub-arith-hs" class="sub-content hidden fade-in">
+                        <h2 class="text-2xl font-black text-slate-800 align-lines block mb-4 border-b-2 border-slate-200 pb-2">3. الطارح النصفي (Half Subtractor)</h2>
+                        <div class="info-card border-r-orange-500 bg-orange-50">
+                            <h4><span class="text-xl">➖</span> وظيفة الدائرة</h4>
+                            <p>تقوم بطرح رقم ثنائي (B) من رقم ثنائي آخر (A). تشبه الجامع النصفي جداً، ولكن نستخدم بوابة NOT على المدخل A قبل إدخاله لبوابة AND لحساب الاستعارة. تنتج:</p>
+                            <ul class="list-disc list-inside font-bold text-orange-900">
+                                <li>الفرق (Diff): ناتج الطرح المباشر (عبر بوابة XOR مثل الجمع).</li>
+                                <li>الاستعارة (Borrow): نحتاج للاستعارة فقط عندما نطرح 1 من 0 (A=0 و B=1). (A' AND B)</li>
+                            </ul>
+                        </div>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div class="logic-box">
+                                <div class="diagram-title">المخطط المنطقي التفاعلي</div>
+                                <div class="circuit-container">
+                                    <svg class="circuit-svg" viewBox="0 0 400 200">
+                                        <text x="20" y="50" class="gate-text">A</text>
+                                        <text x="20" y="150" class="gate-text">B</text>
+                                        
+                                        <!-- Wires -->
+                                        <path id="hs-wa1" class="wire-path wire-0" d="M 40 50 L 90 50 L 90 40 L 180 40" />
+                                        <path id="hs-wa2" class="wire-path wire-0" d="M 90 50 L 90 130 L 120 130" />
+                                        <circle id="hs-na" cx="90" cy="50" r="4" fill="#ef4444" />
+                                        
+                                        <path id="hs-wb1" class="wire-path wire-0" d="M 40 150 L 110 150 L 110 70 L 180 70" />
+                                        <path id="hs-wb2" class="wire-path wire-0" d="M 110 150 L 110 170 L 180 170" />
+                                        <circle id="hs-nb" cx="110" cy="150" r="4" fill="#ef4444" />
+
+                                        <!-- NOT Gate for Borrow -->
+                                        <polygon points="120,120 145,130 120,140" fill="white" stroke="#334155" stroke-width="2.5"/>
+                                        <circle cx="150" cy="130" r="4" fill="white" stroke="#334155" stroke-width="2.5"/>
+                                        <path id="hs-wanot" class="wire-path wire-1" d="M 154 130 L 180 130" />
+
+                                        <!-- Gates -->
+                                        <!-- XOR -->
+                                        <path class="gate-body" d="M 190 20 Q 215 55 190 90" fill="none"/>
+                                        <path class="gate-body" d="M 200 20 Q 225 55 200 90 Q 250 90 270 55 Q 250 20 200 20 Z" />
+                                        <text x="230" y="55" class="gate-text" font-size="12">XOR</text>
+                                        <!-- AND -->
+                                        <path class="gate-body" d="M 180 110 L 230 110 A 40 40 0 0 1 230 190 L 180 190 Z" />
+                                        <text x="215" y="150" class="gate-text" font-size="12">AND</text>
+                                        
+                                        <!-- Out wires -->
+                                        <path id="hs-wd" class="wire-path wire-0" d="M 270 55 L 340 55" />
+                                        <path id="hs-wbout" class="wire-path wire-0" d="M 270 150 L 340 150" />
+                                        <text x="365" y="55" class="gate-text" fill="#047857">Diff</text>
+                                        <text x="365" y="150" class="gate-text" fill="#b91c1c">Bout</text>
+                                    </svg>
+                                </div>
+                                <div class="controls-area">
+                                    <div class="flex gap-4 border-r-2 border-slate-300 pr-4"><div class="input-group"><span class="input-label">A=</span><input type="checkbox" class="switch-btn" id="hs-a" onchange="updateHS()"></div><div class="input-group"><span class="input-label">B=</span><input type="checkbox" class="switch-btn" id="hs-b" onchange="updateHS()"></div></div>
+                                    <div class="flex gap-3 pl-2"><div class="result-box"><span class="result-label">Diff=</span><span class="result-val val-0" id="hs-rd">0</span></div><div class="result-box"><span class="result-label">Bout=</span><span class="result-val val-0" id="hs-rb">0</span></div></div>
+                                </div>
+                            </div>
+                            <div class="logic-box bg-slate-900 border-none p-0 flex flex-col overflow-hidden"><div class="bg-slate-800 text-sky-400 font-bold p-2 text-center border-b border-slate-700">تتبع مسار الطرح (A - B)</div><div id="trace-hs" class="tracing-panel mt-0 rounded-none h-full border-none"></div></div>
+                        </div>
+                    </div>
+
+                    <!-- 1.4 Full Subtractor -->
+                    <div id="sub-arith-fs" class="sub-content hidden fade-in">
+                        <h2 class="text-2xl font-black text-slate-800 align-lines block mb-4 border-b-2 border-slate-200 pb-2">4. الطارح الكامل (Full Subtractor)</h2>
+                        <div class="info-card border-r-red-500 bg-red-50">
+                            <h4><span class="text-xl">➖ ➖</span> وظيفة الدائرة</h4>
+                            <p>تقوم بطرح رقمين (A و B) وتأخذ في الحسبان أي استعارة سابقة (Bin). تتكون من طارحين نصفيين وبوابة OR. المخرجات هي الفرق (Diff) والاستعارة الخارجية (Bout).</p>
+                        </div>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div class="logic-box">
+                                <div class="diagram-title">المخطط المنطقي التفاعلي</div>
+                                <div class="circuit-container">
+                                    <svg class="circuit-svg" viewBox="0 0 500 250">
+                                        <text x="15" y="40" class="gate-text">A</text>
+                                        <text x="15" y="80" class="gate-text">B</text>
+                                        <text x="15" y="160" class="gate-text">Bin</text>
+
+                                        <!-- Inputs -->
+                                        <path id="fs-wa" class="wire-path wire-0" d="M 35 40 L 70 40 L 70 30 L 110 30" />
+                                        <path class="wire-path wire-0" id="fs-wa2" d="M 70 40 L 70 120 L 90 120"/>
+                                        <path id="fs-wb" class="wire-path wire-0" d="M 35 80 L 80 80 L 80 50 L 110 50" />
+                                        <path class="wire-path wire-0" id="fs-wb2" d="M 80 80 L 80 140 L 130 140"/>
+                                        <path id="fs-wbin" class="wire-path wire-0" d="M 35 160 L 200 160 L 200 90 L 230 90" />
+                                        <path class="wire-path wire-0" id="fs-wbin2" d="M 200 160 L 200 200 L 250 200"/>
+
+                                        <!-- HS 1 -->
+                                        <polygon points="90,110 115,120 90,130" fill="white" stroke="#334155" stroke-width="2"/>
+                                        <circle cx="120" cy="120" r="3" fill="white" stroke="#334155" stroke-width="2"/>
+                                        <path id="fs-wanot1" class="wire-path wire-1" d="M 123 120 L 130 120"/>
+
+                                        <path class="gate-body" d="M 120 15 Q 140 40 120 65" fill="none"/><path class="gate-body" d="M 130 15 Q 150 40 130 65 Q 170 65 190 40 Q 170 15 130 15 Z" />
+                                        <path class="gate-body" d="M 130 100 L 160 100 A 30 30 0 0 1 160 160 L 130 160 Z" />
+                                        
+                                        <path id="fs-wxor1" class="wire-path wire-0" d="M 190 40 L 210 40 L 210 70 L 230 70" />
+                                        <path id="fs-wxor1_2" class="wire-path wire-0" d="M 210 40 L 210 180 L 220 180" />
+                                        <path id="fs-wand1" class="wire-path wire-0" d="M 190 130 L 330 130 L 330 150" />
+
+                                        <!-- HS 2 -->
+                                        <polygon points="220,170 235,180 220,190" fill="white" stroke="#334155" stroke-width="2"/>
+                                        <circle cx="240" cy="180" r="3" fill="white" stroke="#334155" stroke-width="2"/>
+                                        <path id="fs-wanot2" class="wire-path wire-1" d="M 243 180 L 250 180"/>
+
+                                        <path class="gate-body" d="M 240 55 Q 260 80 240 105" fill="none"/><path class="gate-body" d="M 250 55 Q 270 80 250 105 Q 290 105 310 80 Q 290 55 250 55 Z" />
+                                        <path class="gate-body" d="M 250 160 L 280 160 A 30 30 0 0 1 280 220 L 250 220 Z" />
+                                        <path id="fs-wand2" class="wire-path wire-0" d="M 310 190 L 330 190 L 330 170" />
+
+                                        <!-- OR Gate -->
+                                        <path class="gate-body" d="M 330 130 Q 350 160 330 190 Q 370 190 410 160 Q 370 130 330 130 Z" />
+
+                                        <!-- Outputs -->
+                                        <path id="fs-wd" class="wire-path wire-0" d="M 310 80 L 440 80" />
+                                        <path id="fs-wbo" class="wire-path wire-0" d="M 410 160 L 440 160" />
+                                        <text x="465" y="80" class="gate-text" fill="#047857">Diff</text>
+                                        <text x="465" y="160" class="gate-text" fill="#b91c1c">Bout</text>
+                                    </svg>
+                                </div>
+                                <div class="controls-area">
+                                    <div class="flex gap-4 border-r-2 border-slate-300 pr-4"><div class="input-group"><span class="input-label">A=</span><input type="checkbox" class="switch-btn" id="fs-a" onchange="updateFS()"></div><div class="input-group"><span class="input-label">B=</span><input type="checkbox" class="switch-btn" id="fs-b" onchange="updateFS()"></div><div class="input-group"><span class="input-label">Bin=</span><input type="checkbox" class="switch-btn" id="fs-bin" onchange="updateFS()"></div></div>
+                                    <div class="flex gap-3 pl-2"><div class="result-box"><span class="result-label">Diff=</span><span class="result-val val-0" id="fs-rd">0</span></div><div class="result-box"><span class="result-label">Bout=</span><span class="result-val val-0" id="fs-rbo">0</span></div></div>
+                                </div>
+                            </div>
+                            <div class="logic-box bg-slate-900 border-none p-0 flex flex-col overflow-hidden"><div class="bg-slate-800 text-sky-400 font-bold p-2 text-center border-b border-slate-700">تتبع الطارح الكامل (A - B - Bin)</div><div id="trace-fs" class="tracing-panel mt-0 rounded-none h-full border-none"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ============================================== -->
+                <!-- TAB 2: توجيه البيانات -->
+                <!-- ============================================== -->
+                <div id="tab-routing" class="main-tab-content hidden fade-in">
+                    <div class="sub-nav">
+                        <button onclick="switchSubTab('rout', 'mux')" id="btn-rout-mux" class="sub-btn active">منتخب البيانات (MUX)</button>
+                        <button onclick="switchSubTab('rout', 'dmx')" id="btn-rout-dmx" class="sub-btn">موزع البيانات (DEMUX)</button>
+                    </div>
+
+                    <!-- 2.1 MUX -->
+                    <div id="sub-rout-mux" class="sub-content block fade-in">
+                        <h2 class="text-2xl font-black text-slate-800 align-lines block mb-4 border-b-2 border-slate-200 pb-2">1. منتخب البيانات (Multiplexer - MUX)</h2>
+                        <div class="info-card border-r-purple-500 bg-purple-50">
+                            <h4><span class="text-xl">🚦</span> مفتاح التوجيه (المُجمِّع)</h4>
+                            <p>يختار بين عدة مدخلات للبيانات ويمرر واحداً منها فقط للمخرج بناءً على إشارة تحكم (Selector). يعمل كـ "محول السكك الحديدية".</p>
+                        </div>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div class="logic-box">
+                                <div class="diagram-title">المخطط المنطقي التفاعلي (MUX 2x1)</div>
+                                <div class="circuit-container">
+                                    <svg class="circuit-svg" viewBox="0 0 400 200">
+                                        <text x="20" y="40" class="gate-text">D0</text><text x="20" y="100" class="gate-text">D1</text><text x="20" y="170" class="gate-text" fill="#8b5cf6">Sel</text>
+                                        <path id="mux-d0" class="wire-path wire-0" d="M 40 40 L 120 40 L 120 60 L 180 60" />
+                                        <path id="mux-d1" class="wire-path wire-0" d="M 40 100 L 120 100 L 120 120 L 180 120" />
+                                        <path id="mux-sel1" class="wire-path wire-0" d="M 50 170 L 90 170 L 90 140 L 180 140" stroke="#8b5cf6"/>
+                                        <path id="mux-sel0" class="wire-path wire-1" d="M 90 170 L 150 170 L 150 80 L 180 80" stroke="#a78bfa" stroke-dasharray="4"/>
+                                        <path class="gate-body" d="M 180 40 L 210 40 A 30 30 0 0 1 210 100 L 180 100 Z" /><text x="195" y="70" class="gate-text text-[10px]">AND</text>
+                                        <path class="gate-body" d="M 180 100 L 210 100 A 30 30 0 0 1 210 160 L 180 160 Z" /><text x="195" y="130" class="gate-text text-[10px]">AND</text>
+                                        <path id="mux-a1" class="wire-path wire-0" d="M 240 70 L 260 70 L 260 85 L 290 85" />
+                                        <path id="mux-a2" class="wire-path wire-0" d="M 240 130 L 260 130 L 260 115 L 290 115" />
+                                        <path class="gate-body" d="M 290 65 Q 310 100 290 135 Q 330 135 360 100 Q 330 65 290 65 Z" /><text x="315" y="100" class="gate-text text-[10px]">OR</text>
+                                        <path id="mux-y" class="wire-path wire-0" d="M 360 100 L 390 100" /><text x="400" y="100" class="gate-text font-black">Y</text>
+                                    </svg>
+                                </div>
+                                <div class="controls-area">
+                                    <div class="flex gap-4 border-r-2 border-slate-300 pr-4"><div class="input-group"><span class="input-label">D0=</span><input type="checkbox" class="switch-btn" id="mux-d0-in" onchange="updateMUX()"></div><div class="input-group"><span class="input-label">D1=</span><input type="checkbox" class="switch-btn" id="mux-d1-in" onchange="updateMUX()"></div></div>
+                                    <div class="flex gap-4 border-r-2 border-slate-300 pr-4 pl-4"><div class="input-group"><span class="input-label text-purple-600">Sel=</span><input type="checkbox" class="switch-btn" id="mux-sel" onchange="updateMUX()"></div></div>
+                                    <div class="flex items-center pl-2"><div class="result-box bg-slate-800 border-slate-700"><span class="result-label text-white">Y=</span><span class="result-val val-0" id="mux-y-out">0</span></div></div>
+                                </div>
+                            </div>
+                            <div class="logic-box bg-slate-900 border-none p-0 flex flex-col overflow-hidden"><div class="bg-slate-800 text-sky-400 font-bold p-2 text-center border-b border-slate-700">تتبع مسار التوجيه (الشرطي)</div><div id="trace-mux" class="tracing-panel mt-0 rounded-none h-full border-none"></div></div>
+                        </div>
+                    </div>
+
+                    <!-- 2.2 DEMUX -->
+                    <div id="sub-rout-dmx" class="sub-content hidden fade-in">
+                        <h2 class="text-2xl font-black text-slate-800 align-lines block mb-4 border-b-2 border-slate-200 pb-2">2. موزع البيانات (Demultiplexer - DEMUX)</h2>
+                        <div class="info-card border-r-amber-500 bg-amber-50">
+                            <h4><span class="text-xl">🛤️</span> المُفرِّق</h4>
+                            <p>يأخذ مدخلاً واحداً للبيانات ويوجهه إلى واحد من عدة مخرجات بناءً على إشارة تحكم. عكس عمل الـ MUX تماماً.</p>
+                        </div>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div class="logic-box">
+                                <div class="diagram-title">المخطط المنطقي التفاعلي (DEMUX 1x2)</div>
+                                <div class="circuit-container">
+                                    <svg class="circuit-svg" viewBox="0 0 400 200">
+                                        <text x="20" y="100" class="gate-text">In</text><text x="20" y="170" class="gate-text" fill="#8b5cf6">Sel</text>
+                                        <path id="dmx-in" class="wire-path wire-0" d="M 40 100 L 80 100" />
+                                        <path id="dmx-in0" class="wire-path wire-0" d="M 80 100 L 80 40 L 180 40" />
+                                        <path id="dmx-in1" class="wire-path wire-0" d="M 80 100 L 80 140 L 180 140" />
+                                        <circle cx="80" cy="100" r="4" fill="#ef4444" id="dmx-node"/>
+                                        <path id="dmx-sel1" class="wire-path wire-0" d="M 50 170 L 110 170 L 110 160 L 180 160" stroke="#8b5cf6"/>
+                                        <path id="dmx-sel0" class="wire-path wire-1" d="M 110 170 L 130 170 L 130 60 L 180 60" stroke="#a78bfa" stroke-dasharray="4"/>
+                                        <path class="gate-body" d="M 180 20 L 210 20 A 30 30 0 0 1 210 80 L 180 80 Z" /><text x="195" y="50" class="gate-text text-[10px]">AND</text>
+                                        <path class="gate-body" d="M 180 120 L 210 120 A 30 30 0 0 1 210 180 L 180 180 Z" /><text x="195" y="150" class="gate-text text-[10px]">AND</text>
+                                        <path id="dmx-o0" class="wire-path wire-0" d="M 240 50 L 310 50" /><path id="dmx-o1" class="wire-path wire-0" d="M 240 150 L 310 150" />
+                                        <text x="330" y="50" class="gate-text">Out 0</text><text x="330" y="150" class="gate-text">Out 1</text>
+                                    </svg>
+                                </div>
+                                <div class="controls-area">
+                                    <div class="flex gap-4 border-r-2 border-slate-300 pr-4"><div class="input-group"><span class="input-label">In=</span><input type="checkbox" class="switch-btn" id="dmx-in-val" onchange="updateDEMUX()"></div><div class="input-group"><span class="input-label text-purple-600">Sel=</span><input type="checkbox" class="switch-btn" id="dmx-sel-in" onchange="updateDEMUX()"></div></div>
+                                    <div class="flex gap-4 pl-2"><div class="result-box"><span class="result-label">O0=</span><span class="result-val val-0" id="dmx-r0">0</span></div><div class="result-box"><span class="result-label">O1=</span><span class="result-val val-0" id="dmx-r1">0</span></div></div>
+                                </div>
+                            </div>
+                            <div class="logic-box bg-slate-900 border-none p-0 flex flex-col overflow-hidden"><div class="bg-slate-800 text-sky-400 font-bold p-2 text-center border-b border-slate-700">تتبع مسار التوزيع</div><div id="trace-dmx" class="tracing-panel mt-0 rounded-none h-full border-none"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ============================================== -->
+                <!-- TAB 3: محولات الشفرة -->
+                <!-- ============================================== -->
+                <div id="tab-converters" class="main-tab-content hidden fade-in">
+                    <div class="sub-nav">
+                        <button onclick="switchSubTab('conv', 'dec')" id="btn-conv-dec" class="sub-btn active">فاك الشفرة (Decoder)</button>
+                        <button onclick="switchSubTab('conv', 'enc')" id="btn-conv-enc" class="sub-btn">المشفّر (Encoder)</button>
+                    </div>
+
+                    <!-- 3.1 Decoder -->
+                    <div id="sub-conv-dec" class="sub-content block fade-in">
+                        <h2 class="text-2xl font-black text-slate-800 align-lines block mb-4 border-b-2 border-slate-200 pb-2">1. فاك الشفرة (Decoder)</h2>
+                        <div class="info-card border-r-pink-500 bg-pink-50">
+                            <h4><span class="text-xl">🔓</span> مترجم الشفرات</h4>
+                            <p>يحول شفرة ثنائية (مثل A,B) إلى مخرج نشط <strong>واحد فقط</strong>. يمتلك N مدخل و 2^N مخرج. يستخدم كثيراً في عنونة الذاكرة (تحديد سطر واحد).</p>
+                        </div>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div class="logic-box">
+                                <div class="diagram-title">المخطط المنطقي التفاعلي (2 to 4)</div>
+                                <div class="circuit-container p-2">
+                                    <svg class="circuit-svg" viewBox="0 0 500 280">
+                                        <text x="20" y="30" class="gate-text">A</text><text x="20" y="70" class="gate-text">B</text>
+                                        <path id="dec-bus-a" class="wire-path wire-0" d="M 40 30 L 70 30 L 70 260" />
+                                        <polygon points="85,40 95,45 85,50" fill="white" stroke="#334155" stroke-width="2"/><circle cx="98" cy="45" r="3" fill="white" stroke="#334155" stroke-width="2"/>
+                                        <path d="M 70 45 L 85 45" class="wire-path wire-0"/> 
+                                        <path id="dec-bus-anot" class="wire-path wire-1" d="M 101 45 L 110 45 L 110 260" /><circle cx="70" cy="45" r="3" fill="#ef4444" id="dec-node-a" />
+                                        <path id="dec-bus-b" class="wire-path wire-0" d="M 40 70 L 140 70 L 140 260" />
+                                        <polygon points="155,80 165,85 155,90" fill="white" stroke="#334155" stroke-width="2"/><circle cx="168" cy="85" r="3" fill="white" stroke="#334155" stroke-width="2"/>
+                                        <path d="M 140 85 L 155 85" class="wire-path wire-0"/> 
+                                        <path id="dec-bus-bnot" class="wire-path wire-1" d="M 171 85 L 180 85 L 180 260" /><circle cx="140" cy="85" r="3" fill="#ef4444" id="dec-node-b" />
+
+                                        <!-- O0 -->
+                                        <path id="dec-w0-a" class="wire-path wire-1" d="M 110 110 L 250 110" /><path id="dec-w0-b" class="wire-path wire-1" d="M 180 130 L 250 130" />
+                                        <path class="gate-body" d="M 250 100 L 280 100 A 20 20 0 0 1 280 140 L 250 140 Z" /><path id="dec-out-0" class="wire-path wire-1" d="M 280 120 L 360 120" /><text x="390" y="120" class="gate-text">O0 (A'B')</text>
+                                        <circle cx="110" cy="110" r="3" fill="#10b981" id="dec-n0a" /><circle cx="180" cy="130" r="3" fill="#10b981" id="dec-n0b" />
+                                        <!-- O1 -->
+                                        <path id="dec-w1-a" class="wire-path wire-1" d="M 110 150 L 250 150" /><path id="dec-w1-b" class="wire-path wire-0" d="M 140 170 L 250 170" />
+                                        <path class="gate-body" d="M 250 140 L 280 140 A 20 20 0 0 1 280 180 L 250 180 Z" /><path id="dec-out-1" class="wire-path wire-0" d="M 280 160 L 360 160" /><text x="390" y="160" class="gate-text">O1 (A'B)</text>
+                                        <circle cx="110" cy="150" r="3" fill="#10b981" id="dec-n1a" /><circle cx="140" cy="170" r="3" fill="#ef4444" id="dec-n1b" />
+                                        <!-- O2 -->
+                                        <path id="dec-w2-a" class="wire-path wire-0" d="M 70 190 L 250 190" /><path id="dec-w2-b" class="wire-path wire-1" d="M 180 210 L 250 210" />
+                                        <path class="gate-body" d="M 250 180 L 280 180 A 20 20 0 0 1 280 220 L 250 220 Z" /><path id="dec-out-2" class="wire-path wire-0" d="M 280 200 L 360 200" /><text x="390" y="200" class="gate-text">O2 (AB')</text>
+                                        <circle cx="70" cy="190" r="3" fill="#ef4444" id="dec-n2a" /><circle cx="180" cy="210" r="3" fill="#10b981" id="dec-n2b" />
+                                        <!-- O3 -->
+                                        <path id="dec-w3-a" class="wire-path wire-0" d="M 70 230 L 250 230" /><path id="dec-w3-b" class="wire-path wire-0" d="M 140 250 L 250 250" />
+                                        <path class="gate-body" d="M 250 220 L 280 220 A 20 20 0 0 1 280 260 L 250 260 Z" /><path id="dec-out-3" class="wire-path wire-0" d="M 280 240 L 360 240" /><text x="390" y="240" class="gate-text">O3 (AB)</text>
+                                        <circle cx="70" cy="230" r="3" fill="#ef4444" id="dec-n3a" /><circle cx="140" cy="250" r="3" fill="#ef4444" id="dec-n3b" />
+                                    </svg>
+                                </div>
+                                <div class="controls-area w-full mt-2"><div class="flex gap-4 justify-center w-full"><div class="input-group"><span class="input-label text-pink-700">A=</span><input type="checkbox" class="switch-btn" id="dec-a" onchange="updateDecoder()"></div><div class="input-group"><span class="input-label text-pink-700">B=</span><input type="checkbox" class="switch-btn" id="dec-b" onchange="updateDecoder()"></div></div></div>
+                            </div>
+                            <div class="logic-box bg-slate-900 border-none p-0 flex flex-col overflow-hidden"><div class="bg-slate-800 text-sky-400 font-bold p-2 text-center border-b border-slate-700">تتبع فك الشفرة</div><div id="trace-dec" class="tracing-panel mt-0 rounded-none h-full border-none"></div></div>
+                        </div>
+                    </div>
+
+                    <!-- 3.2 Encoder -->
+                    <div id="sub-conv-enc" class="sub-content hidden fade-in">
+                        <h2 class="text-2xl font-black text-slate-800 align-lines block mb-4 border-b-2 border-slate-200 pb-2">2. المشفّر (Encoder)</h2>
+                        <div class="info-card border-r-teal-500 bg-teal-50">
+                            <h4><span class="text-xl">🔒</span> مولد الشفرات</h4>
+                            <p>عملية عكسية، يأخذ خطاً واحداً نشطاً ويولد شفرة ثنائية تمثله. مثال: الضغط على زر في لوحة المفاتيح لتوليد الكود الثنائي للزر.</p>
+                        </div>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div class="logic-box">
+                                <div class="diagram-title">المخطط المنطقي التفاعلي (4 to 2)</div>
+                                <div class="circuit-container flex flex-col gap-2">
+                                    <svg class="circuit-svg" viewBox="0 0 500 220">
+                                        <text x="20" y="30" class="gate-text">D0</text><text x="20" y="80" class="gate-text">D1</text><text x="20" y="130" class="gate-text">D2</text><text x="20" y="180" class="gate-text">D3</text>
+                                        <path d="M 50 30 L 120 30" class="wire-path wire-0" stroke-dasharray="4" id="enc-w-d0"/><text x="160" y="30" class="gate-text text-[10px]" fill="#94a3b8">(ينتج 00 بدون توصيل)</text>
+
+                                        <path id="enc-wA-d2" class="wire-path wire-0" d="M 50 130 L 150 130 L 150 70 L 250 70" />
+                                        <path id="enc-wA-d3" class="wire-path wire-1" d="M 50 180 L 180 180 L 180 90 L 250 90" /><circle cx="180" cy="180" r="4" fill="#10b981" id="enc-node-d3a" />
+                                        <path class="gate-body" d="M 250 60 Q 270 80 250 100 Q 290 100 310 80 Q 290 60 250 60 Z" /><path id="enc-out-a-wire" class="wire-path wire-1" d="M 310 80 L 370 80" /><text x="390" y="80" class="gate-text">A (MSB)</text>
+
+                                        <path id="enc-wB-d1" class="wire-path wire-0" d="M 50 80 L 130 80 L 130 150 L 250 150" />
+                                        <path id="enc-wB-d3" class="wire-path wire-1" d="M 180 180 L 210 180 L 210 170 L 250 170" /><circle cx="210" cy="180" r="4" fill="#10b981" id="enc-node-d3b" />
+                                        <path class="gate-body" d="M 250 140 Q 270 160 250 180 Q 290 180 310 160 Q 290 140 250 140 Z" /><path id="enc-out-b-wire" class="wire-path wire-1" d="M 310 160 L 370 160" /><text x="390" y="160" class="gate-text">B (LSB)</text>
+                                    </svg>
+                                    <div class="w-full bg-slate-100 p-2 rounded text-center">
+                                        <p class="font-bold text-slate-600 mb-2 text-sm">اختر الزر المضغوط (D0-D3):</p>
+                                        <div class="flex justify-center gap-4" dir="ltr">
+                                            <label class="flex flex-col items-center gap-1 cursor-pointer"><span class="font-mono text-sm font-bold">D0</span><input type="radio" name="enc-in" value="0" class="radio-btn" onchange="updateEncoder()"></label>
+                                            <label class="flex flex-col items-center gap-1 cursor-pointer"><span class="font-mono text-sm font-bold">D1</span><input type="radio" name="enc-in" value="1" class="radio-btn" onchange="updateEncoder()"></label>
+                                            <label class="flex flex-col items-center gap-1 cursor-pointer"><span class="font-mono text-sm font-bold">D2</span><input type="radio" name="enc-in" value="2" class="radio-btn" onchange="updateEncoder()"></label>
+                                            <label class="flex flex-col items-center gap-1 cursor-pointer"><span class="font-mono text-sm font-bold text-teal-600">D3</span><input type="radio" name="enc-in" value="3" class="radio-btn" checked onchange="updateEncoder()"></label>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-center"><div class="flex flex-row gap-4"><div class="result-box"><span class="result-label">A=</span><span class="result-val val-1" id="enc-a">1</span></div><div class="result-box"><span class="result-label">B=</span><span class="result-val val-1" id="enc-b">1</span></div></div></div>
+                                </div>
+                            </div>
+                            <div class="logic-box bg-slate-900 border-none p-0 flex flex-col overflow-hidden"><div class="bg-slate-800 text-sky-400 font-bold p-2 text-center border-b border-slate-700">تتبع التشفير</div><div id="trace-enc" class="tracing-panel mt-0 rounded-none h-full border-none"></div></div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab Navigation Logic
+        function switchMainTab(tabId) {
+            document.querySelectorAll('.main-tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.remove('hidden');
+            document.getElementById('btn-' + tabId).classList.add('active');
+            
+            // Trigger specific updates to ensure rendering is fresh
+            if(tabId === 'tab-arithmetic') { updateHA(); updateFA(); updateHS(); updateFS(); }
+            if(tabId === 'tab-routing') { updateMUX(); updateDEMUX(); }
+            if(tabId === 'tab-converters') { updateDecoder(); updateEncoder(); }
+            
+            setTimeout(updateCanvasSize, 100);
+        }
+
+        function switchSubTab(category, id) {
+            const container = document.getElementById(`tab-${category === 'arith' ? 'arithmetic' : category === 'rout' ? 'routing' : 'converters'}`);
+            container.querySelectorAll('.sub-content').forEach(el => el.classList.add('hidden'));
+            container.querySelectorAll('.sub-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(`sub-${category}-${id}`).classList.remove('hidden');
+            document.getElementById(`btn-${category}-${id}`).classList.add('active');
+            
+            if(id==='ha') updateHA(); if(id==='fa') updateFA();
+            if(id==='hs') updateHS(); if(id==='fs') updateFS();
+            if(id==='mux') updateMUX(); if(id==='dmx') updateDEMUX();
+            if(id==='dec') updateDecoder(); if(id==='enc') updateEncoder();
+
+            setTimeout(updateCanvasSize, 100);
+        }
+
+        // Logic Helpers
+        function setWire(id, val) { const el = document.getElementById(id); if(el) el.className.baseVal = `wire-path wire-${val}`; }
+        function setNode(id, val) { const el = document.getElementById(id); if(el) el.setAttribute('fill', val ? '#10b981' : '#ef4444'); }
+        function setRes(id, val) { const el = document.getElementById(id); if(el) { el.innerText = val; el.className = `result-val val-${val}`; } }
+
+        // 1. Half Adder
+        function updateHA() {
+            const a = document.getElementById('ha-a').checked ? 1 : 0;
+            const b = document.getElementById('ha-b').checked ? 1 : 0;
+            const s = a ^ b, c = a & b;
+            
+            setWire('ha-wa1', a); setWire('ha-wa2', a); setNode('ha-na', a);
+            setWire('ha-wb1', b); setWire('ha-wb2', b); setNode('ha-nb', b);
+            setWire('ha-ws', s); setWire('ha-wc', c);
+            setRes('ha-rs', s); setRes('ha-rc', c);
+
+            document.getElementById('trace-ha').innerHTML = `
+                <span class="step-title">تحليل إشارات الدخل: A=${a} ، B=${b}</span>
+                <ul>
+                    <li><strong>حساب المجموع (Sum):</strong> تمر الإشارتان لبوابة <span class="trace-gate">XOR</span>. بما أن المدخلات ${a!==b?'مختلفة، فالبوابة تُخرج 1':'متشابهة، فالبوابة تُخرج 0'}. إذن <span class="trace-high-${s}">S = ${s}</span>.</li>
+                    <li><strong>حساب المحمول (Carry):</strong> تمر الإشارتان لبوابة <span class="trace-gate">AND</span>. ${a===1&&b===1?'كلا المدخلين 1، فالبوابة تُخرج 1':'لا يوجد 1 في كلا المدخلين معاً، فالبوابة تُخرج 0'}. إذن <span class="trace-high-${c}">C = ${c}</span>.</li>
+                </ul>`;
+        }
+
+        // 2. Full Adder
+        function updateFA() {
+            const a = document.getElementById('fa-a').checked ? 1 : 0;
+            const b = document.getElementById('fa-b').checked ? 1 : 0;
+            const cin = document.getElementById('fa-cin').checked ? 1 : 0;
+            
+            const xor1 = a ^ b, and1 = a & b;
+            const s = xor1 ^ cin, and2 = xor1 & cin;
+            const cout = and1 | and2;
+
+            setWire('fa-wa', a); setWire('fa-wa2', a); setWire('fa-wb', b); setWire('fa-wb2', b); setWire('fa-wcin', cin); setWire('fa-wcin2', cin);
+            setWire('fa-wxor1', xor1); setWire('fa-wxor1_2', xor1); setWire('fa-wand1', and1); setWire('fa-wand2', and2);
+            setWire('fa-ws', s); setWire('fa-wco', cout);
+            setRes('fa-rs', s); setRes('fa-rc', cout);
+
+            document.getElementById('trace-fa').innerHTML = `
+                <span class="step-title">تحليل إشارات الدخل: A=${a}, B=${b}, Cin=${cin}</span>
+                <ul>
+                    <li><strong>مرحلة 1 (الجامع النصفي الأول):</strong> يجمع A و B. ناتج المجموع المبدئي (XOR1) = <span class="trace-high-${xor1}">${xor1}</span>، والمحمول المبدئي (AND1) = <span class="trace-high-${and1}">${and1}</span>.</li>
+                    <li><strong>مرحلة 2 (الجامع النصفي الثاني):</strong> يأخذ الناتج المبدئي (${xor1}) ويجمعه مع Cin (${cin}). المجموع النهائي (XOR2) = <span class="trace-high-${s}">Sum = ${s}</span>.</li>
+                    <li><strong>مرحلة 3 (المحمول النهائي):</strong> بوابة OR تجمع المحمول من المرحلة 1 والمرحلة 2. الناتج <span class="trace-high-${cout}">Cout = ${cout}</span>.</li>
+                </ul>`;
+        }
+
+        // 3. Half Subtractor
+        function updateHS() {
+            const a = document.getElementById('hs-a').checked ? 1 : 0;
+            const b = document.getElementById('hs-b').checked ? 1 : 0;
+            
+            const aNot = a === 1 ? 0 : 1;
+            const d = a ^ b;
+            const bout = aNot & b;
+
+            setWire('hs-wa1', a); setWire('hs-wa2', a); setNode('hs-na', a);
+            setWire('hs-wb1', b); setWire('hs-wb2', b); setNode('hs-nb', b);
+            setWire('hs-wanot', aNot);
+            setWire('hs-wd', d); setWire('hs-wbout', bout);
+            setRes('hs-rd', d); setRes('hs-rb', bout);
+
+            document.getElementById('trace-hs').innerHTML = `
+                <span class="step-title">طرح: ${a} (المطروح منه) - ${b} (المطروح)</span>
+                <ul>
+                    <li><strong>حساب الفرق (Diff):</strong> يمر عبر بوابة <span class="trace-gate">XOR</span>. النتيجة مطابقة لعملية الجمع. <span class="trace-high-${d}">Diff = ${d}</span>.</li>
+                    <li><strong>حساب الاستعارة (Borrow):</strong> نستخدم بوابة <span class="trace-gate">NOT</span> لقلب A إلى ${aNot}، ثم نمرره مع B إلى <span class="trace-gate">AND</span>. (نحتاج استعارة فقط لو كان A=0 ونريد طرح B=1 منه). النتيجة <span class="trace-high-${bout}">Bout = ${bout}</span>.</li>
+                </ul>`;
+        }
+
+        // 4. Full Subtractor
+        function updateFS() {
+            const a = document.getElementById('fs-a').checked ? 1 : 0;
+            const b = document.getElementById('fs-b').checked ? 1 : 0;
+            const bin = document.getElementById('fs-bin').checked ? 1 : 0;
+            
+            const aNot1 = a === 1 ? 0 : 1;
+            const xor1 = a ^ b;
+            const and1 = aNot1 & b;
+            
+            const xor1Not = xor1 === 1 ? 0 : 1;
+            const diff = xor1 ^ bin;
+            const and2 = xor1Not & bin;
+            
+            const bout = and1 | and2;
+
+            setWire('fs-wa', a); setWire('fs-wa2', a); setWire('fs-wb', b); setWire('fs-wb2', b); setWire('fs-wbin', bin); setWire('fs-wbin2', bin);
+            setWire('fs-wanot1', aNot1); setWire('fs-wxor1', xor1); setWire('fs-wxor1_2', xor1); setWire('fs-wand1', and1);
+            setWire('fs-wanot2', xor1Not); setWire('fs-wand2', and2);
+            setWire('fs-wd', diff); setWire('fs-wbo', bout);
+            setRes('fs-rd', diff); setRes('fs-rbo', bout);
+
+            document.getElementById('trace-fs').innerHTML = `
+                <span class="step-title">طرح: A=${a} - B=${b} - Bin=${bin}</span>
+                <ul>
+                    <li><strong>الطارح النصفي الأول:</strong> يطرح B من A. الفرق المبدئي = <span class="trace-high-${xor1}">${xor1}</span>، والاستعارة المبدئية = <span class="trace-high-${and1}">${and1}</span>.</li>
+                    <li><strong>الطارح النصفي الثاني:</strong> يطرح Bin من الفرق المبدئي (${xor1}). الفرق النهائي <span class="trace-high-${diff}">Diff = ${diff}</span>. والاستعارة = <span class="trace-high-${and2}">${and2}</span>.</li>
+                    <li><strong>الاستعارة النهائية:</strong> بوابة OR تجمع الاستعارات. <span class="trace-high-${bout}">Bout = ${bout}</span>.</li>
+                </ul>`;
+        }
+
+        // 5. MUX
+        function updateMUX() {
+            const d0 = document.getElementById('mux-d0-in').checked ? 1 : 0;
+            const d1 = document.getElementById('mux-d1-in').checked ? 1 : 0;
+            const sel = document.getElementById('mux-sel').checked ? 1 : 0;
+            const y = sel === 0 ? d0 : d1;
+            
+            setWire('mux-d0', d0); setWire('mux-d1', d1);
+            if(sel === 1) { document.getElementById('mux-sel1').style.stroke = '#10b981'; document.getElementById('mux-sel0').style.stroke = '#ef4444'; setWire('mux-a1', 0); setWire('mux-a2', d1); }
+            else { document.getElementById('mux-sel1').style.stroke = '#ef4444'; document.getElementById('mux-sel0').style.stroke = '#10b981'; setWire('mux-a1', d0); setWire('mux-a2', 0); }
+            setWire('mux-y', y); setRes('mux-y-out', y);
+
+            document.getElementById('trace-mux').innerHTML = `
+                <span class="step-title">إشارة التحكم Sel = ${sel}</span>
+                <ul>
+                    ${sel === 0 ? `<li>الشرطي (Sel) قيمته 0. ينعكس عبر بوابة <span class="trace-gate">NOT</span> ليصبح 1 في المسار العلوي، مما <strong>يفتح</strong> بوابة AND لـ D0.</li><li>بوابة AND لـ D1 تُغلق تماماً. النتيجة تمرير بيانات <span class="trace-high-${d0}">D0 (${d0})</span> إلى <span class="trace-high-${y}">Y=${y}</span>.</li>`
+                                : `<li>الشرطي (Sel) قيمته 1. يتجه مباشرة للمسار السفلي مما <strong>يفتح</strong> بوابة AND لـ D1.</li><li>بوابة AND العلوية تُغلق لأن الإشارة تنعكس لـ 0 عبر NOT. النتيجة تمرير <span class="trace-high-${d1}">D1 (${d1})</span> إلى <span class="trace-high-${y}">Y=${y}</span>.</li>`}
+                </ul>`;
+        }
+
+        // 6. DEMUX
+        function updateDEMUX() {
+            const dIn = document.getElementById('dmx-in-val').checked ? 1 : 0;
+            const sel = document.getElementById('dmx-sel-in').checked ? 1 : 0;
+            const o0 = sel === 0 ? dIn : 0;
+            const o1 = sel === 1 ? dIn : 0;
+
+            setWire('dmx-in', dIn); setWire('dmx-in0', dIn); setWire('dmx-in1', dIn); setNode('dmx-node', dIn);
+            if(sel === 1) { document.getElementById('dmx-sel1').style.stroke = '#10b981'; document.getElementById('dmx-sel0').style.stroke = '#ef4444'; }
+            else { document.getElementById('dmx-sel1').style.stroke = '#ef4444'; document.getElementById('dmx-sel0').style.stroke = '#10b981'; }
+            setWire('dmx-o0', o0); setWire('dmx-o1', o1);
+            setRes('dmx-r0', o0); setRes('dmx-r1', o1);
+
+            document.getElementById('trace-dmx').innerHTML = `
+                <span class="step-title">البيانات (In)=${dIn} ، إشارة التوجيه (Sel)=${sel}</span>
+                <ul>
+                    ${sel === 0 ? `<li>إشارة التوجيه (0) تنعكس إلى (1) للمسار العلوي، فتفتح البوابة وتمرر البيانات للمخرج <span class="trace-high-${o0}">Out 0 = ${o0}</span>. المسار السفلي مغلق (<span class="trace-high-0">Out 1 = 0</span>).</li>`
+                                : `<li>إشارة التوجيه (1) تفتح المسار السفلي مباشرة، وتمرر البيانات للمخرج <span class="trace-high-${o1}">Out 1 = ${o1}</span>. المسار العلوي يغلق بسبب العاكس (<span class="trace-high-0">Out 0 = 0</span>).</li>`}
+                </ul>`;
+        }
+
+        // 7. Decoder
+        function updateDecoder() {
+            const a = document.getElementById('dec-a').checked ? 1 : 0;
+            const b = document.getElementById('dec-b').checked ? 1 : 0;
+            const aNot = a === 1 ? 0 : 1, bNot = b === 1 ? 0 : 1;
+
+            setWire('dec-bus-a', a); setNode('dec-node-a', a); setWire('dec-bus-anot', aNot);
+            setWire('dec-bus-b', b); setNode('dec-node-b', b); setWire('dec-bus-bnot', bNot);
+
+            const o0 = aNot & bNot, o1 = aNot & b, o2 = a & bNot, o3 = a & b;
+            
+            setWire('dec-w0-a', aNot); setWire('dec-w0-b', bNot); setWire('dec-out-0', o0); setNode('dec-n0a', aNot); setNode('dec-n0b', bNot);
+            setWire('dec-w1-a', aNot); setWire('dec-w1-b', b);    setWire('dec-out-1', o1); setNode('dec-n1a', aNot); setNode('dec-n1b', b);
+            setWire('dec-w2-a', a);    setWire('dec-w2-b', bNot); setWire('dec-out-2', o2); setNode('dec-n2a', a);    setNode('dec-n2b', bNot);
+            setWire('dec-w3-a', a);    setWire('dec-w3-b', b);    setWire('dec-out-3', o3); setNode('dec-n3a', a);    setNode('dec-n3b', b);
+
+            const val = (a << 1) | b;
+            document.getElementById('trace-dec').innerHTML = `
+                <span class="step-title">الشفرة المدخلة: A=${a}, B=${b} (رقم ${val} عشرياً)</span>
+                <ul>
+                    <li>بوابات NOT توفر المعكوسات: A'=${aNot} و B'=${bNot}.</li>
+                    <li>يتم تغذية بوابات AND الأربع بتركيبات مختلفة. البوابة الوحيدة التي تتلقى (1 و 1) هي بوابة المخرج <span class="trace-high-1">O${val}</span> فتتفعل وتصبح 1.</li>
+                    <li>بقية البوابات تتلقى 0 في أحد أسلاكها على الأقل فتظل مغلقة (0).</li>
+                </ul>`;
+        }
+
+        // 8. Encoder
+        function updateEncoder() {
+            const val = parseInt(document.querySelector('input[name="enc-in"]:checked').value);
+            const a = (val === 2 || val === 3) ? 1 : 0;
+            const b = (val === 1 || val === 3) ? 1 : 0;
+            
+            setRes('enc-a', a); setRes('enc-b', b);
+            setWire('enc-w-d0', val === 0 ? 1 : 0);
+            
+            setWire('enc-wA-d2', val === 2 ? 1 : 0); setWire('enc-wA-d3', val === 3 ? 1 : 0); setNode('enc-node-d3a', val === 3 ? 1 : 0); setWire('enc-out-a-wire', a);
+            setWire('enc-wB-d1', val === 1 ? 1 : 0); setWire('enc-wB-d3', val === 3 ? 1 : 0); setNode('enc-node-d3b', val === 3 ? 1 : 0); setWire('enc-out-b-wire', b);
+
+            document.getElementById('trace-enc').innerHTML = `
+                <span class="step-title">توليد شفرة للزر النشط: D${val}</span>
+                <ul>
+                    ${val === 0 ? `<li>الزر D0 لا يوصل بأي بوابات. لذا بوابات OR تخرج قيمتها الافتراضية الصفرية: الكود = <span class="trace-high-0">00</span>.</li>`
+                                : `<li>الإشارة من D${val} تمر عبر الأسلاك.</li>
+                                   <li>بوابة OR لـ A (البت الأعلى) تتفعل فقط إذا كان D2 أو D3 نشطاً. إذن <span class="trace-high-${a}">A=${a}</span>.</li>
+                                   <li>بوابة OR لـ B (البت الأدنى) تتفعل إذا كان D1 أو D3 نشطاً. إذن <span class="trace-high-${b}">B=${b}</span>. الشفرة النهائية: ${a}${b}</li>`}
+                </ul>`;
+        }
+
+        // Initialize All
+        window.addEventListener('load', () => {
+            updateHA(); updateFA(); updateHS(); updateFS();
+            updateMUX(); updateDEMUX(); updateDecoder(); updateEncoder();
+        });
+
+
+        const canvas = document.getElementById('drawing-canvas');
+        const ctx = canvas.getContext('2d');
+        let isDrawMode = false, isDrawing = false, currentTool = 'pen', currentColor = '#ef4444', lastX = 0, lastY = 0;
+
+        function updateCanvasSize() {
+            if(!canvas) return;
+            const newWidth = document.documentElement.scrollWidth;
+            const newHeight = Math.max(document.documentElement.scrollHeight, window.innerHeight);
+            if (canvas.width !== newWidth || canvas.height !== newHeight) {
+                const tc = document.createElement('canvas'); tc.width = canvas.width || newWidth; tc.height = canvas.height || newHeight;
+                const tx = tc.getContext('2d'); if(canvas.width>0) tx.drawImage(canvas, 0, 0);
+                canvas.width = newWidth; canvas.height = newHeight; ctx.drawImage(tc, 0, 0);
+                ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+            }
+        }
+        
+        window.addEventListener('resize', updateCanvasSize);
+        window.addEventListener('load', () => { updateCanvasSize(); new MutationObserver(updateCanvasSize).observe(document.body, { childList: true, subtree: true }); });
+
+        function toggleDrawingMode() {
+            isDrawMode = !isDrawMode; canvas.style.pointerEvents = isDrawMode ? 'auto' : 'none'; 
+            const tools = document.getElementById('drawing-tools'), btn = document.getElementById('btn-toggle-draw');
+            if (isDrawMode) { tools.classList.remove('hidden'); tools.classList.add('flex'); btn.classList.add('bg-sky-100', 'text-sky-700', 'border-sky-400'); } 
+            else { tools.classList.add('hidden'); tools.classList.remove('flex'); btn.classList.remove('bg-sky-100', 'text-sky-700', 'border-sky-400'); }
+        }
+
+        function setPenColor(hex, el) { currentTool = 'pen'; currentColor = hex; document.getElementById('btn-eraser').classList.remove('bg-slate-300'); document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('scale-110', 'ring-2')); el.classList.add('scale-110', 'ring-2'); canvas.style.cursor = 'crosshair'; }
+        function setEraser() { currentTool = 'eraser'; document.getElementById('btn-eraser').classList.add('bg-slate-300'); document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('scale-110', 'ring-2')); canvas.style.cursor = 'cell'; }
+        function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+        function getMousePos(e) { return { x: e.pageX || (e.touches && e.touches[0].pageX), y: e.pageY || (e.touches && e.touches[0].pageY) }; }
+
+        function startPos(e) { if (!isDrawMode) return; if(e.type==='touchstart' && e.cancelable) e.preventDefault(); isDrawing = true; const p = getMousePos(e); lastX = p.x; lastY = p.y; draw(e); }
+        function endPos() { isDrawing = false; ctx.beginPath(); }
+        function draw(e) {
+            if (!isDrawing || !isDrawMode) return; if(e.type==='touchmove' && e.cancelable) e.preventDefault(); const p = getMousePos(e);
+            ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(p.x, p.y);
+            if (currentTool === 'pen') { ctx.globalCompositeOperation = 'source-over'; ctx.strokeStyle = currentColor; ctx.lineWidth = 4; } 
+            else { ctx.globalCompositeOperation = 'destination-out'; ctx.lineWidth = 40; }
+            ctx.stroke(); lastX = p.x; lastY = p.y;
+        }
+
+        canvas.addEventListener('mousedown', startPos); canvas.addEventListener('mousemove', draw); window.addEventListener('mouseup', endPos);
+        canvas.addEventListener('touchstart', startPos, {passive: false}); canvas.addEventListener('touchmove', draw, {passive: false}); canvas.addEventListener('touchend', endPos);
+    </script>
+</body>
+</html>
