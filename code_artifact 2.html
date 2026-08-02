@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الدوائر المنطقية التسلسلية - المرجع الشامل والتفاعلي</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        :root {
+            --line-height: 44px;
+            --primary-bg: #fdfbf7;
+            --primary-text: #20242f;
+            --wire-0: #ef4444; /* Logic 0 - Red */
+            --wire-1: #10b981; /* Logic 1 - Green */
+            --wire-clk: #3b82f6; /* Clock - Blue */
+            --gate-stroke: #334155;
+            --gate-fill: #ffffff;
+        }
+        body { font-family: 'Cairo', sans-serif; background-color: #cbd5e1; margin: 0; padding: 15px; display: flex; justify-content: center; color: var(--primary-text); }
+        
+        /* Notebook Structure */
+        .notebook-wrapper { width: 100%; max-width: 1400px; background-color: var(--primary-bg); border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.15); overflow: hidden; position: relative; }
+        .notebook-paper { background-image: linear-gradient(rgba(147, 197, 253, 0.35) 2px, transparent 2px); background-size: 100% var(--line-height); min-height: 900px; position: relative; }
+        .notebook-paper::before { content: ""; position: absolute; top: 0; bottom: 0; right: 60px; width: 2px; background-color: rgba(239, 68, 68, 0.4); z-index: 1; }
+        .notebook-content { position: relative; z-index: 2; padding-right: 90px; padding-left: 30px; padding-top: calc(var(--line-height) * 0.5); padding-bottom: calc(var(--line-height) * 3); }
+        
+        .tabs-container { display: flex; flex-wrap: wrap; background-color: #1e293b; border-bottom: 2px solid #0f172a; position: relative; z-index: 10; }
+        .tab-btn { transition: all 0.3s ease; flex-grow: 1; text-align: center; padding: 1.2rem 0.5rem; font-size: 1.1rem; font-weight: 800; color: #94a3b8; border-top: 4px solid transparent; background-color: #1e293b; cursor: pointer; border-left: 1px solid #334155;}
+        .tab-btn:last-child { border-left: none; }
+        .tab-btn:hover { background-color: #334155; color: #38bdf8; }
+        .tab-btn.active { background-color: var(--primary-bg); color: #0284c7; border-top-color: #0ea5e9; }
+        
+        .sub-nav { display: flex; gap: 10px; margin-bottom: 30px; border-bottom: 2px dashed #cbd5e1; padding-bottom: 15px; overflow-x: auto; scrollbar-width: none; }
+        .sub-nav::-webkit-scrollbar { display: none; }
+        .sub-btn { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 20px; font-weight: 700; color: #475569; cursor: pointer; transition: all 0.2s; white-space: nowrap; font-size: 0.95rem;}
+        .sub-btn:hover { background: #e2e8f0; }
+        .sub-btn.active { background: #0ea5e9; color: white; border-color: #0284c7; box-shadow: 0 4px 6px rgba(14, 165, 233, 0.2); }
+
+        /* General & Animations */
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .align-lines { line-height: var(--line-height); margin: 0; padding: 0; }
+        
+        .info-card { background: #f8fafc; border: 1px solid #cbd5e1; border-right: 5px solid #0ea5e9; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .info-card h4 { color: #0369a1; font-weight: 900; margin-bottom: 8px; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
+        .info-card p { font-size: 1rem; color: #334155; font-weight: 600; line-height: 1.7; margin-bottom: 8px; }
+        
+        .logic-box { background: rgba(255, 255, 255, 0.95); border: 2px dashed #94a3b8; border-radius: 12px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); margin-bottom: 20px; }
+        .diagram-title { text-align: center; font-weight: 900; color: #475569; margin-bottom: 15px; font-size: 1.1rem; border-bottom: 1px dashed #cbd5e1; padding-bottom: 5px; }
+        .circuit-container { position: relative; width: 100%; display: flex; align-items: center; justify-content: center; background-color: #0f172a; border-radius: 12px; border: 2px solid #1e293b; padding: 15px; direction: ltr; overflow-x: auto; min-height: 250px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5);}
+        .circuit-svg { width: 100%; height: auto; max-width: 700px; max-height: 450px; }
+        
+        /* SVG Elements */
+        .wire { fill: none; stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; transition: stroke 0.3s ease, stroke-dashoffset 0.5s; }
+        .wire-0 { stroke: var(--wire-0); }
+        .wire-1 { stroke: var(--wire-1); filter: drop-shadow(0 0 5px rgba(16, 185, 129, 0.7)); }
+        .wire-clk { stroke: var(--wire-clk); }
+        .wire-z { stroke: #64748b; stroke-dasharray: 4; }
+        .gate { fill: #1e293b; stroke: #38bdf8; stroke-width: 2.5; stroke-linejoin: round; }
+        .gate-inv { fill: #f8fafc; stroke: #38bdf8; stroke-width: 2.5; }
+        .svg-text { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: bold; fill: #f8fafc; text-anchor: middle; dominant-baseline: middle; }
+        .node { fill: #f8fafc; }
+        
+        .controls-area { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-top: 15px; padding: 15px; background-color: #f1f5f9; border-radius: 8px; border: 1px solid #cbd5e1; }
+        .input-group { display: flex; align-items: center; gap: 8px; direction: ltr; }
+        .input-label { font-size: 1.1rem; font-weight: 900; color: #1e293b; font-family: 'JetBrains Mono', monospace; text-align: right; }
+        
+        .switch-btn { appearance: none; width: 56px; height: 32px; background-color: #cbd5e1; border-radius: 16px; position: relative; cursor: pointer; outline: none; transition: background-color 0.3s; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);}
+        .switch-btn::after { content: '0'; position: absolute; top: 3px; left: 3px; width: 26px; height: 26px; background-color: white; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.3); transition: transform 0.3s; display: flex; align-items: center; justify-content: center; font-family: monospace; font-weight: bold; color: #ef4444; font-size: 1rem;}
+        .switch-btn:checked { background-color: var(--wire-1); }
+        .switch-btn:checked::after { content: '1'; transform: translateX(24px); color: var(--wire-1); }
+        
+        .clk-btn { background: #3b82f6; color: white; border: none; border-radius: 8px; padding: 10px 24px; font-weight: 900; font-size: 1.1rem; font-family: 'JetBrains Mono', monospace; cursor: pointer; box-shadow: 0 4px 0 #1d4ed8; transition: all 0.1s; display: flex; align-items: center; gap: 8px; }
+        .clk-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #1d4ed8; background: #2563eb; }
+
+        .result-box { display: flex; align-items: center; gap: 6px; padding: 8px 16px; background: white; border: 2px solid #e2e8f0; border-radius: 8px; direction: ltr; }
+        .result-label { font-weight: 900; color: #334155; font-size: 1.1rem; }
+        .result-val { font-size: 1.3rem; font-weight: 900; font-family: monospace; padding: 2px 12px; border-radius: 6px; transition: all 0.3s; }
+        .result-val.val-0 { background-color: #fee2e2; color: #b91c1c; }
+        .result-val.val-1 { background-color: #d1fae5; color: #047857; }
+        .result-val.val-err { background-color: #fef08a; color: #a16207; }
+
+        .tracing-panel { background-color: #1e293b; color: #f8fafc; padding: 20px; border-radius: 12px; font-family: 'Cairo', sans-serif; font-size: 1.1rem; line-height: 1.8; width: 100%; border-right: 6px solid #38bdf8; min-height: 150px; box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);}
+        .tracing-panel .step-title { color: #38bdf8; font-weight: 900; font-size: 1.2rem; margin-bottom: 12px; display: block; border-bottom: 1px solid #334155; padding-bottom: 5px;}
+        .tracing-panel ul { list-style-type: none; padding: 0; margin: 0; }
+        .tracing-panel li { margin-bottom: 12px; padding-right: 25px; position: relative; transition: all 0.3s; }
+        .tracing-panel li::before { content: '►'; position: absolute; right: 0; color: #38bdf8; font-size: 1rem; top: 5px; }
+        .trace-high-0 { color: #fca5a5; font-weight: bold; font-family: monospace; padding: 2px 6px; background: rgba(239, 68, 68, 0.2); border-radius: 4px; }
+        .trace-high-1 { color: #6ee7b7; font-weight: bold; font-family: monospace; padding: 2px 6px; background: rgba(16, 185, 129, 0.2); border-radius: 4px; }
+        .trace-clk { color: #93c5fd; font-weight: bold; font-family: monospace; padding: 2px 6px; background: rgba(59, 130, 246, 0.2); border-radius: 4px; }
+
+        table.truth-table { width: 100%; border-collapse: collapse; margin: 15px 0; background: white; direction: ltr; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        table.truth-table th, table.truth-table td { border: 1px solid #cbd5e1; padding: 10px; font-family: 'JetBrains Mono', monospace; font-size: 1rem; }
+        table.truth-table th { background: #f1f5f9; color: #1e293b; font-weight: 900;}
+        table.truth-table td { color: #475569; font-weight: bold;}
+        .highlight-err { background-color: #fee2e2 !important; color: #b91c1c !important; }
+
+        /* Box representation for Registers/Counters */
+        .ff-box { width: 70px; height: 90px; border: 3px solid #38bdf8; background: #1e293b; position: relative; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 1.8rem; font-weight: 900; color: #f8fafc; border-radius: 8px; box-shadow: inset 0 0 15px rgba(0,0,0,0.5); transition: all 0.3s;}
+        .ff-box.val-1 { background-color: #064e3b; border-color: #10b981; color: #34d399;}
+        .ff-box.val-0 { background-color: #450a0a; border-color: #ef4444; color: #fca5a5;}
+        .ff-box::before { content: ''; position: absolute; bottom: 0; left: 10px; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 12px solid #38bdf8; } /* Clock triangle */
+        
+        .wire-arrow { position: absolute; height: 4px; background-color: #475569; display: flex; align-items: center; justify-content: flex-end; transition: all 0.3s; }
+        .wire-arrow::after { content: ''; width: 0; height: 0; border-top: 8px solid transparent; border-bottom: 8px solid transparent; border-left: 12px solid #475569; transform: translateX(6px); transition: all 0.3s;}
+        .wire-arrow.active { background-color: #10b981; }
+        .wire-arrow.active::after { border-left-color: #10b981; }
+
+    </style>
+</head>
+<body>
+
+    <canvas id="drawing-canvas" class="absolute top-0 left-0 w-full z-[100] pointer-events-none"></canvas>
+    
+    <div id="drawing-toolbar" class="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-[110] bg-white p-2 rounded-full shadow-2xl border-2 border-slate-200 flex gap-2 transition-all duration-300">
+        <button id="btn-toggle-draw" onclick="toggleDrawingMode()" class="w-12 h-12 rounded-full flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 transition" title="تفعيل الشرح الحر (القلم)">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+        </button>
+        <div id="drawing-tools" class="hidden gap-2 items-center px-2 border-r-2 border-slate-200 mr-2">
+            <button onclick="setPenColor('#ef4444', this)" class="color-btn w-6 h-6 rounded-full bg-red-500 ring-2 ring-red-400 scale-110" title="أحمر"></button>
+            <button onclick="setPenColor('#3b82f6', this)" class="color-btn w-6 h-6 rounded-full bg-blue-500" title="أزرق"></button>
+            <button onclick="setPenColor('#10b981', this)" class="color-btn w-6 h-6 rounded-full bg-emerald-500" title="أخضر"></button>
+            <button onclick="setPenColor('#f59e0b', this)" class="color-btn w-6 h-6 rounded-full bg-amber-500" title="برتقالي"></button>
+            <button onclick="setPenColor('#8b5cf6', this)" class="color-btn w-6 h-6 rounded-full bg-purple-500" title="بنفسجي"></button>
+            <button onclick="setPenColor('#0f172a', this)" class="color-btn w-6 h-6 rounded-full bg-slate-900" title="أسود"></button>
+            <div class="w-px h-6 bg-slate-300 mx-1"></div>
+            <button id="btn-eraser" onclick="setEraser()" class="w-8 h-8 rounded-full bg-slate-100 text-center text-xl" title="ممحاة">🧽</button>
+            <button onclick="clearCanvas()" class="w-8 h-8 rounded-full bg-slate-100 hover:text-red-600 text-xl" title="مسح الكل">🗑️</button>
+        </div>
+    </div>
+
+    <div class="notebook-wrapper">
+        <div class="bg-slate-900 text-white p-6 relative z-10 border-b-4 border-sky-500">
+            <h1 class="text-3xl font-black mb-2 text-center text-sky-400">الدوائر المنطقية التسلسلية (Sequential Circuits)</h1>
+            <p class="text-slate-300 text-base text-center font-bold">المرجع الشامل التفاعلي: القلابات، العدادات، ومسجلات الإزاحة (التتبع خطوة بخطوة)</p>
+        </div>
+
+        <div class="tabs-container">
+            <button onclick="switchMainTab('tab-concept')" id="btn-tab-concept" class="tab-btn active">المفهوم والتصنيف</button>
+            <button onclick="switchMainTab('tab-ff')" id="btn-tab-ff" class="tab-btn">الماسكات والقلابات</button>
+            <button onclick="switchMainTab('tab-cnt')" id="btn-tab-cnt" class="tab-btn">العدادات الرقمية</button>
+            <button onclick="switchMainTab('tab-reg')" id="btn-tab-reg" class="tab-btn">مسجلات الإزاحة</button>
+        </div>
+
+        <div class="notebook-paper">
+            <div class="notebook-content">
+                
+                <div id="tab-concept" class="main-tab-content block fade-in">
+                    <h2 class="text-3xl font-black text-slate-800 align-lines block mb-6 border-b-2 border-slate-200 pb-2">مفهوم الدوائر التسلسلية (Sequential Circuits)</h2>
+                    
+                    <div class="info-card border-r-sky-500 bg-sky-50 mb-6">
+                        <h4><span class="text-2xl">🧠</span> الذاكرة هي الفارق الجوهري</h4>
+                        <p>على عكس الدوائر التجميعية (التي تعتمد فقط على المدخلات الحالية)، فإن <strong>الدوائر التسلسلية</strong> تمتلك "ذاكرة".</p>
+                        <p class="text-sky-900 bg-sky-100 p-3 rounded mt-2 border border-sky-200">المخرج الحالي للدائرة يعتمد على: <br>1. المدخلات الحالية (Present Inputs).<br>2. الحالة السابقة للدائرة (Past State) المخزنة في عناصر الذاكرة.</p>
+                    </div>
+
+                    <h3 class="text-2xl font-black text-slate-800 mb-4 mt-8">نبضة الساعة (Clock Pulse) ⏱️</h3>
+                    <p class="text-lg font-bold text-slate-700 mb-4">إشارات رقمية مربعة تنتج تزامنًا بين أجزاء النظام الرقمي. تُستخدم لضبط سرعة نقل البيانات وتنفيذ العمليات. كل نبضة تمثل خطوة تنفيذ.</p>
+                    <div class="circuit-container bg-slate-900 border-none h-40 flex items-center justify-center overflow-hidden mb-8" dir="ltr">
+                        <svg viewBox="0 0 600 100" class="w-full max-w-[500px]">
+                            <path d="M 50 80 L 100 80 L 100 20 L 150 20 L 150 80 L 200 80 L 200 20 L 250 20 L 250 80 L 300 80 L 300 20 L 350 20 L 350 80 L 400 80 L 400 20 L 450 20 L 450 80 L 500 80 L 500 20 L 550 20" fill="none" stroke="#3b82f6" stroke-width="4" stroke-linejoin="round"/>
+                            <!-- Edge Highlights -->
+                            <line x1="100" y1="80" x2="100" y2="20" stroke="#ef4444" stroke-width="6" stroke-dasharray="4"/>
+                            <text x="100" y="95" class="svg-text" fill="#ef4444" font-size="12">حافة صاعدة (Rising Edge) ↑</text>
+                            
+                            <line x1="250" y1="20" x2="250" y2="80" stroke="#10b981" stroke-width="6" stroke-dasharray="4"/>
+                            <text x="250" y="95" class="svg-text" fill="#10b981" font-size="12">حافة هابطة (Falling Edge) ↓</text>
+                            
+                            <path d="M 300 10 L 400 10" fill="none" stroke="#f59e0b" stroke-width="2" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+                            <text x="350" y="5" class="svg-text" fill="#f59e0b" font-size="12">دورة كاملة (Cycle)</text>
+                        </svg>
+                    </div>
+
+                    <h3 class="text-2xl font-black text-slate-800 mb-4 mt-8">تصنيف الدوائر التسلسلية</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                        <div class="bg-white border-2 border-blue-200 rounded-xl p-6 shadow-sm relative overflow-hidden">
+                            <div class="absolute top-0 right-0 w-2 h-full bg-blue-500"></div>
+                            <h3 class="text-xl font-black text-blue-800 mb-3">الدوائر المتزامنة (Synchronous)</h3>
+                            <p class="text-slate-600 font-bold mb-4">يتم التحكم في تغيير حالة الدائرة بواسطة إشارة مركزية (نبضة الساعة).</p>
+                            <ul class="list-disc list-inside space-y-2 text-slate-700 font-semibold">
+                                <li>لا تتأثر المخرجات بتغير المدخلات إلا عند وصول حافة نبضة الساعة.</li>
+                                <li>أكثر استقراراً وموثوقية في الأنظمة المعقدة.</li>
+                                <li>تستخدم <strong>القلابات (Flip-Flops)</strong> كعناصر ذاكرة.</li>
+                            </ul>
+                        </div>
+                        <div class="bg-white border-2 border-amber-200 rounded-xl p-6 shadow-sm relative overflow-hidden">
+                            <div class="absolute top-0 right-0 w-2 h-full bg-amber-500"></div>
+                            <h3 class="text-xl font-black text-amber-800 mb-3">الدوائر غير المتزامنة (Asynchronous)</h3>
+                            <p class="text-slate-600 font-bold mb-4">تتغير حالة الدائرة <strong>فوراً</strong> عند حدوث أي تغيير في إشارات الدخل.</p>
+                            <ul class="list-disc list-inside space-y-2 text-slate-700 font-semibold">
+                                <li>أسرع في الاستجابة لأنها لا تنتظر النبضات.</li>
+                                <li>تستجيب للتغير اللحظي في الجهد (Level-Triggered).</li>
+                                <li>تستخدم <strong>الماسكات (Latches)</strong> كعناصر ذاكرة.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-ff" class="main-tab-content hidden fade-in">
+                    <div class="sub-nav">
+                        <button onclick="switchSubTab('ff', 'sr-latch')" id="btn-ff-sr-latch" class="sub-btn active">ماسك (SR Latch)</button>
+                        <button onclick="switchSubTab('ff', 'sr-sync')" id="btn-ff-sr-sync" class="sub-btn">قلاب SR المتزامن</button>
+                        <button onclick="switchSubTab('ff', 'd-ff')" id="btn-ff-d-ff" class="sub-btn">قلاب D</button>
+                        <button onclick="switchSubTab('ff', 'jk-ff')" id="btn-ff-jk-ff" class="sub-btn">قلاب JK</button>
+                        <button onclick="switchSubTab('ff', 'jk-pre')" id="btn-ff-jk-pre" class="sub-btn">قلاب JK (Preset/Clear)</button>
+                        <button onclick="switchSubTab('ff', 't-ff')" id="btn-ff-t-ff" class="sub-btn">قلاب T</button>
+                    </div>
+
+                    <div id="sub-ff-sr-latch" class="sub-content block fade-in">
+                        <h2 class="text-2xl font-black text-slate-800 align-lines block mb-4 border-b-2 border-slate-200 pb-2">1. ماسك الضبط وإعادة الضبط (SR Latch) غير المتزامن</h2>
+                        <div class="info-card border-r-pink-500 bg-pink-50">
+                            <p>أبسط دوائر الذاكرة. يتكون من بوابتي <strong>NOR</strong> متقاطعتين. <br><strong>S (Set)</strong> لجعل الخرج 1، و <strong>R (Reset)</strong> لجعل الخرج 0. يعمل فوراً دون نبضة ساعة.</p>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div class="logic-box">
+                                <div class="diagram-title">الرسم المنطقي (بوابات NOR) والتتبع</div>
+                                <div class="circuit-container">
+                                    <svg class="circuit-svg" viewBox="0 0 450 250">
+                                        <!-- Inputs -->
+                                        <text x="20" y="62" class="svg-text" fill="#ef4444">R</text>
+                                        <text x="20" y="182" class="svg-text" fill="#ef4444">S</text>
+                                        
+                                        <!-- Wires -->
+                                        <path id="srl-r" class="wire wire-0" d="M 40 62 L 130 62" />
+                                        <path id="srl-s" class="wire wire-0" d="M 40 182 L 130 182" />
+                                        
+                                        <!-- NOR Gates (using paths) -->
+                                        <!-- Top NOR -->
+                                        <path class="gate" d="M 130 32 Q 160 62 130 92 Q 180 92 220 62 Q 180 32 130 32 Z" />
+                                        <circle cx="225" cy="62" r="5" class="gate-inv" />
+                                        <text x="170" y="62" class="svg-text" font-size="14">NOR</text>
+                                        
+                                        <!-- Bottom NOR -->
+                                        <path class="gate" d="M 130 152 Q 160 182 130 212 Q 180 212 220 182 Q 180 152 130 152 Z" />
+                                        <circle cx="225" cy="182" r="5" class="gate-inv" />
+                                        <text x="170" y="182" class="svg-text" font-size="14">NOR</text>
+
+                                        <!-- Outputs -->
+                                        <path id="srl-q" class="wire wire-0" d="M 230 62 L 350 62" />
+                                        <path id="srl-qb" class="wire wire-1" d="M 230 182 L 350 182" />
+                                        <text x="380" y="62" class="svg-text font-black" font-size="18">Q</text>
+                                        <text x="380" y="182" class="svg-text font-black" font-size="18">Q'</text>
+
+                                        <!-- Feedback Wires -->
+                                        <!-- Q to Bottom NOR -->
+                                        <path id="srl-f-q" class="wire wire-0" d="M 300 62 L 300 120 L 100 120 L 100 162 L 130 162" />
+                                        <circle cx="300" cy="62" r="4" class="node" />
+                                        <!-- Q' to Top NOR -->
+                                        <path id="srl-f-qb" class="wire wire-1" d="M 280 182 L 280 135 L 115 135 L 115 77 L 130 77" />
+                                        <circle cx="280" cy="182" r="4" class="node" />
+                                    </svg>
+                                </div>
+                                <div class="controls-area">
+                                    <div class="flex gap-4 pr-4 border-r-2 border-slate-300">
+                                        <div class="input-group"><span class="input-label">S=</span><input type="checkbox" class="switch-btn" id="srl-s-in" onchange="evalSRLatch()"></div>
+                                        <div class="input-group"><span class="input-label">R=</span><input type="checkbox" class="switch-btn" id="srl-r-in" onchange="evalSRLatch()"></div>
+                                    </div>
+                                    <div class="flex gap-3 pl-2">
+                                        <div class="result-box"><span class="result-label">Q=</span><span class="result-val val-0" id="srl-q-out">0</span></div>
+                                        <div class="result-box"><span class="result-label">Q'=</span><span class="result-val val-1" id="srl-qb-out">1</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="logic-box bg-slate-900 border-none p-0 flex flex-col">
+                                <div class="bg-slate-800 text-pink-400 font-bold p-3 text-center border-b border-slate-700">جدول الحقيقة وتتبع الحالة</div>
+                                <table class="truth-table !mx-0 !w-full border-x-0 !mb-0 text-sm">
+                                    <tr><th>S</th><th>R</th><th>Q</th><th>Q'</th></tr>
+                                    <tr><td>0</td><td>0</td><td colspan="2">الحالة السابقة (Hold)</td></tr>
+                                    <tr><td>1</td><td>0</td><td>1 (Set)</td><td>0</td></tr>
+                                    <tr><td>0</td><td>1</td><td>0 (Reset)</td><td>1</td></tr>
+                                    <tr><td class="text-red-500">1</td><td class="text-red-500">1</td><td colspan="2" class="text-red-500">حالة خطأ (Invalid)</td></tr>
+                                </table>
+                                <div id="trace-srl" class="tracing-panel mt-0 rounded-none h-full border-none border-t border-slate-700 text-sm">
+                                    <span class="step-title">تحليل المسار (غير متزامن):</span>
+                                    <ul><li>الدائرة في حالة <strong>احتفاظ (Hold)</strong>. القيمة المخزنة مسبقاً هي Q=0.</li></ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="sub-ff-sr-sync" class="sub-content hidden fade-in">
+                        <h2 class="text-2xl font-black text-slate-800 align-lines block mb-4 border-b-2 border-slate-200 pb-2">2. قلاب SR المتزامن (Synchronous SR Flip-Flop)</h2>
+                        <div class="info-card border-r-blue-500 bg-blue-50">
+                            <p>يُبنى باستخدام <strong>4 بوابات NAND</strong>. يشبه ماسك SR، لكنه يعتمد على نبضة الساعة (CLK) لتغيير الحالة. لا تتغير الحالة إلا عند ورود النبضة.</p>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div class="logic-box">
+                                <div class="diagram-title">الرسم المنطقي (4 بوابات NAND) والتتبع</div>
+                                <div class="circuit-container">
+                                    <svg class="circuit-svg" viewBox="0 0 550 250">
+                                        <!-- Inputs -->
+                                        <text x="20" y="50" class="svg-text">S</text>
+                                        <text x="20" y="150" class="svg-text text-blue-400">CLK</text>
+                                        <text x="20" y="250" class="svg-text">R</text>
+                                        
+                                        <!-- Input Wires -->
+                                        <path id="srs-s" class="wire wire-0" d="M 40 50 L 130 50" />
+                                        <path id="srs-clk" class="wire wire-0" d="M 55 150 L 100 150" />
+                                        <path id="srs-clk1" class="wire wire-0" d="M 100 150 L 100 80 L 130 80" />
+                                        <path id="srs-clk2" class="wire wire-0" d="M 100 150 L 100 220 L 130 220" />
+                                        <circle cx="100" cy="150" r="4" class="node" />
+                                        <path id="srs-r" class="wire wire-0" d="M 40 250 L 130 250" />
+                                        
+                                        <!-- Input NANDs -->
+                                        <!-- Top NAND (S, CLK) -->
+                                        <path class="gate" d="M 130 35 H 160 A 20 25 0 0 1 160 95 H 130 Z" />
+                                        <circle cx="185" cy="65" r="5" class="gate-inv" />
+                                        <text x="145" y="65" class="svg-text" font-size="12">NAND</text>
+                                        <!-- Bottom NAND (R, CLK) -->
+                                        <path class="gate" d="M 130 205 H 160 A 20 25 0 0 1 160 265 H 130 Z" />
+                                        <circle cx="185" cy="235" r="5" class="gate-inv" />
+                                        <text x="145" y="235" class="svg-text" font-size="12">NAND</text>
+
+                                        <!-- Intermediate wires -->
+                                        <path id="srs-n1" class="wire wire-1" d="M 190 65 L 260 65 L 260 90 L 300 90" />
+                                        <path id="srs-n2" class="wire wire-1" d="M 190 235 L 260 235 L 260 210 L 300 210" />
+
+                                        <!-- Output NANDs (SR Latch part) -->
+                                        <!-- Top NAND -->
+                                        <path class="gate" d="M 300 75 H 330 A 20 25 0 0 1 330 135 H 300 Z" />
+                                        <circle cx="355" cy="105" r="5" class="gate-inv" />
+                                        <text x="315" y="105" class="svg-text" font-size="12">NAND</text>
+                                        <!-- Bottom NAND -->
+                                        <path class="gate" d="M 300 165 H 330 A 20 25 0 0 1 330 225 H 300 Z" />
+                                        <circle cx="355" cy="195" r="5" class="gate-inv" />
+                                        <text x="315" y="195" class="svg-text" font-size="12">NAND</text>
+
+                                        <!-- Output Wires -->
+                                        <path id="srs-q" class="wire wire-0" d="M 360 105 L 480 105" />
+                                        <path id="srs-qb" class="wire wire-1" d="M 360 195 L 480 195" />
+                                        <text x="510" y="105" class="svg-text font-black" font-size="18">Q</text>
+                                        <text x="510" y="195" class="svg-text font-black" font-size="18">Q'</text>
+
+                                        <!-- Feedback Wires -->
+                                        <!-- Q to Bottom NAND -->
+                                        <path id="srs-f-q" class="wire wire-0" d="M 420 105 L 420 150 L 280 150 L 280 180 L 300 180" />
+                                        <circle cx="420" cy="105" r="4" class="node" />
+                                        <!-- Q' to Top NAND -->
+                                        <path id="srs-f-qb" class="wire wire-1" d="M 400 195 L 400 140 L 290 140 L 290 120 L 300 120" />
+                                        <circle cx="400" cy="195" r="4" class="node" />
+                                    </svg>
+                                </div>
+                                <div class="controls-area">
+                                    <div class="flex gap-4 pr-4 border-r-2 border-slate-300">
+                                        <div class="input-group"><span class="input-label">S=</span><input type="checkbox" class="switch-btn" id="srs-s-in"></div>
+                                        <div class="input-group"><span class="input-label">R=</span><input type="checkbox" class="switch-btn" id="srs-r-in"></div>
+                                    </div>
+                                    <button class="clk-btn" onclick="evalSRSync()">نبضة CLK ↑</button>
+                                    <div class="flex gap-3 pl-2 border-l-2 border-slate-300 pl-4">
+                                        <div class="result-box"><span class="result-label">Q=</span><span class="result-val val-0" id="srs-q-out">0</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="logic-box bg-slate-900 border-none p-0 flex flex-col">
+                                <div class="bg-slate-800 text-blue-400 font-bold p-3 text-center border-b border-slate-700">تتبع التزامن في القلاب</div>
+                                <div id="trace-srs" class="tracing-panel mt-0 rounded-none h-full border-none text-sm">
+                                    <span class="step-title">في انتظار النبضة...</span>
+                                    <ul><li>غيّر قيم S و R كما تشاء. لن تتغير الحالة Q إلا عند ضغط زر نبضة الساعة.</li></ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="sub-ff-d-ff" class="sub-content hidden fade-in">
+                        <h2 class="text-2xl font-black text-slate-800 align-lines block mb-4 border-b-2 border-slate-200 pb-2">3. قلاب البيانات (D Flip-Flop)</h2>
+                        <div class="info-card border-r-emerald-500 bg-emerald-50">
+                            <p>الأكثر استخداماً في بناء الذاكرة. يمنع حالة الخطأ تماماً عبر توصيل مدخل D ببوابة <strong>NOT</strong> للطرف الآخر. ينقل القيمة من <strong>D (Data)</strong> إلى Q فور وصول نبضة الساعة.</p>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div class="logic-box">
+                                <div class="diagram-title">الرسم المنطقي (4 NAND + 1 NOT) والتتبع</div>
+                                <div class="circuit-container">
+                                    <svg class="circuit-svg" viewBox="0 0 550 250">
+                                        <text x="20" y="50" class="svg-text">D</text>
+                                        <text x="20" y="150" class="svg-text text-blue-400">CLK</text>
+                                        
+                                        <!-- D Input & NOT -->
+                                        <path id="dff-d" class="wire wire-0" d="M 40 50 L 130 50" />
+                                        <path id="dff-d-branch" class="wire wire-0" d="M 70 50 L 70 250 L 80 250" />
+                                        <circle cx="70" cy="50" r="4" class="node" />
+                                        
+                                        <path class="gate" d="M 80 235 L 110 250 L 80 265 Z" />
+                                        <circle cx="115" cy="250" r="4" class="gate-inv" />
+                                        <path id="dff-d-not" class="wire wire-1" d="M 120 250 L 130 250" />
+
+                                        <!-- CLK -->
+                                        <path id="dff-clk" class="wire wire-0" d="M 55 150 L 100 150" />
+                                        <path id="dff-clk1" class="wire wire-0" d="M 100 150 L 100 80 L 130 80" />
+                                        <path id="dff-clk2" class="wire wire-0" d="M 100 150 L 100 220 L 130 220" />
+                                        <circle cx="100" cy="150" r="4" class="node" />
+                                        
+                                        <!-- Input NANDs -->
+                                        <path class="gate" d="M 130 35 H 160 A 20 25 0 0 1 160 95 H 130 Z" /><circle cx="185" cy="65" r="5" class="gate-inv" /><text x="145" y="65" class="svg-text" font-size="12">NAND</text>
+                                        <path class="gate" d="M 130 205 H 160 A 20 25 0 0 1 160 265 H 130 Z" /><circle cx="185" cy="235" r="5" class="gate-inv" /><text x="145" y="235" class="svg-text" font-size="12">NAND</text>
+
+                                        <!-- Intermediate -->
+                                        <path id="dff-n1" class="wire wire-1" d="M 190 65 L 260 65 L 260 90 L 300 90" />
+                                        <path id="dff-n2" class="wire wire-1" d="M 190 235 L 260 235 L 260 210 L 300 210" />
+
+                                        <!-- Output NANDs -->
+                                        <path class="gate" d="M 300 75 H 330 A 20 25 0 0 1 330 135 H 300 Z" /><circle cx="355" cy="105" r="5" class="gate-inv" /><text x="315" y="105" class="svg-text" font-size="12">NAND</text>
+                                        <path class="gate" d="M 300 165 H 330 A 20 25 0 0 1 330 225 H 300 Z" /><circle cx="355" cy="195" r="5" class="gate-inv" /><text x="315" y="195" class="svg-text" font-size="12">NAND</text>
+
+                                        <!-- Output Wires -->
+                                        <path id="dff-q" class="wire wire-0" d="M 360 105 L 480 105" /><path id="dff-qb" class="wire wire-1" d="M 360 195 L 480 195" />
+                                        <text x="510" y="105" class="svg-text font-black" font-size="18">Q</text><text x="510" y="195" class="svg-text font-black" font-size="18">Q'</text>
+
+                                        <!-- Feedback -->
+                                        <path id="dff-f-q" class="wire wire-0" d="M 420 105 L 420 150 L 280 150 L 280 180 L 300 180" /><circle cx="420" cy="105" r="4" class="node" />
+                                        <path id="dff-f-qb" class="wire wire-1" d="M 400 195 L 400 140 L 290 140 L 290 120 L 300 120" /><circle cx="400" cy="195" r="4" class="node" />
+                                    </svg>
+                                </div>
+                                <div class="controls-area">
+                                    <div class="flex gap-4 pr-4 border-r-2 border-slate-300">
+                                        <div class="input-group"><span class="input-label text-emerald-600">D=</span><input type="checkbox" class="switch-btn" id="dff-d-in"></div>
+                                    </div>
+                                    <button class="clk-btn bg-emerald-600 shadow-[0_4px_0_#059669]" onclick="evalDFF()">نبضة CLK ↑</button>
+                                    <div class="flex gap-3 pl-2 border-l-2 border-slate-300 pl-4">
+                                        <div class="result-box"><span class="result-label">Q=</span><span class="result-val val-0" id="dff-q-out">0</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="logic-box bg-slate-900 border-none p-0 flex flex-col">
+                                <div class="bg-slate-800 text-emerald-400 font-bold p-3 text-center border-b border-slate-700">تتبع قلاب D</div>
+                                <div id="trace-dff" class="tracing-panel mt-0 rounded-none h-full border-none text-sm">
+                                    <span class="step-title">في انتظار النبضة...</span>
+                                    <ul><li>بوابة NOT تضمن دائماً أن يكون أحد مدخلي قلاب SR الداخلي 0 والآخر 1.</li><li>اضغط نبضة الساعة لتخزين القيمة D في المخرج Q.</li></ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="sub-ff-jk-ff" class="sub-content hidden fade-in">
+                        <h2 class="text-2xl font-black text-slate-800 align-lines block mb-4 border-b-2 border-slate-200 pb-2">4. القلاب الشامل (JK Flip-Flop)</h2>
+                        <div class="info-card border-r-amber-500 bg-amber-50">
+                            <p>تطوير لقلاب SR يتجنب حالة الخطأ. يحتوي على تغذية راجعة من المخرجات Q و Q' إلى بوابات الدخل الأولى. <br>عندما يكون J=1 و K=1 يقوم بـ <strong>تبديل الحالة (Toggle)</strong> مع كل نبضة ساعة.</p>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div class="logic-box">
+                                <div class="diagram-title">الرسم المنطقي (4 NAND مع التغذية العكسية المتقاطعة)</div>
+                                <div class="circuit-container">
+                                    <svg class="circuit-svg" viewBox="0 0 600 280">
+                                        <!-- Inputs -->
+                                        <text x="20" y="75" class="svg-text">J</text>
+                                        <text x="20" y="140" class="svg-text text-blue-400">CLK</text>
+                                        <text x="20" y="205" class="svg-text">K</text>
+                                        
+                                        <!-- Input Wires -->
+                                        <path id="jk-j" class="wire wire-0" d="M 40 75 L 140 75" />
+                                        <path id="jk-clk" class="wire wire-0" d="M 60 140 L 100 140" />
+                                        <path id="jk-clk1" class="wire wire-0" d="M 100 140 L 100 95 L 140 95" />
+                                        <path id="jk-clk2" class="wire wire-0" d="M 100 140 L 100 185 L 140 185" />
+                                        <circle cx="100" cy="140" r="4" class="node" />
+                                        <path id="jk-k" class="wire wire-0" d="M 40 205 L 140 205" />
+
+                                        <!-- Huge Feedback wires to inputs (The JK Magic) -->
+                                        <!-- Q' to Top NAND -->
+                                        <path id="jk-fb-in1" class="wire wire-1" d="M 450 205 L 450 260 L 80 260 L 80 55 L 140 55" stroke-dasharray="4"/>
+                                        <!-- Q to Bottom NAND -->
+                                        <path id="jk-fb-in2" class="wire wire-0" d="M 470 75 L 470 20 L 60 20 L 60 225 L 140 225" stroke-dasharray="4"/>
+                                        
+                                        <!-- Input NANDs (3 inputs each logically, drawn compactly) -->
+                                        <path class="gate" d="M 140 45 H 170 A 25 30 0 0 1 170 105 H 140 Z" /><circle cx="195" cy="75" r="5" class="gate-inv" /><text x="155" y="75" class="svg-text" font-size="12">NAND</text>
+                                        <path class="gate" d="M 140 175 H 170 A 25 30 0 0 1 170 235 H 140 Z" /><circle cx="195" cy="205" r="5" class="gate-inv" /><text x="155" y="205" class="svg-text" font-size="12">NAND</text>
+
+                                        <!-- Intermediate wires -->
+                                        <path id="jk-n1" class="wire wire-1" d="M 200 75 L 280 75 L 280 100 L 320 100" />
+                                        <path id="jk-n2" class="wire wire-1" d="M 200 205 L 280 205 L 280 180 L 320 180" />
+
+                                        <!-- Output NANDs -->
+                                        <path class="gate" d="M 320 85 H 350 A 20 25 0 0 1 350 145 H 320 Z" /><circle cx="375" cy="115" r="5" class="gate-inv" /><text x="335" y="115" class="svg-text" font-size="12">NAND</text>
+                                        <path class="gate" d="M 320 135 H 350 A 20 25 0 0 1 350 195 H 320 Z" transform="translate(0, 40)"/><circle cx="375" cy="165" r="5" class="gate-inv" transform="translate(0, 40)"/><text x="335" y="165" class="svg-text" font-size="12" transform="translate(0, 40)">NAND</text>
+
+                                        <!-- Output Wires -->
+                                        <path id="jk-q" class="wire wire-0" d="M 380 115 L 520 115" />
+                                        <path id="jk-qb" class="wire wire-1" d="M 380 205 L 520 205" />
+                                        <text x="550" y="115" class="svg-text font-black" font-size="18">Q</text>
+                                        <text x="550" y="205" class="svg-text font-black" font-size="18">Q'</text>
+
+                                        <!-- Internal SR Feedback -->
+                                        <path id="jk-sr-f1" class="wire wire-0" d="M 430 115 L 430 155 L 300 155 L 300 190 L 320 190" /><circle cx="430" cy="115" r="4" class="node" />
+                                        <path id="jk-sr-f2" class="wire wire-1" d="M 410 205 L 410 145 L 310 145 L 310 130 L 320 130" /><circle cx="410" cy="205" r="4" class="node" />
+                                        
+                                        <!-- Connect to large feedback loops -->
+                                        <path class="wire wire-0" id="jk-out-f1" d="M 470 115 L 470 75" stroke-dasharray="4"/><circle cx="470" cy="115" r="4" class="node" />
+                                        <path class="wire wire-1" id="jk-out-f2" d="M 450 205 L 450 205" stroke-dasharray="4"/><circle cx="450" cy="205" r="4" class="node" />
+                                    </svg>
+                                </div>
+                                <div class="controls-area">
+                                    <div class="flex gap-4 pr-4 border-r-2 border-slate-300">
+                                        <div class="input-group"><span class="input-label text-amber-600">J=</span><input type="checkbox" class="switch-btn" id="jk-j-in"></div>
+                                        <div class="input-group"><span class="input-label text-amber-600">K=</span><input type="checkbox" class="switch-btn" id="jk-k-in"></div>
+                                    </div>
+                                    <button class="clk-btn bg-amber-500 shadow-[0_4px_0_#d97706]" onclick="evalJK()">نبضة CLK ↑</button>
+                                    <div class="flex gap-3 pl-2 border-l-2 border-slate-300 pl-4">
+                                        <div class="result-box"><span class="result-label">Q=</span><span class="result-val val-0" id="jk-q-out">0</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="logic-box bg-slate-900 border-none p-0 flex flex-col">
+                                <div class="bg-slate-800 text-amber-400 font-bold p-3 text-center border-b border-slate-700">تتبع القلاب الشامل (Toggle Magic)</div>
+                                <div id="trace-jk" class="tracing-panel mt-0 rounded-none h-full border-none text-sm">
+                                    <span class="step-title">في انتظار النبضة...</span>
+                                    <ul><li>التغذية الراجعة من المخرجات إلى بوابات الدخل تضمن عدم حدوث حالة S=1 و R=1 داخلياً في نفس الوقت.</li><li>جرب J=1 و K=1 مع إعطاء عدة نبضات لملاحظة التبديل.</li></ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="sub-ff-jk-pre" class="sub-content hidden fade-in">
+                        <h2 class="text-2xl font-black text-slate-800 align-lines block mb-4 border-b-2 border-slate-200 pb-2">5. قلاب JK مع أطراف التحكم (Preset / Clear)</h2>
+                        <div class="info-card border-r-purple-500 bg-purple-50">
+                            <p>أطراف <strong>غير متزامنة (Asynchronous)</strong> تتحكم بالخرج فوراً بغض النظر عن نبضة الساعة. <br>تُستخدم لتهيئة العدادات أو تصفيرها: <strong>Preset (PRE)</strong> يفرض Q=1 فوراً. <strong>Clear (CLR)</strong> يفرض Q=0 فوراً.</p>
+                        </div>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div class="logic-box flex flex-col items-center">
+                                <!-- Standard Block Symbol for FF -->
+                                <div class="relative mt-8 mb-12">
+                                    <div class="w-32 h-40 border-4 border-slate-700 bg-white rounded-lg flex flex-col justify-between p-4 relative shadow-lg">
+                                        <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 flex flex-col items-center">
+                                            <span class="font-bold text-purple-600 mb-1">PRE</span>
+                                            <div class="w-1 h-8 bg-purple-500" id="jkpc-w-pre"></div>
+                                        </div>
+                                        <div class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 flex flex-col items-center">
+                                            <div class="w-1 h-8 bg-purple-500" id="jkpc-w-clr"></div>
+                                            <span class="font-bold text-purple-600 mt-1">CLR</span>
+                                        </div>
+                                        <div class="flex justify-between w-full mt-2">
+                                            <div class="flex items-center"><div class="w-8 h-1 bg-slate-500 absolute -left-8" id="jkpc-w-j"></div><span class="font-black text-lg ml-1">J</span></div>
+                                            <div class="flex items-center"><span class="font-black text-lg mr-1">Q</span><div class="w-8 h-1 bg-slate-500 absolute -right-8" id="jkpc-w-q"></div></div>
+                                        </div>
+                                        <div class="flex items-center relative -left-4 my-2">
+                                            <div class="w-8 h-1 bg-blue-500 absolute -left-4"></div>
+                                            <div class="w-0 h-0 border-t-8 border-b-8 border-l-12 border-transparent border-l-slate-700 ml-4"></div>
+                                            <span class="text-xs text-blue-600 font-bold ml-1">CLK</span>
+                                        </div>
+                                        <div class="flex justify-between w-full mb-2">
+                                            <div class="flex items-center"><div class="w-8 h-1 bg-slate-500 absolute -left-8" id="jkpc-w-k"></div><span class="font-black text-lg ml-1">K</span></div>
+                                            <div class="flex items-center"><span class="font-black text-lg mr-1">Q'</span><div class="w-8 h-1 bg-slate-500 absolute -right-8" id="jkpc-w-qb"></div></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="controls-area w-full">
+                                    <div class="flex gap-4 mb-2 p-2 bg-purple-100 rounded w-full justify-center border border-purple-200 shadow-inner">
+                                        <div class="input-group"><span class="input-label text-purple-800">PRE=</span><input type="checkbox" class="switch-btn" id="jkpc-pre" onchange="evalJKPC_Async()"></div>
+                                        <div class="input-group"><span class="input-label text-purple-800">CLR=</span><input type="checkbox" class="switch-btn" id="jkpc-clr" onchange="evalJKPC_Async()"></div>
+                                    </div>
+                                    <div class="flex gap-4 mb-2 mt-2 w-full justify-center">
+                                        <div class="input-group"><span class="input-label">J=</span><input type="checkbox" class="switch-btn" id="jkpc-j"></div>
+                                        <div class="input-group"><span class="input-label">K=</span><input type="checkbox" class="switch-btn" id="jkpc-k"></div>
+                                    </div>
+                                    <button class="clk-btn w-full justify-center py-3 text-lg" onclick="evalJKPC_Sync()">نبضة CLK ↑ (تأثير متزامن)</button>
+                                </div>
+                            </div>
+                            <div class="logic-box bg-slate-900 border-none p-0 flex flex-col">
+                                <div class="bg-slate-800 text-purple-400 font-bold p-3 text-center border-b border-slate-700">تتبع أولويات التحكم</div>
+                                <div id="trace-jkpc" class="tracing-panel mt-0 rounded-none h-full border-none text-sm">
+                                    <span class="step-title">أولوية PRE / CLR</span>
+                                    <ul><li>هذه الأطراف تعمل كلحظة ضغطها. جرب تفعيلها ولاحظ أن Q تتغير فوراً بدون ساعة.</li><li>لتشغيل القلاب بالوضع المتزامن (J,K,CLK)، يجب أن تكون PRE=0 و CLR=0.</li></ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="sub-ff-t-ff" class="sub-content hidden fade-in">
+                        <h2 class="text-2xl font-black text-slate-800 align-lines block mb-4 border-b-2 border-slate-200 pb-2">6. قلاب التبديل (T Flip-Flop)</h2>
+                        <div class="info-card border-r-teal-500 bg-teal-50">
+                            <p>يُبنى من قلاب JK ببساطة عن طريق <strong>توصيل المدخلين J و K معاً</strong> لتشكيل مدخل واحد يسمى <strong>T (Toggle)</strong>. <br>يُستخدم حصرياً في بناء العدادات. إذا كان T=1، تتبدل الحالة كل نبضة (يُقسم التردد على 2).</p>
+                        </div>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div class="logic-box">
+                                <div class="diagram-title">المخطط (JK كـ T)</div>
+                                <div class="circuit-container bg-slate-100 border-slate-300 shadow-none min-h-[200px]">
+                                    <svg viewBox="0 0 400 200" class="w-full max-w-[300px]">
+                                        <!-- Box -->
+                                        <rect x="150" y="40" width="100" height="120" fill="white" stroke="#1e293b" stroke-width="4" rx="8"/>
+                                        <text x="170" y="70" class="svg-text !fill-slate-800 text-lg">J</text>
+                                        <text x="170" y="150" class="svg-text !fill-slate-800 text-lg">K</text>
+                                        <text x="230" y="70" class="svg-text !fill-slate-800 text-lg">Q</text>
+                                        <text x="230" y="150" class="svg-text !fill-slate-800 text-lg">Q'</text>
+                                        <polygon points="150,90 165,100 150,110" fill="none" stroke="#3b82f6" stroke-width="2"/>
+                                        
+                                        <!-- T Input connected to J & K -->
+                                        <text x="30" y="105" class="svg-text !fill-teal-600 text-2xl">T</text>
+                                        <path id="tff-t-wire" class="wire wire-0" d="M 50 100 L 100 100" />
+                                        <path id="tff-j-wire" class="wire wire-0" d="M 100 100 L 100 65 L 150 65" />
+                                        <path id="tff-k-wire" class="wire wire-0" d="M 100 100 L 100 145 L 150 145" />
+                                        <circle cx="100" cy="100" r="4" fill="#334155" />
+                                        
+                                        <path d="M 50 115 L 150 115" class="wire wire-clk" stroke-width="2" stroke-dasharray="4"/>
+                                        <text x="30" y="125" class="svg-text !fill-blue-500 text-sm">CLK</text>
+                                        
+                                        <!-- Outputs -->
+                                        <path id="tff-q-wire" class="wire wire-0" d="M 250 65 L 320 65" />
+                                        <path id="tff-qb-wire" class="wire wire-1" d="M 250 145 L 320 145" />
+                                        <text x="350" y="70" class="svg-text !fill-slate-800 text-xl font-black">Q</text>
+                                    </svg>
+                                </div>
+                                <div class="controls-area">
+                                    <div class="flex gap-4 pr-4 border-r-2 border-slate-300">
+                                        <div class="input-group"><span class="input-label text-teal-600">T=</span><input type="checkbox" class="switch-btn" id="tff-t-in"></div>
+                                    </div>
+                                    <button class="clk-btn bg-teal-600 shadow-[0_4px_0_#0d9488]" onclick="evalTFF()">نبضة CLK ↑</button>
+                                    <div class="flex gap-3 pl-2 border-l-2 border-slate-300 pl-4">
+                                        <div class="result-box"><span class="result-label">Q=</span><span class="result-val val-0" id="tff-q-out">0</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="logic-box bg-slate-900 border-none p-0 flex flex-col">
+                                <div class="bg-slate-800 text-teal-400 font-bold p-3 text-center border-b border-slate-700">تتبع قلاب T</div>
+                                <div id="trace-tff" class="tracing-panel mt-0 rounded-none h-full border-none text-sm">
+                                    <span class="step-title">مبدأ التبديل:</span>
+                                    <ul><li>اجعل T=1.</li><li>اضغط نبضة الساعة متكرراً. لاحظ كيف يعكس Q قيمته (يقسم النبضات على 2).</li></ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-cnt" class="main-tab-content hidden fade-in">
+                    <div class="sub-nav">
+                        <button onclick="switchSubTab('cnt', 'intro')" id="btn-cnt-intro" class="sub-btn active">آلية العد الثنائي</button>
+                        <button onclick="switchSubTab('cnt', 'async')" id="btn-cnt-async" class="sub-btn">عداد غير متزامن (Ripple)</button>
+                        <button onclick="switchSubTab('cnt', 'sync')" id="btn-cnt-sync" class="sub-btn">عداد متزامن (Sync)</button>
+                        <button onclick="switchSubTab('cnt', 'updown')" id="btn-cnt-updown" class="sub-btn">عداد تصاعدي/تنازلي</button>
+                    </div>
+
+                    <!-- Intro -->
+                    <div id="sub-cnt-intro" class="sub-content block fade-in">
+                        <h2 class="text-3xl font-black text-slate-800 align-lines block mb-6 border-b-2 border-slate-200 pb-2">العدادات الرقمية (Digital Counters)</h2>
+                        <div class="info-card border-r-amber-500 bg-amber-50 mb-6">
+                            <p>دوائر تسلسلية تُستخدم لعد النبضات، حفظ الوقت، وعرض الأرقام (مثل الساعات الرقمية وعدادات الكهرباء). <br>تعمل بنظام العد الثنائي، حيث <strong>كل قلاب (Flip-Flop) يمثل خانة واحدة (Bit).</strong> لعرض الأرقام بشرياً، نحتاج دائرة (Decoder).</p>
+                        </div>
+                        <div class="flex justify-center mb-6"><table class="truth-table w-[400px]"><tr><th colspan="4">تسلسل العد الثنائي (3 بت = يعد من 0 إلى 7)</th></tr><tr><th>العشري</th><th>Q2 (MSB)</th><th>Q1</th><th>Q0 (LSB)</th></tr><tr><td>0</td><td>0</td><td>0</td><td>0</td></tr><tr><td>1</td><td>0</td><td>0</td><td>1</td></tr><tr><td>2</td><td>0</td><td>1</td><td>0</td></tr><tr><td>3</td><td>0</td><td>1</td><td>1</td></tr><tr><td>...</td><td>...</td><td>...</td><td>...</td></tr></table></div>
+                    </div>
+
+                    <!-- Async Counter -->
+                    <div id="sub-cnt-async" class="sub-content hidden fade-in">
+                        <h2 class="text-2xl font-black text-slate-800 align-lines block mb-4 border-b-2 border-slate-200 pb-2">العداد غير المتزامن / المتموج (Ripple Counter) - 3 بت</h2>
+                        <div class="info-card border-r-rose-500 bg-rose-50">
+                            <p>في هذا العداد، نبضة الساعة العامة تدخل للقلاب الأول فقط (Q0). <br><strong>مخرج القلاب الأول يمثل نبضة الساعة للقلاب الثاني</strong>، وهكذا. تنتشر الإشارة كالموجة (Ripple). هو بسيط لكنه بطيء ولا يصلح للترددات العالية جداً بسبب تراكم التأخير.</p>
+                        </div>
+                        <div class="logic-box text-center overflow-x-auto pb-4">
+                            <div class="flex justify-center items-center gap-2 mb-8 mt-4 min-w-[600px]" dir="ltr">
+                                <!-- CLK Source -->
+                                <div class="flex flex-col items-center">
+                                    <div class="bg-blue-100 text-blue-800 p-2 rounded-lg font-bold border-2 border-blue-400 mb-2 shadow animate-pulse">Main CLK</div>
+                                    <div class="w-10 h-1 bg-blue-500 relative"><div class="absolute right-0 w-0 h-0 border-y-4 border-y-transparent border-l-8 border-l-blue-500 transform -translate-y-[3px]"></div></div>
+                                </div>
+                                
+                                <!-- FF0 (LSB) -->
+                                <div class="flex flex-col items-center relative">
+                                    <span class="font-bold text-slate-600 mb-2">FF0 (Q0) LSB</span>
+                                    <div class="ff-box val-0" id="ca-q0">0</div>
+                                    <span class="absolute -top-8 bg-teal-100 text-teal-800 px-2 rounded font-mono text-sm font-bold border border-teal-300">T=1</span>
+                                    <div class="w-1 h-6 bg-teal-500 absolute -top-2"></div>
+                                </div>
+                                
+                                <!-- Ripple wire 0 to 1 -->
+                                <div class="w-16 h-1 bg-rose-400 relative" id="ca-w1"><div class="absolute right-0 w-0 h-0 border-y-4 border-y-transparent border-l-8 border-l-rose-500 transform -translate-y-[3px]"></div><span class="absolute -top-6 left-2 text-xs font-bold text-rose-600">Ripple CLK</span></div>
+
+                                <!-- FF1 -->
+                                <div class="flex flex-col items-center relative">
+                                    <span class="font-bold text-slate-600 mb-2">FF1 (Q1)</span>
+                                    <div class="ff-box val-0" id="ca-q1">0</div>
+                                    <span class="absolute -top-8 bg-teal-100 text-teal-800 px-2 rounded font-mono text-sm font-bold border border-teal-300">T=1</span>
+                                    <div class="w-1 h-6 bg-teal-500 absolute -top-2"></div>
+                                </div>
+
+                                <!-- Ripple wire 1 to 2 -->
+                                <div class="w-16 h-1 bg-rose-400 relative" id="ca-w2"><div class="absolute right-0 w-0 h-0 border-y-4 border-y-transparent border-l-8 border-l-rose-500 transform -translate-y-[3px]"></div><span class="absolute -top-6 left-2 text-xs font-bold text-rose-600">Ripple CLK</span></div>
+
+                                <!-- FF2 (MSB) -->
+                                <div class="flex flex-col items-center relative">
+                                    <span class="font-bold text-slate-600 mb-2">FF2 (Q2) MSB</span>
+                                    <div class="ff-box val-0" id="ca-q2">0</div>
+                                    <span class="absolute -top-8 bg-teal-100 text-teal-800 px-2 rounded font-mono text-sm font-bold border border-teal-300">T=1</span>
+                                    <div class="w-1 h-6 bg-teal-500 absolute -top-2"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex justify-center items-center gap-8 mb-4">
+                                <button class="clk-btn bg-rose-500 shadow-[0_4px_0_#e11d48]" onclick="pulseAsyncCounter()">توليد نبضة ⏱️</button>
+                                <button class="bg-slate-200 text-slate-700 font-bold px-4 py-2 rounded-lg" onclick="resetAsyncCounter()">تصفير</button>
+                                <div class="text-3xl font-black text-rose-600 bg-rose-50 px-6 py-2 rounded-lg border-2 border-rose-200" id="ca-dec">العشري: 0</div>
+                            </div>
+                            <div class="tracing-panel mt-4 text-right"><span class="step-title">التتبع (تموج النبضات):</span><div id="trace-ca">اضغط لتوليد نبضة. لاحظ أن Q1 لا تتغير إلا إذا تغيرت Q0 (من 1 إلى 0)، و Q2 تعتمد على Q1.</div></div>
+                        </div>
+                    </div>
+
+                    <!-- Sync Counter -->
+                    <div id="sub-cnt-sync" class="sub-content hidden fade-in">
+                        <h2 class="text-2xl font-black text-slate-800 align-lines block mb-4 border-b-2 border-slate-200 pb-2">العداد المتزامن (Synchronous Counter) - 3 بت</h2>
+                        <div class="info-card border-r-sky-500 bg-sky-50">
+                            <p>لحل مشكلة التأخير، جميع القلابات تستقبل نفس إشارة الساعة <strong>معاً وفي نفس اللحظة</strong>. يعتمد التبديل على بوابات منطقية (AND) تتحكم بمدخلات T لكل قلاب لتحديد متى يجب أن يتبدل. سريع جداً ودقيق.</p>
+                        </div>
+                        <div class="logic-box text-center overflow-x-auto pb-4">
+                            <div class="flex justify-center items-center gap-8 mb-12 mt-8 min-w-[600px] relative" dir="ltr">
+                                <!-- Global CLK line -->
+                                <div class="absolute bottom-[-30px] left-10 w-[80%] h-1 bg-blue-500"></div>
+                                <div class="absolute bottom-[-45px] left-2 text-blue-600 font-bold text-lg">Main CLK</div>
+                                
+                                <!-- FF0 -->
+                                <div class="flex flex-col items-center relative">
+                                    <span class="font-bold text-slate-600 mb-2">FF0 (Q0) LSB</span>
+                                    <div class="ff-box val-0" id="cs-q0">0</div>
+                                    <span class="absolute -top-8 bg-teal-100 text-teal-800 px-2 rounded font-mono text-sm font-bold border border-teal-300">T0=1</span>
+                                    <div class="w-1 h-6 bg-teal-500 absolute -top-2"></div>
+                                    <div class="w-1 h-8 bg-blue-500 absolute -bottom-8 left-4"></div> <!-- CLK connect -->
+                                </div>
+
+                                <!-- FF1 -->
+                                <div class="flex flex-col items-center relative">
+                                    <span class="font-bold text-slate-600 mb-2">FF1 (Q1)</span>
+                                    <div class="ff-box val-0" id="cs-q1">0</div>
+                                    <span class="absolute -top-8 bg-purple-100 text-purple-800 px-2 rounded font-mono text-sm font-bold border border-purple-300" id="cs-t1-label">T1=Q0</span>
+                                    <div class="w-1 h-6 bg-purple-500 absolute -top-2"></div>
+                                    <div class="w-1 h-8 bg-blue-500 absolute -bottom-8 left-4"></div> <!-- CLK connect -->
+                                </div>
+
+                                <!-- FF2 -->
+                                <div class="flex flex-col items-center relative">
+                                    <span class="font-bold text-slate-600 mb-2">FF2 (Q2) MSB</span>
+                                    <div class="ff-box val-0" id="cs-q2">0</div>
+                                    <span class="absolute -top-8 bg-purple-100 text-purple-800 px-2 rounded font-mono text-sm font-bold border border-purple-300" id="cs-t2-label">T2=Q0·Q1</span>
+                                    <div class="w-1 h-6 bg-purple-500 absolute -top-2"></div>
+                                    <div class="w-1 h-8 bg-blue-500 absolute -bottom-8 left-4"></div> <!-- CLK connect -->
+                                </div>
+                                
+                                <!-- Logic lines visual hint -->
+                                <svg class="absolute top-[-50px] left-0 w-full h-[60px] pointer-events-none" style="z-index:-1;">
+                                    <path d="M 150 50 L 150 20 L 250 20 L 250 40" fill="none" stroke="#a855f7" stroke-width="2" stroke-dasharray="4"/>
+                                    <path d="M 330 50 L 330 10 L 450 10 L 450 40" fill="none" stroke="#a855f7" stroke-width="2" stroke-dasharray="4"/>
+                                </svg>
+                            </div>
+                            
+                            <div class="flex justify-center items-center gap-8 mb-4">
+                                <button class="clk-btn bg-sky-500 shadow-[0_4px_0_#0284c7]" onclick="pulseSyncCounter()">توليد نبضة ⚡</button>
+                                <button class="bg-slate-200 text-slate-700 font-bold px-4 py-2 rounded-lg" onclick="resetSyncCounter()">تصفير</button>
+                                <div class="text-3xl font-black text-sky-600 bg-sky-50 px-6 py-2 rounded-lg border-2 border-sky-200" id="cs-dec">العشري: 0</div>
+                            </div>
+                            <div class="tracing-panel mt-4 text-right"><span class="step-title">التتبع (التزامن الدقيق):</span><div id="trace-cs">عند وصول النبضة، جميع القلابات تستجيب في نفس اللحظة تماماً بناءً على حالة مداخل T المجهزة من بوابات AND.</div></div>
+                        </div>
+                    </div>
+
+                    <!-- Up/Down Counter -->
+                    <div id="sub-cnt-updown" class="sub-content hidden fade-in">
+                        <h2 class="text-2xl font-black text-slate-800 align-lines block mb-4 border-b-2 border-slate-200 pb-2">العداد التصاعدي / التنازلي (Up/Down Counter)</h2>
+                        <div class="info-card border-r-indigo-500 bg-indigo-50">
+                            <p>يحتوي هذا العداد على مدخل تحكم إضافي يحدد اتجاه العد. يستخدم دوائر توجيه (MUX) بداخلة لتحديد ما إذا كان سيأخذ نبضته من Q (للعد التصاعدي) أو من Q' (للعد التنازلي).</p>
+                        </div>
+                        <div class="logic-box text-center">
+                            <div class="flex justify-center mb-6 gap-6 bg-slate-100 p-4 rounded-xl border border-slate-300 w-fit mx-auto shadow-inner">
+                                <label class="bg-white px-6 py-3 rounded-lg font-black text-lg cursor-pointer flex items-center gap-2 border-2 border-indigo-200 shadow-sm transition hover:bg-indigo-50"><input type="radio" name="ud-dir" value="up" checked onchange="updateUDDir()" class="w-5 h-5 accent-indigo-600"> تصاعدي (UP ⬆️)</label>
+                                <label class="bg-white px-6 py-3 rounded-lg font-black text-lg cursor-pointer flex items-center gap-2 border-2 border-indigo-200 shadow-sm transition hover:bg-indigo-50"><input type="radio" name="ud-dir" value="down" onchange="updateUDDir()" class="w-5 h-5 accent-indigo-600"> تنازلي (DOWN ⬇️)</label>
+                            </div>
+                            
+                            <div class="flex justify-center items-center gap-4 text-2xl font-bold font-mono text-slate-300 mb-8" dir="ltr">
+                                <div class="ff-box val-0 scale-125" id="ud-q2">0</div>
+                                <div class="ff-box val-0 scale-125" id="ud-q1">0</div>
+                                <div class="ff-box val-0 scale-125" id="ud-q0">0</div>
+                            </div>
+                            
+                            <div class="flex justify-center items-center gap-8 mb-4">
+                                <button class="clk-btn mx-auto bg-indigo-500 shadow-[0_4px_0_#4338ca] text-xl px-10 py-4" onclick="pulseUDCounter()">نبضة ساعة ⏱️</button>
+                                <div class="text-5xl font-black text-indigo-600 bg-indigo-50 px-8 py-4 rounded-2xl border-4 border-indigo-200 font-mono shadow-inner" id="ud-dec">0</div>
+                            </div>
+                            <div class="tracing-panel mt-4 text-right"><span class="step-title">التتبع:</span><div id="trace-ud">حدد الاتجاه ثم أرسل النبضات. تغيير الاتجاه يؤثر فوراً على التسلسل القادم.</div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-reg" class="main-tab-content hidden fade-in">
+                    <div class="sub-nav">
+                        <button onclick="switchSubTab('reg', 'intro')" id="btn-reg-intro" class="sub-btn active">مقدمة وأنواع</button>
+                        <button onclick="switchSubTab('reg', 'siso')" id="btn-reg-siso" class="sub-btn">SISO (تسلسلي/تسلسلي)</button>
+                        <button onclick="switchSubTab('reg', 'sipo')" id="btn-reg-sipo" class="sub-btn">SIPO (تسلسلي/توازي)</button>
+                        <button onclick="switchSubTab('reg', 'piso')" id="btn-reg-piso" class="sub-btn">PISO (توازي/تسلسلي)</button>
+                        <button onclick="switchSubTab('reg', 'pipo')" id="btn-reg-pipo" class="sub-btn">PIPO (توازي/توازي)</button>
+                        <button onclick="switchSubTab('reg', 'rotate')" id="btn-reg-rotate" class="sub-btn">الدوران (Rotate)</button>
+                    </div>
+
+                    <!-- Intro -->
+                    <div id="sub-reg-intro" class="sub-content block fade-in">
+                        <h2 class="text-3xl font-black text-slate-800 align-lines block mb-6 border-b-2 border-slate-200 pb-2">مسجلات الإزاحة (Shift Registers)</h2>
+                        <div class="info-card border-r-emerald-500 bg-emerald-50">
+                            <p>المسجلات هي مصفوفة من القلابات (غالباً D Flip-Flops) تُستخدم لـ <strong>تخزين البيانات وتحريكها (إزاحتها) يميناً أو يساراً</strong>. عند كل نبضة ساعة، تنتقل البيانات من قلاب للذي يليه.</p>
+                            <p class="mt-2 text-emerald-900 font-bold">تطبيقاتها: الذاكرة المؤقتة، تحويل البيانات للتوافق مع المنافذ (مثل USB)، تأخير الإشارات الرقمية، وعمليات التشفير.</p>
+                        </div>
+                        <table class="truth-table w-full mt-4">
+                            <tr><th>النوع</th><th>الاسم الكامل</th><th>آلية العمل والتطبيق</th></tr>
+                            <tr><td class="font-black text-emerald-600">SISO</td><td>Serial In - Serial Out</td><td>تأخير إشارة البيانات بتلو الآخر.</td></tr>
+                            <tr><td class="font-black text-emerald-600">SIPO</td><td>Serial In - Parallel Out</td><td>محول لفك شفرة البيانات التسلسلية لعرضها على شاشات LED دفعة واحدة.</td></tr>
+                            <tr><td class="font-black text-emerald-600">PISO</td><td>Parallel In - Serial Out</td><td>تجميع بيانات الحساسات المتوازية لإرسالها عبر سلك واحد (نقل تسلسلي).</td></tr>
+                            <tr><td class="font-black text-emerald-600">PIPO</td><td>Parallel In - Parallel Out</td><td>مخزن مؤقت للبيانات (Buffer) لسرعة المعالجة.</td></tr>
+                        </table>
+                    </div>
+
+                    <!-- SISO -->
+                    <div id="sub-reg-siso" class="sub-content hidden fade-in">
+                        <h2 class="text-2xl font-black text-slate-800 align-lines block mb-4 border-b-2 border-slate-200 pb-2">1. مسجل الإزاحة SISO</h2>
+                        <div class="info-card bg-slate-50"><p>تدخل البيانات بت تلو الآخر من جهة، وتخرج بت تلو الآخر من الجهة الأخرى مع كل نبضة. لتمرير 4 بتات كاملة، نحتاج 4 نبضات ساعة.</p></div>
+                        <div class="logic-box text-center overflow-hidden">
+                            <div class="flex items-center justify-center gap-2 mb-8 mt-4" dir="ltr">
+                                <div class="bg-slate-800 p-2 rounded-lg text-white font-bold border-2 border-slate-600 text-center">Data In <br><select id="siso-in" class="mt-2 text-black font-bold p-1 rounded outline-none"><option value="1">1</option><option value="0">0</option></select></div>
+                                <div class="wire-arrow w-10 active bg-emerald-500 h-2"></div>
+                                <div class="ff-box val-0" id="siso-ff0">0</div><div class="wire-arrow w-8 relative left-3 h-2" id="siso-w1"></div>
+                                <div class="ff-box val-0 ml-6" id="siso-ff1">0</div><div class="wire-arrow w-8 relative left-3 h-2" id="siso-w2"></div>
+                                <div class="ff-box val-0 ml-6" id="siso-ff2">0</div><div class="wire-arrow w-8 relative left-3 h-2" id="siso-w3"></div>
+                                <div class="ff-box val-0 ml-6" id="siso-ff3">0</div>
+                                <div class="wire-arrow w-10 active ml-6 bg-slate-400 h-2" id="siso-wout"></div>
+                                <div class="bg-slate-100 p-2 rounded-lg text-slate-700 font-bold border-2 border-slate-300 text-center w-20">Out <br><span class="text-3xl text-emerald-600 font-black" id="siso-out">-</span></div>
+                            </div>
+                            <button class="clk-btn mx-auto px-10 py-3 bg-emerald-600 shadow-[0_4px_0_#059669] text-xl" onclick="shiftSISO()">نبضة إزاحة لليمين ⏱️</button>
+                        </div>
+                    </div>
+
+                    <!-- SIPO -->
+                    <div id="sub-reg-sipo" class="sub-content hidden fade-in">
+                        <h2 class="text-2xl font-black text-slate-800 align-lines block mb-4 border-b-2 border-slate-200 pb-2">2. مسجل الإزاحة SIPO</h2>
+                        <div class="info-card bg-slate-50"><p>تدخل البيانات تسلسلياً (بت مع كل نبضة)، ولكننا نقرأ مخرجات جميع القلابات <strong>في نفس الوقت (توازي)</strong>.</p></div>
+                        <div class="logic-box text-center">
+                            <div class="flex flex-col items-center justify-center gap-2 mb-8 mt-4" dir="ltr">
+                                <div class="flex items-center gap-2">
+                                    <div class="bg-slate-800 p-2 rounded-lg text-white font-bold border-2 border-slate-600 text-center">Data In <br><select id="sipo-in" class="mt-2 text-black font-bold p-1 rounded outline-none"><option value="1">1</option><option value="0">0</option></select></div>
+                                    <div class="wire-arrow w-10 active bg-emerald-500 h-2"></div>
+                                    <div class="ff-box val-0" id="sipo-ff0">0</div><div class="wire-arrow w-8 relative left-3 h-2"></div>
+                                    <div class="ff-box val-0 ml-6" id="sipo-ff1">0</div><div class="wire-arrow w-8 relative left-3 h-2"></div>
+                                    <div class="ff-box val-0 ml-6" id="sipo-ff2">0</div><div class="wire-arrow w-8 relative left-3 h-2"></div>
+                                    <div class="ff-box val-0 ml-6" id="sipo-ff3">0</div>
+                                </div>
+                                <!-- Parallel Output visual -->
+                                <div class="flex w-[350px] ml-20 justify-between mt-2">
+                                    <div class="h-8 w-2 bg-emerald-500 rounded-b"></div><div class="h-8 w-2 bg-emerald-500 rounded-b"></div><div class="h-8 w-2 bg-emerald-500 rounded-b"></div><div class="h-8 w-2 bg-emerald-500 rounded-b"></div>
+                                </div>
+                                <div class="flex w-[350px] ml-20 justify-between font-black text-white text-2xl bg-emerald-600 p-2 rounded-lg shadow-inner">
+                                    <span id="sipo-o0">0</span><span id="sipo-o1">0</span><span id="sipo-o2">0</span><span id="sipo-o3">0</span>
+                                </div>
+                            </div>
+                            <button class="clk-btn mx-auto px-10 py-3 bg-emerald-600 shadow-[0_4px_0_#059669] text-xl" onclick="shiftSIPO()">نبضة إزاحة تسلسلية ⏱️</button>
+                        </div>
+                    </div>
+
+                    <!-- PISO -->
+                    <div id="sub-reg-piso" class="sub-content hidden fade-in">
+                        <h2 class="text-2xl font-black text-slate-800 align-lines block mb-4 border-b-2 border-slate-200 pb-2">3. مسجل الإزاحة PISO</h2>
+                        <div class="info-card bg-slate-50"><p>نحمّل الكلمة الرقمية (4 بتات) دفعة واحدة (توازي) عند تفعيل أمر التحميل، ثم نزيحها بت تلو الآخر (تسلسلي) للخارج مع كل نبضة.</p></div>
+                        <div class="logic-box text-center">
+                            <div class="bg-amber-100 p-4 rounded-xl border border-amber-300 w-fit mx-auto mb-6">
+                                <span class="font-bold text-amber-800 block mb-2">أدخل البيانات للتوازي (Parallel Input)</span>
+                                <div class="flex justify-center gap-6" dir="ltr">
+                                    <select id="piso-in0" class="border-2 border-slate-400 p-2 rounded text-xl font-black"><option value="1">1</option><option value="0">0</option></select>
+                                    <select id="piso-in1" class="border-2 border-slate-400 p-2 rounded text-xl font-black"><option value="0">0</option><option value="1">1</option></select>
+                                    <select id="piso-in2" class="border-2 border-slate-400 p-2 rounded text-xl font-black"><option value="1">1</option><option value="0">0</option></select>
+                                    <select id="piso-in3" class="border-2 border-slate-400 p-2 rounded text-xl font-black"><option value="1">1</option><option value="0">0</option></select>
+                                </div>
+                                <button class="bg-amber-500 hover:bg-amber-600 text-white font-black py-2 px-6 rounded mt-4 shadow" onclick="loadPISO()">تفعيل أمر التحميل (Load) ↓</button>
+                            </div>
+                            
+                            <div class="flex items-center justify-center gap-2 mb-8 mt-2" dir="ltr">
+                                <div class="font-bold text-slate-400 text-lg w-12 text-right">0 ──►</div>
+                                <div class="ff-box val-0" id="piso-ff0">0</div><div class="wire-arrow w-8 relative left-3 h-2"></div>
+                                <div class="ff-box val-0 ml-6" id="piso-ff1">0</div><div class="wire-arrow w-8 relative left-3 h-2"></div>
+                                <div class="ff-box val-0 ml-6" id="piso-ff2">0</div><div class="wire-arrow w-8 relative left-3 h-2"></div>
+                                <div class="ff-box val-0 ml-6" id="piso-ff3">0</div>
+                                <div class="wire-arrow w-10 active ml-6 bg-amber-500 h-2"></div>
+                                <div class="bg-slate-100 p-2 rounded-lg text-slate-700 font-bold border-2 border-slate-300 text-center w-20">Serial Out <br><span class="text-3xl text-amber-600 font-black" id="piso-out">-</span></div>
+                            </div>
+                            <button class="clk-btn mx-auto px-10 py-3 bg-amber-600 shadow-[0_4px_0_#d97706] text-xl" onclick="shiftPISO()">إزاحة للخارج (Shift) ⏱️</button>
+                        </div>
+                    </div>
+
+                    <!-- PIPO -->
+                    <div id="sub-reg-pipo" class="sub-content hidden fade-in">
+                        <h2 class="text-2xl font-black text-slate-800 align-lines block mb-4 border-b-2 border-slate-200 pb-2">4. مسجل الإزاحة PIPO</h2>
+                        <div class="info-card bg-slate-50"><p>تدخل البيانات بالتوازي وتخرج بالتوازي بناءً على نبضة ساعة واحدة. يعمل كـ "ذاكرة تخزين مؤقت" (Buffer) تحتفظ بالمعلومة.</p></div>
+                        <div class="logic-box text-center">
+                            <div class="flex justify-center mb-6 gap-8" dir="ltr">
+                                <select id="pipo-in0" class="border-2 border-purple-400 p-3 rounded text-2xl font-black bg-purple-50 text-purple-900 shadow-sm"><option value="1">1</option><option value="0">0</option></select>
+                                <select id="pipo-in1" class="border-2 border-purple-400 p-3 rounded text-2xl font-black bg-purple-50 text-purple-900 shadow-sm"><option value="0">0</option><option value="1">1</option></select>
+                                <select id="pipo-in2" class="border-2 border-purple-400 p-3 rounded text-2xl font-black bg-purple-50 text-purple-900 shadow-sm"><option value="1">1</option><option value="0">0</option></select>
+                                <select id="pipo-in3" class="border-2 border-purple-400 p-3 rounded text-2xl font-black bg-purple-50 text-purple-900 shadow-sm"><option value="0">0</option><option value="1">1</option></select>
+                            </div>
+                            
+                            <!-- Visual arrows pointing down -->
+                            <div class="flex justify-center mb-2 gap-8 w-full" dir="ltr">
+                                <div class="w-16 flex justify-center"><div class="w-2 h-6 bg-slate-400 rounded-t"></div></div>
+                                <div class="w-16 flex justify-center"><div class="w-2 h-6 bg-slate-400 rounded-t"></div></div>
+                                <div class="w-16 flex justify-center"><div class="w-2 h-6 bg-slate-400 rounded-t"></div></div>
+                                <div class="w-16 flex justify-center"><div class="w-2 h-6 bg-slate-400 rounded-t"></div></div>
+                            </div>
+                            
+                            <div class="flex items-center justify-center gap-8 mb-8" dir="ltr">
+                                <div class="ff-box val-0 w-16" id="pipo-ff0">0</div>
+                                <div class="ff-box val-0 w-16" id="pipo-ff1">0</div>
+                                <div class="ff-box val-0 w-16" id="pipo-ff2">0</div>
+                                <div class="ff-box val-0 w-16" id="pipo-ff3">0</div>
+                            </div>
+                            <button class="clk-btn mx-auto px-10 py-3 bg-purple-600 shadow-[0_4px_0_#7c3aed] text-xl" onclick="loadPIPO()">نبضة ساعة للتحميل (Load) ⏱️</button>
+                        </div>
+                    </div>
+
+                    <!-- Rotate -->
+                    <div id="sub-reg-rotate" class="sub-content hidden fade-in">
+                        <h2 class="text-2xl font-black text-slate-800 align-lines block mb-4 border-b-2 border-slate-200 pb-2">5. مسجل الدوران (Rotate Register)</h2>
+                        <div class="info-card bg-slate-50"><p>دائرة مغلقة: يتم توصيل المخرج الأخير بالمدخل الأول. البيانات تدور ولا تضيع، تستخدم في بعض خوارزميات التشفير ومعالجة الإشارات.</p></div>
+                        <div class="logic-box text-center overflow-hidden relative pb-10">
+                            <!-- Huge Feedback loop drawn with CSS -->
+                            <div class="absolute top-4 left-1/2 transform -translate-x-1/2 w-[380px] h-12 border-t-4 border-l-4 border-r-4 border-emerald-500 rounded-t-xl z-0 border-dashed"></div>
+                            
+                            <div class="flex items-center justify-center gap-2 mb-4 mt-12 relative z-10" dir="ltr">
+                                <div class="wire-arrow w-8 active bg-emerald-500 h-2" style="margin-right:-5px;"></div>
+                                <div class="ff-box val-1" id="rot-ff0">1</div><div class="wire-arrow w-8 relative left-3 h-2"></div>
+                                <div class="ff-box val-0 ml-6" id="rot-ff1">0</div><div class="wire-arrow w-8 relative left-3 h-2"></div>
+                                <div class="ff-box val-0 ml-6" id="rot-ff2">0</div><div class="wire-arrow w-8 relative left-3 h-2"></div>
+                                <div class="ff-box val-1 ml-6" id="rot-ff3">1</div>
+                                <div class="wire-arrow w-8 active ml-6 bg-emerald-500 h-2" style="margin-left:-5px;"></div>
+                            </div>
+                            <button class="clk-btn mx-auto px-10 py-3 mt-8 text-xl" onclick="shiftRotate()">نبضة دوران يمين ⏱️</button>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Navigation Logic ---
+        function switchMainTab(tabId) {
+            document.querySelectorAll('.main-tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.remove('hidden');
+            document.getElementById('btn-' + tabId).classList.add('active');
+            setTimeout(updateCanvasSize, 100);
+        }
+
+        function switchSubTab(category, id) {
+            const container = document.getElementById(`tab-${category}`);
+            container.querySelectorAll('.sub-content').forEach(el => el.classList.add('hidden'));
+            container.querySelectorAll('.sub-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(`sub-${category}-${id}`).classList.remove('hidden');
+            document.getElementById(`btn-${category}-${id}`).classList.add('active');
+            
+            // Clean specific states
+            if(id === 'jk-pre') { document.getElementById('jkpc-pre').checked=false; document.getElementById('jkpc-clr').checked=false; evalJKPC_Async(); }
+            setTimeout(updateCanvasSize, 100);
+        }
+
+        // --- Helpers ---
+        function setWire(id, val) { const el = document.getElementById(id); if(el) el.className.baseVal = `wire wire-${val}`; }
+        function setNode(id, val) { const el = document.getElementById(id); if(el) el.setAttribute('fill', val ? '#10b981' : '#ef4444'); }
+        function setResVal(id, val, isErr=false) {
+            const el = document.getElementById(id);
+            if(!el) return;
+            el.innerText = isErr ? 'X' : val;
+            el.className = `result-val val-${isErr ? 'err' : val}`;
+        }
+        function setFFBox(id, val) {
+            const el = document.getElementById(id);
+            if(!el) return;
+            el.innerText = val;
+            if(val == 1) el.classList.add('val-1'); else el.classList.remove('val-1');
+            if(val == 0) el.classList.add('val-0'); else el.classList.remove('val-0');
+        }
+        function pulseWire(id) {
+            const el = document.getElementById(id);
+            if(!el) return;
+            el.classList.add('wire-clk');
+            setTimeout(() => el.classList.remove('wire-clk'), 200);
+        }
+
+        // --- 1. SR Latch Logic ---
+        let latch_q = 0;
+        function evalSRLatch() {
+            const s = document.getElementById('srl-s-in').checked ? 1 : 0;
+            const r = document.getElementById('srl-r-in').checked ? 1 : 0;
+            let msg = '';
+            let qb = latch_q === 1 ? 0 : 1;
+
+            setWire('srl-s', s); setWire('srl-r', r);
+
+            if (s === 0 && r === 0) {
+                msg = `S=0, R=0: احتفاظ بالحالة. المخرج Q يظل ${latch_q}.`;
+            } else if (s === 1 && r === 0) {
+                latch_q = 1; qb = 0;
+                msg = `S=1, R=0: ضبط (Set). الخرج Q أُجبر ليصبح 1.`;
+            } else if (s === 0 && r === 1) {
+                latch_q = 0; qb = 1;
+                msg = `S=0, R=1: إعادة ضبط (Reset). الخرج Q أُجبر ليصبح 0.`;
+            } else if (s === 1 && r === 1) {
+                msg = `<span class="text-red-400">حالة غير صالحة! (Invalid).</span> بوابتي NOR تخرجان 0 وهذا يناقض المنطق.`;
+                setResVal('srl-q-out', 'X', true); setResVal('srl-qb-out', 'X', true);
+                setWire('srl-q', 0); setWire('srl-qb', 0); setWire('srl-f-q', 0); setWire('srl-f-qb', 0);
+                document.getElementById('trace-srl').innerHTML = `<ul><li>${msg}</li></ul>`;
+                return; 
+            }
+            
+            setWire('srl-q', latch_q); setWire('srl-qb', qb);
+            setWire('srl-f-q', latch_q); setWire('srl-f-qb', qb);
+            setResVal('srl-q-out', latch_q); setResVal('srl-qb-out', qb);
+            document.getElementById('trace-srl').innerHTML = `<ul><li>${msg}</li></ul>`;
+        }
+
+        // --- 2. SR Sync Logic ---
+        let srs_q = 0;
+        function evalSRSync() {
+            const s = document.getElementById('srs-s-in').checked ? 1 : 0;
+            const r = document.getElementById('srs-r-in').checked ? 1 : 0;
+            let msg = '';
+            
+            pulseWire('srs-clk'); pulseWire('srs-clk1'); pulseWire('srs-clk2');
+            setWire('srs-s', s); setWire('srs-r', r);
+            
+            // NAND gates simulation
+            const n1 = !(s && 1) ? 1 : 0;
+            const n2 = !(r && 1) ? 1 : 0;
+            setWire('srs-n1', n1); setWire('srs-n2', n2);
+
+            if (s === 0 && r === 0) msg = "احتفاظ بالحالة. (S=0, R=0)";
+            else if (s === 1 && r === 0) { srs_q = 1; msg = "ضبط (Set) متزامن مع الساعة. (Q=1)"; }
+            else if (s === 0 && r === 1) { srs_q = 0; msg = "إعادة ضبط (Reset) متزامن. (Q=0)"; }
+            else if (s === 1 && r === 1) {
+                msg = `<span class="text-red-400">حالة خطأ!</span> يرجى تجنب إدخال 1 و 1 معاً.`;
+                setResVal('srs-q-out', 'X', true); 
+                document.getElementById('trace-srs').innerHTML = `<ul><li>↑ CLK : ${msg}</li></ul>`; return;
+            }
+            
+            let qb = srs_q === 1 ? 0 : 1;
+            setWire('srs-q', srs_q); setWire('srs-qb', qb);
+            setWire('srs-f-q', srs_q); setWire('srs-f-qb', qb);
+            setResVal('srs-q-out', srs_q);
+            document.getElementById('trace-srs').innerHTML = `<ul><li>↑ النبضة: ${msg}</li></ul>`;
+        }
+
+        // --- STREAMING_CHUNK:Javascript Logic - D, JK, T Flip-Flops... ---
+        // --- 3. D Flip-Flop ---
+        let dff_q = 0;
+        function evalDFF() {
+            const d = document.getElementById('dff-d-in').checked ? 1 : 0;
+            dff_q = d;
+            
+            pulseWire('dff-clk'); pulseWire('dff-clk1'); pulseWire('dff-clk2');
+            setWire('dff-d', d); setWire('dff-d-branch', d); setWire('dff-d-not', d===1?0:1);
+            
+            const n1 = !(d && 1) ? 1 : 0;
+            const n2 = !((d===1?0:1) && 1) ? 1 : 0;
+            setWire('dff-n1', n1); setWire('dff-n2', n2);
+            
+            let qb = dff_q === 1 ? 0 : 1;
+            setWire('dff-q', dff_q); setWire('dff-qb', qb);
+            setWire('dff-f-q', dff_q); setWire('dff-f-qb', qb);
+            setResVal('dff-q-out', dff_q); 
+            document.getElementById('trace-dff').innerHTML = `<ul><li>↑ النبضة: قراءة المدخل D. تمرير القيمة <span class="trace-high-${d}">${d}</span> إلى Q.</li></ul>`;
+        }
+
+        // --- 4. JK Flip-Flop ---
+        let jk_q = 0;
+        function evalJK() {
+            const j = document.getElementById('jk-j-in').checked ? 1 : 0;
+            const k = document.getElementById('jk-k-in').checked ? 1 : 0;
+            let msg = '';
+            
+            pulseWire('jk-clk'); pulseWire('jk-clk1'); pulseWire('jk-clk2');
+            setWire('jk-j', j); setWire('jk-k', k);
+            
+            let old_q = jk_q;
+            if (j === 0 && k === 0) msg = "احتفاظ بالحالة. (J=0, K=0)";
+            else if (j === 1 && k === 0) { jk_q = 1; msg = "ضبط (Set) (Q=1)."; }
+            else if (j === 0 && k === 1) { jk_q = 0; msg = "إعادة ضبط (Reset) (Q=0)."; }
+            else if (j === 1 && k === 1) { jk_q = jk_q === 1 ? 0 : 1; msg = `تبديل (Toggle) للحالة السابقة (${old_q} أصبحت ${jk_q}).`; }
+            
+            let qb = jk_q === 1 ? 0 : 1;
+            
+            // Visual feedback loop update
+            setWire('jk-fb-in1', qb); setWire('jk-fb-in2', jk_q);
+            setWire('jk-q', jk_q); setWire('jk-qb', qb);
+            setWire('jk-out-f1', jk_q); setWire('jk-out-f2', qb);
+            
+            setResVal('jk-q-out', jk_q);
+            document.getElementById('trace-jk').innerHTML = `<ul><li>↑ النبضة: ${msg}</li></ul>`;
+        }
+
+        // --- 5. JK (Preset/Clear) ---
+        let jkpc_q = 0;
+        function evalJKPC_Async() {
+            const pre = document.getElementById('jkpc-pre').checked ? 1 : 0;
+            const clr = document.getElementById('jkpc-clr').checked ? 1 : 0;
+            let msg = "";
+            if(pre===1 && clr===1) { msg="<span class='text-red-400'>خطأ: تفعيل Preset و Clear معاً!</span>"; jkpc_q='X'; }
+            else if(pre===1) { jkpc_q = 1; msg="Preset فعّال (تجاوز الساعة) ► Q=1"; }
+            else if(clr===1) { jkpc_q = 0; msg="Clear فعّال (تجاوز الساعة) ► Q=0"; }
+            else { msg = "القلاب يعمل بالوضع المتزامن (في انتظار الساعة)."; if(jkpc_q==='X') jkpc_q=0;}
+            
+            document.getElementById('jkpc-w-pre').style.backgroundColor = pre ? '#10b981' : '#a855f7';
+            document.getElementById('jkpc-w-clr').style.backgroundColor = clr ? '#10b981' : '#a855f7';
+            
+            if(jkpc_q!=='X') {
+                document.getElementById('jkpc-w-q').style.backgroundColor = jkpc_q ? '#10b981' : '#475569';
+                document.getElementById('jkpc-w-qb').style.backgroundColor = jkpc_q===1 ? '#475569' : '#10b981';
+            }
+            document.getElementById('trace-jkpc').innerHTML = `<ul><li>التأثير اللحظي (غير متزامن): ${msg}</li></ul>`;
+        }
+        function evalJKPC_Sync() {
+            const pre = document.getElementById('jkpc-pre').checked ? 1 : 0;
+            const clr = document.getElementById('jkpc-clr').checked ? 1 : 0;
+            if(pre===1 || clr===1) { document.getElementById('trace-jkpc').innerHTML += `<ul><li class="text-slate-400">↑ تم تجاهل نبضة الساعة لأن أحد أطراف التحكم المباشر مُفعّل.</li></ul>`; return; }
+            
+            const j = document.getElementById('jkpc-j').checked ? 1 : 0;
+            const k = document.getElementById('jkpc-k').checked ? 1 : 0;
+            document.getElementById('jkpc-w-j').style.backgroundColor = j ? '#10b981' : '#475569';
+            document.getElementById('jkpc-w-k').style.backgroundColor = k ? '#10b981' : '#475569';
+            
+            if(jkpc_q === 'X') jkpc_q = 0;
+            if(j===1 && k===0) jkpc_q = 1; else if(j===0 && k===1) jkpc_q = 0; else if(j===1 && k===1) jkpc_q = jkpc_q===1?0:1;
+            
+            document.getElementById('jkpc-w-q').style.backgroundColor = jkpc_q ? '#10b981' : '#475569';
+            document.getElementById('jkpc-w-qb').style.backgroundColor = jkpc_q===1 ? '#475569' : '#10b981';
+            document.getElementById('trace-jkpc').innerHTML = `<ul><li>↑ النبضة: الوضع المتزامن، J=${j} K=${k} ► Q=${jkpc_q}</li></ul>`;
+        }
+
+        // --- 6. T Flip-Flop ---
+        let t_q = 0;
+        function evalTFF() {
+            const t = document.getElementById('tff-t-in').checked ? 1 : 0;
+            let msg = '';
+            setWire('tff-t-wire', t); setWire('tff-j-wire', t); setWire('tff-k-wire', t);
+            
+            if (t === 1) { t_q = t_q === 1 ? 0 : 1; msg = "T=1 ► تبديل (Toggle)."; }
+            else { msg = "T=0 ► لا تغيير (Hold)."; }
+            
+            setWire('tff-q-wire', t_q); setWire('tff-qb-wire', t_q===1?0:1);
+            setResVal('tff-q-out', t_q);
+            document.getElementById('trace-tff').innerHTML = `<ul><li>↑ النبضة: ${msg} ► Q=${t_q}</li></ul>`;
+        }
+
+        // --- STREAMING_CHUNK:Javascript Logic - Counters... ---
+        // --- Counters Logic ---
+        let ca_val = 0;
+        function pulseAsyncCounter() {
+            ca_val = (ca_val + 1) % 8;
+            const q0 = ca_val & 1; const q1 = (ca_val >> 1) & 1; const q2 = (ca_val >> 2) & 1;
+            setFFBox('ca-q0', q0); setFFBox('ca-q1', q1); setFFBox('ca-q2', q2);
+            document.getElementById('ca-dec').innerText = `العشري: ${ca_val}`;
+            
+            // Highlight ripple wires briefly based on transitions (from 1 to 0 triggers next)
+            if(q0===0 && ca_val!==0) { document.getElementById('ca-w1').classList.add('bg-rose-600'); setTimeout(()=>document.getElementById('ca-w1').classList.remove('bg-rose-600'),300); }
+            if(q1===0 && q0===0 && ca_val!==0) { document.getElementById('ca-w2').classList.add('bg-rose-600'); setTimeout(()=>document.getElementById('ca-w2').classList.remove('bg-rose-600'),300); }
+            
+            document.getElementById('trace-ca').innerHTML = `<ul><li>دخلت النبضة לـ Q0 فأصبحت ${q0}. ${q0===0 && ca_val!==0 ? 'انتقال Q0 من 1 لـ 0 أرسل نبضة لـ Q1.' : ''}</li></ul>`;
+        }
+        function resetAsyncCounter() { ca_val = 0; setFFBox('ca-q0', 0); setFFBox('ca-q1', 0); setFFBox('ca-q2', 0); document.getElementById('ca-dec').innerText = `العشري: 0`;}
+
+        let cs_val = 0;
+        function pulseSyncCounter() {
+            cs_val = (cs_val + 1) % 8;
+            const q0 = cs_val & 1; const q1 = (cs_val >> 1) & 1; const q2 = (cs_val >> 2) & 1;
+            
+            // Highlight logic hints before changing visual
+            const prevQ0 = (cs_val===0)?1:((cs_val-1)&1);
+            const prevQ1 = (cs_val===0)?1:(((cs_val-1)>>1)&1);
+            
+            document.getElementById('cs-t1-label').className = prevQ0 ? "absolute -top-8 bg-purple-100 text-purple-900 px-2 rounded font-mono text-sm font-bold border-2 border-purple-500 scale-110 transition" : "absolute -top-8 bg-purple-100 text-purple-800 px-2 rounded font-mono text-sm font-bold border border-purple-300";
+            document.getElementById('cs-t2-label').className = (prevQ0 && prevQ1) ? "absolute -top-8 bg-purple-100 text-purple-900 px-2 rounded font-mono text-sm font-bold border-2 border-purple-500 scale-110 transition" : "absolute -top-8 bg-purple-100 text-purple-800 px-2 rounded font-mono text-sm font-bold border border-purple-300";
+            
+            setTimeout(() => {
+                setFFBox('cs-q0', q0); setFFBox('cs-q1', q1); setFFBox('cs-q2', q2);
+                document.getElementById('cs-dec').innerText = `العشري: ${cs_val}`;
+                document.getElementById('cs-t1-label').className = "absolute -top-8 bg-purple-100 text-purple-800 px-2 rounded font-mono text-sm font-bold border border-purple-300";
+                document.getElementById('cs-t2-label').className = "absolute -top-8 bg-purple-100 text-purple-800 px-2 rounded font-mono text-sm font-bold border border-purple-300";
+            }, 300);
+            
+            document.getElementById('trace-cs').innerHTML = `<ul><li>نبضة واحدة للجميع. T1 تأخذ الإذن من Q0. و T2 تأخذ الإذن من (Q0 AND Q1).</li></ul>`;
+        }
+        function resetSyncCounter() { cs_val = 0; setFFBox('cs-q0', 0); setFFBox('cs-q1', 0); setFFBox('cs-q2', 0); document.getElementById('cs-dec').innerText = `العشري: 0`;}
+
+        let ud_val = 0, ud_dir = 1; // 1 up, -1 down
+        function updateUDDir() { ud_dir = document.querySelector('input[name="ud-dir"]:checked').value === 'up' ? 1 : -1; }
+        function pulseUDCounter() {
+            ud_val = (ud_val + ud_dir);
+            if(ud_val > 7) ud_val = 0; if(ud_val < 0) ud_val = 7;
+            document.getElementById('ud-dec').innerText = ud_val;
+            setFFBox('ud-q0', ud_val & 1); setFFBox('ud-q1', (ud_val >> 1) & 1); setFFBox('ud-q2', (ud_val >> 2) & 1);
+        }
+
+        // --- STREAMING_CHUNK:Javascript Logic - Shift Registers... ---
+        // --- Shift Registers Logic ---
+        let siso_arr = [0,0,0,0];
+        function shiftSISO() {
+            const d_in = parseInt(document.getElementById('siso-in').value);
+            const out = siso_arr[3];
+            siso_arr.unshift(d_in); siso_arr.pop(); // shift right mathematically
+            for(let i=0; i<4; i++) setFFBox(`siso-ff${i}`, siso_arr[i]);
+            document.getElementById('siso-out').innerText = out;
+            
+            // Visual pulses
+            const wires = [document.querySelector('#sub-reg-siso .wire-arrow'), document.getElementById('siso-w1'), document.getElementById('siso-w2'), document.getElementById('siso-w3'), document.getElementById('siso-wout')];
+            wires.forEach(el=> {el.classList.add('bg-emerald-400', 'scale-y-150'); setTimeout(()=>el.classList.remove('bg-emerald-400', 'scale-y-150'),300)});
+        }
+
+        let sipo_arr = [0,0,0,0];
+        function shiftSIPO() {
+            const d_in = parseInt(document.getElementById('sipo-in').value);
+            sipo_arr.unshift(d_in); sipo_arr.pop();
+            for(let i=0; i<4; i++){
+                setFFBox(`sipo-ff${i}`, sipo_arr[i]);
+                document.getElementById(`sipo-o${i}`).innerText = sipo_arr[i];
+            }
+        }
+
+        let piso_arr = [0,0,0,0];
+        function loadPISO() {
+            for(let i=0; i<4; i++) {
+                piso_arr[i] = parseInt(document.getElementById(`piso-in${i}`).value);
+                setFFBox(`piso-ff${i}`, piso_arr[i]);
+            }
+            document.getElementById('piso-out').innerText = '-';
+        }
+        function shiftPISO() {
+            const out = piso_arr[3];
+            piso_arr.unshift(0); piso_arr.pop(); // feed 0 from left
+            for(let i=0; i<4; i++) setFFBox(`piso-ff${i}`, piso_arr[i]);
+            document.getElementById('piso-out').innerText = out;
+        }
+
+        function loadPIPO() {
+            for(let i=0; i<4; i++) {
+                let val = document.getElementById(`pipo-in${i}`).value;
+                setFFBox(`pipo-ff${i}`, val);
+            }
+        }
+
+        let rot_arr = [1,0,0,1]; // initial visual setup
+        function shiftRotate() {
+            const temp = rot_arr[3]; // The one falling off the right edge
+            rot_arr.unshift(temp); // Put it at the beginning
+            rot_arr.pop();
+            for(let i=0; i<4; i++) setFFBox(`rot-ff${i}`, rot_arr[i]);
+        }
+
+        // --- STREAMING_CHUNK:Javascript Logic - Drawing Canvas... ---
+        const canvas = document.getElementById('drawing-canvas');
+        const ctx = canvas.getContext('2d');
+        let isDrawMode = false, isDrawing = false, currentTool = 'pen', currentColor = '#ef4444', lastX = 0, lastY = 0;
+
+        function updateCanvasSize() {
+            if(!canvas) return;
+            const newWidth = document.documentElement.scrollWidth;
+            const newHeight = Math.max(document.documentElement.scrollHeight, window.innerHeight);
+            if (canvas.width !== newWidth || canvas.height !== newHeight) {
+                const tc = document.createElement('canvas'); tc.width = canvas.width || newWidth; tc.height = canvas.height || newHeight;
+                const tx = tc.getContext('2d'); if(canvas.width>0) tx.drawImage(canvas, 0, 0);
+                canvas.width = newWidth; canvas.height = newHeight; ctx.drawImage(tc, 0, 0);
+                ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+            }
+        }
+        
+        window.addEventListener('resize', updateCanvasSize);
+        window.addEventListener('load', () => { updateCanvasSize(); new MutationObserver(updateCanvasSize).observe(document.body, { childList: true, subtree: true }); });
+
+        function toggleDrawingMode() {
+            isDrawMode = !isDrawMode; canvas.style.pointerEvents = isDrawMode ? 'auto' : 'none'; 
+            const tools = document.getElementById('drawing-tools'), btn = document.getElementById('btn-toggle-draw');
+            if (isDrawMode) { tools.classList.remove('hidden'); tools.classList.add('flex'); btn.classList.add('bg-sky-100', 'text-sky-700', 'border-sky-400'); } 
+            else { tools.classList.add('hidden'); tools.classList.remove('flex'); btn.classList.remove('bg-sky-100', 'text-sky-700', 'border-sky-400'); }
+        }
+
+        function setPenColor(hex, el) { currentTool = 'pen'; currentColor = hex; document.getElementById('btn-eraser').classList.remove('bg-slate-300'); document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('scale-110', 'ring-2')); el.classList.add('scale-110', 'ring-2'); canvas.style.cursor = 'crosshair'; }
+        function setEraser() { currentTool = 'eraser'; document.getElementById('btn-eraser').classList.add('bg-slate-300'); document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('scale-110', 'ring-2')); canvas.style.cursor = 'cell'; }
+        function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+        function getMousePos(e) { return { x: e.pageX || (e.touches && e.touches[0].pageX), y: e.pageY || (e.touches && e.touches[0].pageY) }; }
+
+        function startPos(e) { if (!isDrawMode) return; if(e.type==='touchstart' && e.cancelable) e.preventDefault(); isDrawing = true; const p = getMousePos(e); lastX = p.x; lastY = p.y; draw(e); }
+        function endPos() { isDrawing = false; ctx.beginPath(); }
+        function draw(e) {
+            if (!isDrawing || !isDrawMode) return; if(e.type==='touchmove' && e.cancelable) e.preventDefault(); const p = getMousePos(e);
+            ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(p.x, p.y);
+            if (currentTool === 'pen') { ctx.globalCompositeOperation = 'source-over'; ctx.strokeStyle = currentColor; ctx.lineWidth = 4; } 
+            else { ctx.globalCompositeOperation = 'destination-out'; ctx.lineWidth = 40; }
+            ctx.stroke(); lastX = p.x; lastY = p.y;
+        }
+
+        canvas.addEventListener('mousedown', startPos); canvas.addEventListener('mousemove', draw); window.addEventListener('mouseup', endPos);
+        canvas.addEventListener('touchstart', startPos, {passive: false}); canvas.addEventListener('touchmove', draw, {passive: false}); canvas.addEventListener('touchend', endPos);
+
+        // Initial setup calls
+        evalSRLatch();
+        evalSRSync();
+        evalDFF();
+        evalJK();
+        evalJKPC_Async();
+        evalTFF();
+    </script>
+</body>
+</html>
