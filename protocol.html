@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دليل بروتوكولات الشبكات</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        :root {
+            --line-height: 32px; 
+        }
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #e5e7eb; 
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            font-size: 0.90rem; 
+        }
+        
+        .notebook-wrapper {
+            width: 100%;
+            max-width: 1280px; 
+            background-color: #fcf9f2; 
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1), 0 4px 10px rgba(0,0,0,0.05);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .notebook-paper {
+            background-image: linear-gradient(rgba(147, 197, 253, 0.4) 1px, transparent 1px);
+            background-size: 100% var(--line-height);
+            min-height: 750px;
+            position: relative;
+        }
+
+        .notebook-paper::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            right: 50px;
+            width: 2px;
+            background-color: rgba(239, 68, 68, 0.4);
+            z-index: 1;
+        }
+
+        .notebook-content {
+            position: relative;
+            z-index: 2;
+            padding-right: 70px; 
+            padding-left: 20px;
+            padding-top: calc(var(--line-height) / 2);
+            padding-bottom: var(--line-height);
+        }
+
+        .en-text {
+            font-family: 'JetBrains Mono', monospace;
+            direction: ltr;
+            display: inline-block;
+        }
+
+        /* تنسيق أدوات الرسم */
+        .color-btn.active {
+            transform: scale(1.25);
+            border-color: #374151 !important;
+            box-shadow: 0 0 0 2px white, 0 0 0 4px #374151;
+        }
+
+        /* تنسيقات جدول البروتوكولات */
+        .protocol-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 8px;
+            margin-top: 1rem;
+        }
+        
+        .protocol-table th {
+            background-color: #1f2937;
+            color: white;
+            padding: 12px 16px;
+            text-align: right;
+            font-weight: 700;
+        }
+        
+        .protocol-table th:first-child { border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
+        .protocol-table th:last-child { border-top-left-radius: 8px; border-bottom-left-radius: 8px; text-align: center; }
+
+        .protocol-row {
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border-radius: 8px;
+        }
+        
+        .protocol-row:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .protocol-row td {
+            padding: 12px 16px;
+            border-top: 1px solid #f3f4f6;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        
+        .protocol-row td:first-child { 
+            border-right: 4px solid transparent; 
+            border-top-right-radius: 8px; 
+            border-bottom-right-radius: 8px;
+            border-right-color: #3b82f6; /* لون افتراضي للطبقة */
+        }
+        
+        .protocol-row td:last-child { 
+            border-top-left-radius: 8px; 
+            border-bottom-left-radius: 8px;
+            border-left: 1px solid #f3f4f6;
+            text-align: center;
+        }
+
+        /* ألوان الطبقات */
+        .layer-7 td:first-child { border-right-color: #3b82f6; } /* أزرق */
+        .layer-6 td:first-child { border-right-color: #8b5cf6; } /* بنفسجي */
+        .layer-5 td:first-child { border-right-color: #ec4899; } /* وردي */
+        .layer-4 td:first-child { border-right-color: #ef4444; } /* أحمر */
+        .layer-3 td:first-child { border-right-color: #f59e0b; } /* برتقالي */
+        .layer-2 td:first-child { border-right-color: #10b981; } /* أخضر */
+        .layer-1 td:first-child { border-right-color: #64748b; } /* رمادي */
+
+        .layer-header {
+            background-color: #f8fafc;
+            font-weight: 800;
+            color: #334155;
+            padding: 16px 20px;
+            margin-top: 24px;
+            margin-bottom: -4px;
+            border-radius: 8px;
+            border-bottom: 2px solid #cbd5e1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .layer-badge {
+            background-color: #1e293b;
+            color: white;
+            width: 28px;
+            height: 28px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 0.85rem;
+        }
+
+        /* تنسيقات النافذة المنبثقة (Modal) */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            transform: translateY(20px) scale(0.95);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: translateY(0) scale(1);
+        }
+
+        .modal-header {
+            background-color: #f8fafc;
+            padding: 20px 24px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #64748b;
+            cursor: pointer;
+            transition: color 0.2s;
+            line-height: 1;
+        }
+
+        .close-modal:hover {
+            color: #ef4444;
+        }
+
+        .stars-container {
+            color: #fbbf24;
+            letter-spacing: 2px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <canvas id="drawing-canvas" class="absolute top-0 left-0 w-full z-50 pointer-events-none"></canvas>
+
+    <div id="drawing-toolbar" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-[60] bg-white p-2 rounded-full shadow-2xl border-2 border-emerald-200 flex gap-2 transition-all duration-300">
+        <button id="btn-toggle-draw" onclick="toggleDrawingMode()" class="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-700 transition border-2 border-transparent" title="وضع الشرح والرسم (تفعيل/إلغاء)">
+            <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+        </button>
+
+        <div id="drawing-tools" class="hidden gap-3 items-center px-3 border-r-2 border-gray-200 mr-1">
+            <div class="flex gap-2 items-center bg-gray-50 px-2 py-1 rounded-full border border-gray-200">
+                <button onclick="setPenColor('#ef4444', this)" class="color-btn w-5 h-5 md:w-6 md:h-6 rounded-full bg-red-500 border-2 border-transparent transition-all" title="أحمر"></button>
+                <button onclick="setPenColor('#3b82f6', this)" class="color-btn w-5 h-5 md:w-6 md:h-6 rounded-full bg-blue-500 border-2 border-transparent transition-all" title="أزرق"></button>
+                <button onclick="setPenColor('#059669', this)" class="color-btn active w-5 h-5 md:w-6 md:h-6 rounded-full bg-emerald-600 border-2 border-transparent transition-all" title="أخضر"></button>
+                <button onclick="setPenColor('#f59e0b', this)" class="color-btn w-5 h-5 md:w-6 md:h-6 rounded-full bg-amber-500 border-2 border-transparent transition-all" title="برتقالي"></button>
+                <button onclick="setPenColor('#1f2937', this)" class="color-btn w-5 h-5 md:w-6 md:h-6 rounded-full bg-gray-800 border-2 border-transparent transition-all" title="أسود"></button>
+            </div>
+            
+            <div class="w-px h-6 bg-gray-300 mx-1"></div>
+
+            <button id="btn-eraser" onclick="setEraser()" class="w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center transition border-2 border-transparent bg-gray-100 text-gray-600 hover:bg-gray-200" title="ممحاة">
+                <span class="text-lg md:text-xl">🧽</span>
+            </button>
+            <button onclick="clearCanvas()" class="w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center bg-gray-100 hover:bg-red-100 text-gray-600 hover:text-red-600 transition" title="مسح كامل السبورة">
+                <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+            </button>
+        </div>
+    </div>
+
+    <div class="notebook-wrapper">
+        <div class="bg-slate-900 text-white p-5 relative z-10 shadow-md">
+            <div class="flex items-center justify-between mb-2">
+                <span class="bg-blue-700 px-4 py-1.5 rounded-full text-xs font-bold shadow-inner border border-blue-500">المؤشر: بروتوكولات الشبكات وتقنياتها</span>
+            </div>
+            <h1 class="text-2xl font-bold mb-3 leading-relaxed tracking-wide">دليل بروتوكولات الشبكات الشامل</h1>
+            
+            <div class="bg-slate-800 bg-opacity-70 p-3 rounded-lg text-sm leading-relaxed border border-slate-600 text-gray-200">
+                <p><strong class="text-blue-400">طريقة الاستخدام:</strong> هذه القائمة تصنف أشهر بروتوكولات الشبكات حسب طبقات نموذج OSI. <strong class="text-emerald-400">انقر على أي بروتوكول</strong> لعرض تفاصيله، وظيفته، ومدى شيوعه.</p>
+            </div>
+        </div>
+
+        <div class="notebook-paper">
+            <div class="notebook-content">
+                
+                <!-- حاوية الجدول -->
+                <div id="protocols-container" class="pb-10">
+                    <!-- سيتم حقن البيانات هنا بواسطة جافاسكربت -->
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal (النافذة المنبثقة) -->
+    <div id="protocol-modal" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div>
+                    <h2 id="modal-protocol-name" class="text-2xl font-bold text-gray-900 en-text">PROTOCOL</h2>
+                    <p id="modal-protocol-fullname" class="text-sm text-gray-500 mt-1 en-text italic">Full Name of Protocol</p>
+                </div>
+                <button class="close-modal" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                        <h3 class="text-sm font-bold text-gray-400 mb-1">الطبقة (Layer)</h3>
+                        <p id="modal-layer" class="font-semibold text-gray-800">Layer Name</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                        <h3 class="text-sm font-bold text-gray-400 mb-1">مدى الشيوع</h3>
+                        <div id="modal-stars" class="stars-container text-lg">★★★★★</div>
+                        <p id="modal-popularity-text" class="text-xs text-gray-500 mt-1">شائع جداً</p>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-2 border-b-2 border-blue-100 inline-block pb-1">الوظيفة الأساسية</h3>
+                    <p id="modal-function" class="text-gray-700 leading-relaxed text-justify bg-blue-50 p-3 rounded-r-lg border-r-4 border-blue-500">
+                        شرح الوظيفة...
+                    </p>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-2 border-b-2 border-amber-100 inline-block pb-1">ملاحظات إضافية</h3>
+                    <p id="modal-notes" class="text-gray-700 leading-relaxed text-justify bg-amber-50 p-3 rounded-r-lg border-r-4 border-amber-500">
+                        ملاحظات...
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // بيانات البروتوكولات
+        const protocolsData = [
+            { layerNum: 7, layerName: "التطبيق (Application)", colorClass: "layer-7", protocols: [
+                { name: "HTTP", fullName: "Hypertext Transfer Protocol", func: "تصفح الويب ونقل صفحات HTML والملفات عبر الإنترنت.", stars: 5, popText: "شائع جداً", notes: "يتم استبداله تدريجياً بـ HTTPS لافتقاره للتشفير." },
+                { name: "HTTPS", fullName: "Hypertext Transfer Protocol Secure", func: "تصفح آمن للويب، يقوم بتشفير الاتصال بين المتصفح والخادم.", stars: 5, popText: "شائع جداً", notes: "المعيار الحالي والأساسي لكل مواقع الويب وتطبيقات الإنترنت." },
+                { name: "DNS", fullName: "Domain Name System", func: "ترجمة أسماء النطاقات (مثل google.com) إلى عناوين IP التي تفهمها الحواسيب.", stars: 5, popText: "شائع جداً", notes: "بنية تحتية حيوية، لا يمكن تصفح الإنترنت عملياً بدونه." },
+                { name: "DHCP", fullName: "Dynamic Host Configuration Protocol", func: "توزيع عناوين IP ومعلومات الشبكة (مثل Subnet, Gateway) تلقائياً للأجهزة.", stars: 5, popText: "شائع جداً", notes: "موجود في كل شبكة محلية (المنزل، العمل) لتسهيل اتصال الأجهزة." },
+                { name: "SMTP", fullName: "Simple Mail Transfer Protocol", func: "إرسال رسائل البريد الإلكتروني وتوجيهها بين الخوادم.", stars: 5, popText: "شائع جداً", notes: "بروتوكول الدفع (Push)، يستخدم للإرسال فقط." },
+                { name: "IMAP", fullName: "Internet Message Access Protocol", func: "استقبال وقراءة البريد الإلكتروني مع إبقاء النسخة الأصلية على الخادم والمزامنة بين الأجهزة.", stars: 4, popText: "شائع", notes: "الخيار الأفضل والأكثر شيوعاً حالياً للتعامل مع البريد من أجهزة متعددة." },
+                { name: "POP3", fullName: "Post Office Protocol version 3", func: "استقبال البريد الإلكتروني عن طريق تحميله للجهاز وحذفه من الخادم.", stars: 2, popText: "متراجع", notes: "استُبدل بشكل كبير بـ IMAP، يستخدم فقط في حالات محدودة." },
+                { name: "SSH", fullName: "Secure Shell", func: "إدارة الخوادم وأجهزة الشبكة عن بُعد بشكل آمن ومشفّر.", stars: 5, popText: "شائع جداً", notes: "المعيار الذهبي لإدارة أنظمة Linux وأجهزة التوجيه." },
+                { name: "Telnet", fullName: "Teletype Network", func: "إدارة الأجهزة عن بُعد (نصياً).", stars: 1, popText: "نادر", notes: "مهجور ويُحذر من استخدامه لأنه يرسل البيانات (بما فيها كلمات المرور) بنص صريح غير مشفّر." },
+                { name: "FTP", fullName: "File Transfer Protocol", func: "نقل الملفات بين العميل والخادم.", stars: 2, popText: "متراجع", notes: "غير آمن، يُستبدل حالياً ببروتوكولات مشفّرة." },
+                { name: "SFTP", fullName: "SSH File Transfer Protocol", func: "نقل ملفات آمن يعتمد على تشفير SSH.", stars: 4, popText: "شائع", notes: "البديل الآمن والحديث لـ FTP." },
+                { name: "TFTP", fullName: "Trivial File Transfer Protocol", func: "نقل ملفات مبسّط وسريع لا يتطلب مصادقة.", stars: 2, popText: "محدود", notes: "يُستخدم غالباً في بيئات LAN لتحديث أنظمة تشغيل أجهزة الشبكة (Routers/Switches) أو الإقلاع عبر الشبكة (PXE)." },
+                { name: "SNMP", fullName: "Simple Network Management Protocol", func: "جمع المعلومات ومراقبة أداء أجهزة الشبكة المختلفة مركزيًا.", stars: 4, popText: "شائع", notes: "أساسي في بيئات الشركات الكبيرة ومراكز البيانات." },
+                { name: "LDAP", fullName: "Lightweight Directory Access Protocol", func: "الوصول إلى خدمات الدليل والاستعلام عن المستخدمين والأجهزة مركزيًا.", stars: 4, popText: "شائع", notes: "البروتوكول الأساسي وراء Microsoft Active Directory." },
+                { name: "Kerberos", fullName: "Kerberos", func: "بروتوكول مصادقة يعتمد على 'التذاكر' لإثبات الهوية بشكل آمن عبر شبكة غير آمنة.", stars: 4, popText: "شائع", notes: "طريقة المصادقة الافتراضية داخل شبكات Windows Domain." },
+                { name: "RADIUS", fullName: "Remote Authentication Dial-In User Service", func: "توفير مصادقة مركزية (AAA) للمستخدمين الذين يتصلون بالشبكة.", stars: 4, popText: "شائع", notes: "يستخدم بكثرة في شبكات مزودي الخدمة (ISP) والشبكات المؤسسية للمصادقة على Wi-Fi و VPN." },
+                { name: "NTP", fullName: "Network Time Protocol", func: "مزامنة ساعات الحواسيب وأجهزة الشبكة عبر الإنترنت.", stars: 5, popText: "شائع جداً", notes: "يعمل بصمت في الخلفية لكل جهاز تقريباً، حرج جدًا لعمل بروتوكولات التشفير والتسجيل." },
+                { name: "SIP", fullName: "Session Initiation Protocol", func: "إنشاء، وتعديل، وإنهاء جلسات الاتصال في شبكات نقل الصوت عبر الإنترنت (VoIP).", stars: 4, popText: "شائع", notes: "بمثابة 'رنين الهاتف' في مكالمات الإنترنت." },
+                { name: "RTP", fullName: "Real-time Transport Protocol", func: "نقل البيانات الصوتية والمرئية في الوقت الفعلي عبر الشبكة.", stars: 4, popText: "شائع", notes: "يعمل غالباً جنباً إلى جنب مع SIP لنقل محتوى المكالمة الفعلي." },
+                { name: "RDP", fullName: "Remote Desktop Protocol", func: "الاتصال بواجهة مستخدم رسومية لجهاز كمبيوتر آخر عن بُعد.", stars: 4, popText: "شائع", notes: "خاص بأنظمة Microsoft Windows." },
+                { name: "MQTT", fullName: "Message Queuing Telemetry Transport", func: "نقل الرسائل خفيف الوزن مخصص للأجهزة ذات الموارد المحدودة والشبكات الضعيفة.", stars: 4, popText: "متنامي", notes: "البروتوكول المهيمن في عالم إنترنت الأشياء (IoT)." },
+                { name: "SMB / CIFS", fullName: "Server Message Block", func: "مشاركة الملفات والطابعات والمنافذ المتسلسلة عبر الشبكة.", stars: 4, popText: "شائع", notes: "أساسي في شبكات مشاركة الملفات لأنظمة Windows." }
+            ]},
+            { layerNum: 6, layerName: "العرض (Presentation)", colorClass: "layer-6", protocols: [
+                { name: "SSL", fullName: "Secure Sockets Layer", func: "تشفير البيانات المنقولة عبر الشبكة لضمان الخصوصية.", stars: 1, popText: "مهجور", notes: "يعتبر غير آمن حالياً واستُبدل كلياً ببروتوكول TLS، لكن الاسم لا يزال يُستخدم مجازاً." },
+                { name: "TLS", fullName: "Transport Layer Security", func: "الإصدار الأحدث والآمن لتشفير الاتصالات، وهو الأساس الذي يبنى عليه HTTPS و FTPS وغيرها.", stars: 5, popText: "شائع جداً", notes: "العمود الفقري للأمان على الإنترنت حالياً." },
+                { name: "JPEG / MPEG", fullName: "Joint Photographic Experts Group / Moving Picture Experts Group", func: "معايير لضغط وترميز الصور (JPEG) والفيديو/الصوت (MPEG) لتقليل حجمها قبل النقل.", stars: 5, popText: "شائع جداً", notes: "هي في الواقع صيغ ومعايير ترميز وليست بروتوكولات اتصال تقليدية، وتصنف ضمن هذه الطبقة." },
+                { name: "ASCII / Unicode", fullName: "American Standard Code for Information Interchange / Unicode", func: "معايير لتمثيل النصوص والرموز بأرقام لكي يفهمها الحاسوب.", stars: 5, popText: "شائع جداً", notes: "Unicode (مثل UTF-8) هو المعيار السائد حالياً لدعمه كل لغات العالم." }
+            ]},
+            { layerNum: 5, layerName: "الجلسة (Session)", colorClass: "layer-5", protocols: [
+                { name: "NetBIOS", fullName: "Network Basic Input/Output System", func: "يسمح للتطبيقات على أجهزة مختلفة بالتواصل ضمن شبكة محلية (LAN).", stars: 2, popText: "متراجع", notes: "تقنية قديمة جداً من مايكروسوفت، قل استخدامها في الشبكات الحديثة المعتمدة بالكامل على IP." },
+                { name: "RPC", fullName: "Remote Procedure Call", func: "يسمح لبرنامج بتنفيذ كود (إجراء) على جهاز كمبيوتر آخر في الشبكة كما لو كان ينفذ محلياً.", stars: 3, popText: "متوسط", notes: "مستخدم بكثرة في الأنظمة الموزعة والتطبيقات الداخلية." },
+                { name: "SOCKS", fullName: "Socket Secure", func: "بروتوكول وكيل (Proxy) يوجه حركة مرور الشبكة بين العميل والخادم عبر وسيط.", stars: 3, popText: "متوسط", notes: "يُستخدم لتجاوز قيود الشبكات ولإخفاء الهوية (مثل استخدامه مع شبكة Tor)." },
+                { name: "PPTP", fullName: "Point-to-Point Tunneling Protocol", func: "إنشاء شبكات افتراضية خاصة (VPN) قديمة.", stars: 1, popText: "مهجور", notes: "يعتبر غير آمن وتم كسره بسهولة. استُبدل بتقنيات أحدث مثل IPSec و WireGuard." }
+            ]},
+            { layerNum: 4, layerName: "النقل (Transport)", colorClass: "layer-4", protocols: [
+                { name: "TCP", fullName: "Transmission Control Protocol", func: "نقل بيانات موثوق يضمن وصول جميع الحزم بالترتيب الصحيح ويقوم بإعادة الإرسال عند الفقد.", stars: 5, popText: "شائع جداً", notes: "العمود الفقري لمعظم تطبيقات الإنترنت (ويب، بريد، نقل ملفات)، يعيبه البطء النسبي بسبب التحقق." },
+                { name: "UDP", fullName: "User Datagram Protocol", func: "نقل بيانات سريع ومباشر لا يضمن وصول الحزم ولا يتأكد من سلامتها ('أرسل وانسَ').", stars: 5, popText: "شائع جداً", notes: "مثالي للتطبيقات التي تتطلب سرعة ولا تتأثر بضياع بعض البيانات كالبث المباشر والألعاب عبر الإنترنت والـ DNS." },
+                { name: "SCTP", fullName: "Stream Control Transmission Protocol", func: "يجمع بين مزايا TCP و UDP، ويدعم تدفقات متعددة وعناوين IP متعددة في اتصال واحد.", stars: 2, popText: "محدود", notes: "يُستخدم بشكل أساسي في شبكات الاتصالات الخلوية (مثل شبكات 4G و 5G للإشارات)." },
+                { name: "QUIC", fullName: "Quick UDP Internet Connections", func: "بروتوكول نقل حديث من جوجل مبني فوق UDP لتوفير أمان TLS وسرعة أعلى من TCP.", stars: 4, popText: "متنامي", notes: "هو الأساس لمعيار HTTP/3 الجديد، يقلل التأخير بشكل كبير ويحسن أداء تصفح الويب." }
+            ]},
+            { layerNum: 3, layerName: "الشبكة (Network)", colorClass: "layer-3", protocols: [
+                { name: "IPv4", fullName: "Internet Protocol version 4", func: "يوفر العنونة المنطقية (IP) وتوجيه الحزم عبر الشبكات للوصول للوجهة المطلوبة.", stars: 5, popText: "شائع جداً", notes: "لا يزال المهيمن رغم نفاذ العناوين عالمياً. يعتمد على عناوين بطول 32 بت." },
+                { name: "IPv6", fullName: "Internet Protocol version 6", func: "الإصدار الأحدث الذي يحل مشكلة نفاذ عناوين IPv4 باستخدام عناوين بطول 128 بت.", stars: 4, popText: "متنامي", notes: "ينمو ببطء ولكن بثبات، وهو المستقبل الحتمي للإنترنت." },
+                { name: "ICMP", fullName: "Internet Control Message Protocol", func: "إرسال رسائل الأخطاء والمعلومات التشخيصية حول الشبكة.", stars: 5, popText: "شائع جداً", notes: "البروتوكول الذي تعتمد عليه أدوات الفحص الشهيرة مثل Ping و Traceroute." },
+                { name: "IGMP", fullName: "Internet Group Management Protocol", func: "إدارة مجموعات البث المتعدد (Multicast) لتحديد من يستقبل البيانات على شبكة محلية.", stars: 3, popText: "متوسط", notes: "يُستخدم في تطبيقات مثل بث الفيديو عبر الشبكة (IPTV)." },
+                { name: "IPSec", fullName: "Internet Protocol Security", func: "تشفير ومصادقة حزم بيانات IP لتوفير اتصال آمن عبر شبكة عامة.", stars: 4, popText: "شائع", notes: "الأساس المتين لمعظم شبكات VPN المؤسسية للربط بين الفروع." },
+                { name: "OSPF", fullName: "Open Shortest Path First", func: "بروتوكول توجيه ديناميكي داخلي (IGP) يبحث عن أقصر مسار لنقل البيانات داخل الشبكة.", stars: 5, popText: "شائع جداً", notes: "واسع الانتشار في شبكات المؤسسات الكبيرة نظراً لسرعته وقابليته للتوسع." },
+                { name: "EIGRP", fullName: "Enhanced Interior Gateway Routing Protocol", func: "بروتوكول توجيه ديناميكي داخلي مطور.", stars: 3, popText: "متوسط", notes: "كان حكراً على شركة Cisco وأصبح مفتوحاً، يستخدم في بيئات سيسكو." },
+                { name: "RIP", fullName: "Routing Information Protocol", func: "بروتوكول توجيه قديم يعتمد على 'عدد القفزات' (Hop count) لتحديد المسار.", stars: 2, popText: "نادر", notes: "بطيء ومحدود، يُستخدم غالباً لأغراض تعليمية وفي الشبكات الصغيرة جداً." },
+                { name: "BGP", fullName: "Border Gateway Protocol", func: "بروتوكول توجيه خارجي (EGP) يقوم بتوجيه البيانات بين الأنظمة المستقلة (الشبكات الكبرى) على الإنترنت.", stars: 5, popText: "شائع جداً", notes: "هو حرفياً 'نظام التوجيه الخاص بالإنترنت'، يربط مزودي الخدمة ببعضهم." },
+                { name: "GRE", fullName: "Generic Routing Encapsulation", func: "تغليف البيانات داخل نفق (Tunnel) لنقلها فوق شبكة IP.", stars: 3, popText: "متوسط", notes: "يُستخدم مع IPSec لإنشاء شبكات VPN تدعم بروتوكولات التوجيه." }
+            ]},
+            { layerNum: 2, layerName: "ربط البيانات (Data Link)", colorClass: "layer-2", protocols: [
+                { name: "Ethernet (802.3)", fullName: "Ethernet", func: "يحدد كيفية تنسيق البيانات وإرسالها عبر كابلات الشبكة المحلية (LAN)، ويدير الوصول للوسيط بآلية CSMA/CD، ويستخدم عناوين MAC.", stars: 5, popText: "شائع جداً", notes: "المعيار المطلق للشبكات المحلية السلكية." },
+                { name: "Wi-Fi (802.11)", fullName: "Wireless LAN", func: "يدير الاتصال ونقل البيانات في الشبكات المحلية اللاسلكية بآلية CSMA/CA.", stars: 5, popText: "شائع جداً", notes: "موجود في كل مكان، المنازل والشركات والأماكن العامة." },
+                { name: "ARP", fullName: "Address Resolution Protocol", func: "ربط عنوان IP المنطقي بعنوان MAC الفيزيائي المطلوب لإرسال البيانات في الشبكة المحلية.", stars: 5, popText: "شائع جداً", notes: "يعمل خلف الكواليس تلقائياً ولا يمكن للشبكة العمل بدونه." },
+                { name: "STP / RSTP", fullName: "Spanning Tree Protocol", func: "منع حدوث 'حلقات' (Loops) في الشبكة عند وجود مسارات متعددة بين السويتشات.", stars: 4, popText: "شائع", notes: "مهم جداً في تصميم الشبكات المؤسسية لتوفير مسارات احتياطية دون التسبب بانهيار الشبكة." },
+                { name: "VLAN (802.1Q)", fullName: "Virtual Local Area Network", func: "تقسيم شبكة مادية واحدة إلى عدة شبكات محلية افتراضية معزولة منطقياً لزيادة الأمان وتقليل الزحام.", stars: 5, popText: "شائع جداً", notes: "أساس تصميم الشبكات في أي بيئة عمل." },
+                { name: "PPP", fullName: "Point-to-Point Protocol", func: "إنشاء اتصال مباشر بين عقدتين عبر شبكة واسعة (WAN) مع دعم للمصادقة.", stars: 3, popText: "متوسط", notes: "كان يُستخدم بكثرة في اتصالات الطلب الهاتفي (Dial-up) وبعض اتصالات DSL (PPPoE)." },
+                { name: "HDLC", fullName: "High-Level Data Link Control", func: "تغليف البيانات للخطوط التسلسلية (Serial).", stars: 2, popText: "متراجع", notes: "كان الإعداد الافتراضي للروابط التسلسلية في أجهزة Cisco قديماً." },
+                { name: "Frame Relay", fullName: "Frame Relay", func: "تقنية قديمة لشبكات WAN تعتمد على تبديل الحزم لربط الفروع.", stars: 1, popText: "مهجور", notes: "تم استبداله بالكامل تقريباً بتقنيات أحدث مثل MPLS." },
+                { name: "ATM", fullName: "Asynchronous Transfer Mode", func: "تقنية نقل سريعة تعتمد على تقسيم البيانات إلى خلايا صغيرة ثابتة الحجم.", stars: 1, popText: "مهجور", notes: "تقنية قديمة جداً ومكلفة." },
+                { name: "MPLS", fullName: "Multiprotocol Label Switching", func: "توجيه البيانات في شبكات واسعة بناءً على 'تسميات' (Labels) قصيرة بدلاً من عناوين IP لتسريع النقل.", stars: 4, popText: "شائع", notes: "التقنية المفضلة لدى مزودي الخدمة (ISPs) لربط فروع الشركات بشبكات خاصة." },
+                { name: "Bluetooth", fullName: "Bluetooth", func: "معيار للاتصالات اللاسلكية قصيرة المدى لنقل البيانات بين الأجهزة الشخصية.", stars: 5, popText: "شائع جداً", notes: "الهواتف، السماعات، الأجهزة الطرفية." },
+                { name: "Zigbee", fullName: "Zigbee", func: "بروتوكول لاسلكي منخفض التكلفة والطاقة مصمم للشبكات الشخصية الصغيرة ذات معدلات نقل بيانات منخفضة.", stars: 3, popText: "متنامي", notes: "يستخدم بشكل واسع في أجهزة المنزل الذكي (Smart Home)." }
+            ]},
+            { layerNum: 1, layerName: "الفيزيائية (Physical)", colorClass: "layer-1", protocols: [
+                { name: "IEEE 802.3 (Physical)", fullName: "Ethernet Physical Layer", func: "تحديد خصائص الكابلات (النحاسية مثل Cat6)، الإشارات الكهربائية، وأنواع الموصلات (RJ45).", stars: 5, popText: "شائع جداً", notes: "في هذه الطبقة نتحدث عن معايير فيزيائية (كابلات وإشارات) وليس 'بروتوكولات' برمجية." },
+                { name: "IEEE 802.11 (Physical)", fullName: "Wi-Fi Physical Layer", func: "تحديد الترددات اللاسلكية (2.4GHz, 5GHz) وأنواع التضمين للإشارات الراديوية.", stars: 5, popText: "شائع جداً", notes: "معايير فيزيائية." },
+                { name: "DSL", fullName: "Digital Subscriber Line", func: "نقل البيانات الرقمية عبر خطوط الهاتف النحاسية العادية لتوفير الإنترنت.", stars: 3, popText: "متراجع", notes: "يتم استبداله عالمياً بشبكات الألياف البصرية." },
+                { name: "SONET / SDH", fullName: "Synchronous Optical Networking", func: "معايير لنقل الإشارات الرقمية بسرعات عالية جداً عبر الألياف البصرية.", stars: 3, popText: "متوسط", notes: "يشكل العمود الفقري لشبكات مزودي الاتصالات." },
+                { name: "Fiber (متعدد المعايير)", fullName: "Fiber Optics", func: "نقل البيانات باستخدام نبضات ضوئية عبر أسلاك زجاجية رفيعة لسرعات ومسافات هائلة.", stars: 5, popText: "شائع جداً", notes: "المهيمن حالياً في بناء البنى التحتية للمدن ومزودي الخدمة." },
+                { name: "RS-232", fullName: "Recommended Standard 232", func: "معيار لنقل البيانات التسلسلية، يحدد الإشارات والأسلاك في منفذ الكونسول.", stars: 2, popText: "محدود", notes: "قديم، ولكن لا يزال يستخدم لإعداد أجهزة الشبكة الصناعية والراوترات الأولية." }
+            ]}
+        ];
+
+        function renderProtocols() {
+            const container = document.getElementById('protocols-container');
+            let html = '';
+
+            protocolsData.forEach(layer => {
+                html += `
+                    <div class="layer-header">
+                        <span class="layer-badge">${layer.layerNum}</span>
+                        <span>${layer.layerName}</span>
+                    </div>
+                    <table class="protocol-table ${layer.colorClass}">
+                        <thead>
+                            <tr>
+                                <th style="width: 20%;">البروتوكول</th>
+                                <th style="width: 50%;">الوظيفة المختصرة</th>
+                                <th style="width: 20%;">مدى الشيوع</th>
+                                <th style="width: 10%;">التفاصيل</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                layer.protocols.forEach(protocol => {
+                    const starString = '★'.repeat(protocol.stars) + '☆'.repeat(5 - protocol.stars);
+                    // التعديل هنا: إضافة .replace(/'/g, "%27") لمنع تعارض علامات الاقتباس
+                    const encodedProtocol = encodeURIComponent(JSON.stringify({...protocol, layerName: layer.layerName})).replace(/'/g, "%27");
+                    
+                    html += `
+                            <tr class="protocol-row" onclick="openModal('${encodedProtocol}')">
+                                <td class="font-bold text-gray-800 en-text text-base">${protocol.name}</td>
+                                <td class="text-gray-600 text-sm">${protocol.func.substring(0, 50)}${protocol.func.length > 50 ? '...' : ''}</td>
+                                <td class="text-sm">
+                                    <span class="text-amber-500 tracking-wider">${starString}</span>
+                                </td>
+                                <td>
+                                    <button class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded text-xs font-semibold transition">عـرض</button>
+                                </td>
+                            </tr>
+                    `;
+                });
+
+                html += `
+                        </tbody>
+                    </table>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function openModal(encodedData) {
+            const data = JSON.parse(decodeURIComponent(encodedData));
+            
+            document.getElementById('modal-protocol-name').textContent = data.name;
+            document.getElementById('modal-protocol-fullname').textContent = data.fullName;
+            document.getElementById('modal-layer').textContent = data.layerName;
+            
+            const starString = '★'.repeat(data.stars) + '☆'.repeat(5 - data.stars);
+            document.getElementById('modal-stars').textContent = starString;
+            document.getElementById('modal-popularity-text').textContent = data.popText;
+            
+            document.getElementById('modal-function').textContent = data.func;
+            document.getElementById('modal-notes').textContent = data.notes;
+            
+            document.getElementById('protocol-modal').classList.add('active');
+            
+            // إيقاف الرسم مؤقتاً عند فتح المودال لتجنب الرسم الخاطئ
+            if(isDrawMode) {
+                 canvas.style.pointerEvents = 'none';
+            }
+        }
+
+        function closeModal(event) {
+            // إغلاق فقط إذا تم النقر على زر الإغلاق أو الخلفية الرمادية
+            if (!event || event.target.id === 'protocol-modal' || event.target.classList.contains('close-modal')) {
+                document.getElementById('protocol-modal').classList.remove('active');
+                
+                // إعادة تفعيل الرسم إذا كان مفضلاً
+                if(isDrawMode) {
+                    canvas.style.pointerEvents = 'auto';
+                }
+            }
+        }
+
+        // إغلاق المودال بزر ESC
+        document.addEventListener('keydown', function(event) {
+            if (event.key === "Escape") {
+                closeModal();
+            }
+        });
+
+        const canvas = document.getElementById('drawing-canvas');
+        const ctx = canvas.getContext('2d');
+        let isDrawMode = false;
+        let isDrawing = false;
+        let currentTool = 'pen'; 
+        let penColor = '#059669'; 
+        let lastX = 0, lastY = 0;
+
+        function updateCanvasSize() {
+            if(!canvas) return;
+            const newWidth = document.documentElement.scrollWidth;
+            const newHeight = Math.max(document.documentElement.scrollHeight, window.innerHeight);
+            
+            if (canvas.width !== newWidth || canvas.height !== newHeight) {
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = canvas.width || newWidth;
+                tempCanvas.height = canvas.height || newHeight;
+                const tempCtx = tempCanvas.getContext('2d');
+                if(canvas.width > 0) tempCtx.drawImage(canvas, 0, 0);
+                
+                canvas.width = newWidth;
+                canvas.height = newHeight;
+                
+                ctx.drawImage(tempCanvas, 0, 0);
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+            }
+        }
+        
+        window.addEventListener('resize', updateCanvasSize);
+        window.addEventListener('load', () => {
+            renderProtocols();
+            updateCanvasSize();
+            new MutationObserver(updateCanvasSize).observe(document.body, { 
+                childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'style'] 
+            });
+        });
+
+        function toggleDrawingMode() {
+            isDrawMode = !isDrawMode;
+            canvas.style.pointerEvents = isDrawMode ? 'auto' : 'none'; 
+            
+            const toolsDiv = document.getElementById('drawing-tools');
+            const toggleBtn = document.getElementById('btn-toggle-draw');
+            
+            if (isDrawMode) {
+                toolsDiv.classList.remove('hidden');
+                toolsDiv.classList.add('flex');
+                toggleBtn.classList.add('bg-emerald-100', 'text-emerald-700', 'border-emerald-400', 'shadow-inner');
+                toggleBtn.classList.remove('bg-gray-100', 'text-gray-700');
+            } else {
+                toolsDiv.classList.add('hidden');
+                toolsDiv.classList.remove('flex');
+                toggleBtn.classList.remove('bg-emerald-100', 'text-emerald-700', 'border-emerald-400', 'shadow-inner');
+                toggleBtn.classList.add('bg-gray-100', 'text-gray-700');
+            }
+        }
+
+        function setPenColor(color, btnElement) {
+            currentTool = 'pen';
+            penColor = color;
+            canvas.style.cursor = 'crosshair';
+            
+            document.querySelectorAll('.color-btn').forEach(btn => btn.classList.remove('active'));
+            btnElement.classList.add('active');
+            
+            const eraserBtn = document.getElementById('btn-eraser');
+            eraserBtn.classList.remove('bg-gray-200', 'border-gray-400');
+            eraserBtn.classList.add('bg-gray-100', 'border-transparent');
+        }
+
+        function setEraser() {
+            currentTool = 'eraser';
+            canvas.style.cursor = 'cell';
+            
+            document.querySelectorAll('.color-btn').forEach(btn => btn.classList.remove('active'));
+            
+            const eraserBtn = document.getElementById('btn-eraser');
+            eraserBtn.classList.add('bg-gray-200', 'border-gray-400');
+            eraserBtn.classList.remove('bg-gray-100', 'border-transparent');
+        }
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function getMousePos(evt) {
+            let x = evt.pageX || (evt.touches && evt.touches[0].pageX);
+            let y = evt.pageY || (evt.touches && evt.touches[0].pageY);
+            return { x, y };
+        }
+
+        function startPosition(e) {
+            if (!isDrawMode) return;
+            // لا تبدأ الرسم إذا تم النقر داخل المودال المفتوح
+            if (document.getElementById('protocol-modal').classList.contains('active')) return;
+            
+            isDrawing = true;
+            const pos = getMousePos(e);
+            lastX = pos.x;
+            lastY = pos.y;
+            draw(e); 
+        }
+
+        function endPosition() {
+            isDrawing = false;
+            ctx.beginPath();
+        }
+
+        function draw(e) {
+            if (!isDrawing || !isDrawMode) return;
+            if(e.cancelable) e.preventDefault();
+            
+            const pos = getMousePos(e);
+            
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(pos.x, pos.y);
+            
+            if (currentTool === 'pen') {
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.strokeStyle = penColor; 
+                ctx.lineWidth = 3;
+            } else if (currentTool === 'eraser') {
+                ctx.globalCompositeOperation = 'destination-out';
+                ctx.lineWidth = 30;
+            }
+            
+            ctx.stroke();
+            lastX = pos.x;
+            lastY = pos.y;
+        }
+
+        canvas.addEventListener('mousedown', startPosition);
+        canvas.addEventListener('mousemove', draw);
+        window.addEventListener('mouseup', endPosition);
+        canvas.addEventListener('touchstart', startPosition, {passive: false});
+        canvas.addEventListener('touchmove', draw, {passive: false});
+        window.addEventListener('touchend', endPosition);
+
+    </script>
+</body>
+</html>
