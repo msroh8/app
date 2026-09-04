@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>استراتيجيات التدريس - ثانوية دار التوحيد</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Tajawal', 'sans-serif'],
+                    },
+                    colors: {
+                        ain: {
+                            purple: '#5B21B6',
+                            purpleDark: '#4C1D95',
+                            purpleLight: '#8B5CF6',
+                            cyan: '#06B6D4',
+                            cyanLight: '#67E8F9',
+                            bg: '#F3F4F6',
+                            success: '#10B981'
+                        }
+                    },
+                    animation: {
+                        'pop-in': 'popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+                        'fade-in': 'fadeIn 0.2s ease-out forwards',
+                    },
+                    keyframes: {
+                        popIn: {
+                            '0%': { opacity: '0', transform: 'scale(0.9) translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'scale(1) translateY(0)' },
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #e5e7eb; }
+        .main-wrapper {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #f8fafc;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* تأثيرات البطاقات */
+        .strategy-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .strategy-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-color: #8B5CF6;
+        }
+        
+        /* تخصيص شريط التمرير للنافذة المنبثقة */
+        .modal-content-scroll::-webkit-scrollbar {
+            width: 8px;
+        }
+        .modal-content-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+            border-radius: 4px;
+        }
+        .modal-content-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        .modal-content-scroll::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+
+        .svg-icon-small {
+            width: 48px;
+            height: 48px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 1.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        .svg-icon-large {
+            width: 64px;
+            height: 64px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 1.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+    </style>
+</head>
+<body class="text-gray-800 antialiased selection:bg-ain-cyanLight selection:text-ain-purpleDark">
+
+    <div class="main-wrapper relative">
+        
+        <!-- Header -->
+        <header class="bg-gradient-to-r from-ain-purple to-ain-purpleDark text-white pt-8 pb-6 px-6 shadow-lg relative overflow-hidden shrink-0">
+            <!-- Decorative SVG -->
+            <svg class="absolute top-0 left-0 w-40 h-40 text-white opacity-10 transform -translate-x-10 -translate-y-10" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            <svg class="absolute bottom-0 right-0 w-32 h-32 text-ain-cyan opacity-20 transform translate-x-10 translate-y-10" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v8m-4-4h8"></path></svg>
+            
+            <div class="relative z-10 text-center">
+                <h1 class="text-2xl md:text-4xl font-extrabold tracking-tight mb-2 text-transparent bg-clip-text bg-gradient-to-l from-white to-ain-cyanLight">مرجع استراتيجيات التدريس</h1>
+                <p class="text-ain-cyanLight font-medium text-lg mb-6">لمعلمي ثانوية دار التوحيد</p>
+                
+                <!-- Progress Bar UI -->
+                <div class="max-w-md mx-auto bg-white/10 p-3 rounded-2xl backdrop-blur-sm border border-white/20">
+                    <div class="flex justify-between items-center mb-2 text-sm font-bold">
+                        <span>معدل الإنجاز والاطلاع</span>
+                        <span id="progress-text" class="text-ain-cyanLight bg-white/20 px-2 py-0.5 rounded-md">0 / 12</span>
+                    </div>
+                    <div class="h-3 w-full bg-black/20 rounded-full overflow-hidden">
+                        <div id="progress-bar" class="h-full bg-gradient-to-r from-ain-cyan to-ain-cyanLight transition-all duration-700 ease-out" style="width: 0%;"></div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content (Grid of Cards) -->
+        <main class="flex-1 p-6 md:p-8 overflow-y-auto">
+            <p class="text-center text-gray-500 mb-8 font-medium">انقر على أي استراتيجية لعرض التفاصيل وإضافتها لسجل اطلاعك</p>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5" id="cardsContainer">
+                <!-- Cards injected by JS -->
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-white border-t border-gray-200 text-gray-600 text-center py-5 text-sm mt-auto shrink-0">
+            <p>فكرة وتنفيذ <span class="font-bold text-ain-purple">محمد مجممي</span></p>
+        </footer>
+
+    </div>
+
+    <!-- Modal (Popup Window) -->
+    <div id="strategyModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 hidden">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" id="modalBackdrop"></div>
+        
+        <!-- Modal Content Box -->
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-full flex flex-col relative z-10 opacity-0 transform scale-95 transition-all duration-300" id="modalPanel">
+            
+            <!-- Close Button -->
+            <button id="closeModalBtn" class="absolute top-4 left-4 p-2 bg-gray-100 hover:bg-red-100 hover:text-red-600 text-gray-500 rounded-full transition-colors z-20 focus:outline-none">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+
+            <!-- Modal Header -->
+            <div class="bg-ain-bg border-b border-gray-200 p-6 rounded-t-2xl flex items-center gap-4 shrink-0">
+                <div class="bg-white p-3 rounded-xl shadow-sm text-ain-cyan" id="modalIconContainer">
+                    <!-- Icon injected here -->
+                </div>
+                <div>
+                    <h2 class="text-2xl md:text-3xl font-extrabold text-ain-purpleDark" id="modalTitle">عنوان الاستراتيجية</h2>
+                    <span class="inline-block mt-2 text-xs font-bold px-2 py-1 bg-green-100 text-green-700 rounded-md flex items-center gap-1 hidden" id="modalStatusBadge">
+                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                        تم الاطلاع
+                    </span>
+                </div>
+            </div>
+
+            <!-- Modal Body (Scrollable) -->
+            <div class="p-6 overflow-y-auto modal-content-scroll space-y-6 flex-1">
+                
+                <!-- وصف الاستراتيجية -->
+                <div class="bg-white border border-gray-100 rounded-xl p-5 shadow-sm relative overflow-hidden group hover:border-ain-cyan/30 transition-colors">
+                    <div class="absolute right-0 top-0 w-1 h-full bg-ain-cyan"></div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+                        <div class="bg-ain-cyan/10 p-1.5 rounded-lg text-ain-cyan"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div>
+                        وصف الاستراتيجية
+                    </h3>
+                    <p class="text-gray-600 leading-relaxed text-justify" id="modalDesc"></p>
+                </div>
+
+                <!-- دور المعلم -->
+                <div class="bg-white border border-gray-100 rounded-xl p-5 shadow-sm relative overflow-hidden group hover:border-ain-purpleLight/30 transition-colors">
+                    <div class="absolute right-0 top-0 w-1 h-full bg-ain-purpleLight"></div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+                        <div class="bg-ain-purpleLight/10 p-1.5 rounded-lg text-ain-purpleLight"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg></div>
+                        دور المعلم
+                    </h3>
+                    <div class="text-gray-600 leading-relaxed space-y-2 text-justify" id="modalTeacher"></div>
+                </div>
+
+                <!-- دور المتعلم -->
+                <div class="bg-white border border-gray-100 rounded-xl p-5 shadow-sm relative overflow-hidden group hover:border-green-400/30 transition-colors">
+                    <div class="absolute right-0 top-0 w-1 h-full bg-green-400"></div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+                        <div class="bg-green-100 p-1.5 rounded-lg text-green-600"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg></div>
+                        دور المتعلم
+                    </h3>
+                    <div class="text-gray-600 leading-relaxed space-y-2 text-justify" id="modalLearner"></div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data strictly extracted from the provided text. No text omitted. 12 items total.
+        const strategiesData = [
+            {
+                id: 's1',
+                title: 'التعلم التعاوني',
+                svg: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>',
+                desc: 'استراتيجية تقوم على تنمية روح الفريق بين الطلاب، مختلفي القدرات، وإلى تنمية المهارات الاجتماعية، وتكوين الاتجاه السليم نحو المواد الدراسية.',
+                teacher: 'تزويد المتعلمين بالإرشادات اللازمة للعمل واختيار منسق كل مجموعة وشكل دور وتحديد دور المنسق ومسؤولياته (يقترح أن يضع المعلم الإرشادات على لوح أمام المجموعة يتم الاتفاق عليها مسبقًا، ومن جهة أخرى اسم المجموعة، تتضمن التعليمات والقوانين الصفيّة، وقوانين العمل الجماعي).<br><br>التأكد من تفاعل أفراد المجموعة مع توجيه الإرشادات لكل مجموعة على حدة وتقديم المساعدة وقت الحاجة (يتم ضبط عمل المجموعات عن طريق تطبيق الساعة في الأيباد أو ما يشابهها).<br><br>ربط الأفكار بعد انتهاء العمل التعاوني، وتوضيح تلخيص ما تعلمه الطلاب مع فيديوهات وتحديد الواجبات الصفيّة وتقويم تحصيل الطلاب.<br><br>تفقد أعمال المجموعات والتأكد من أن المجموعات تسير في الإنتاج الصحيح المخطط له وتقديم التغذية الراجعة لهم.<br><br>يمكن استخدام تطبيق idocceo للإدارة الصفيّة وتقويم الطالب',
+                learner: 'المشاركة الفاعلة ضمن عمل المجموعة في البحث عن المعلومة والتقييم الذاتي.<br><br>التعبير عن أفكاره دون خوف، وإلقاء الأسئلة، والإجابة عن بعض التساؤلات، وحصوله على فرصة آمنة للمحاولة والخطأ، والتعلم من خطئه.<br><br>يُعطى الفرصة للنقد الذاتي ولبحث عن النقص ومعرفة أماكن تقييم الآخرين وتقبل الآراء'
+            },
+            {
+                id: 's2',
+                title: 'خرائط المفاهيم',
+                svg: '<rect x="8" y="2" width="8" height="6" rx="1"></rect><path d="M12 8v4"></path><path d="M12 12H6v4"></path><path d="M12 12h6v4"></path><rect x="2" y="16" width="8" height="6" rx="1"></rect><rect x="14" y="16" width="8" height="6" rx="1"></rect>',
+                desc: 'تمثيل المعرفة عن طريق أشكال تخطيطية تربط بين المفاهيم بخطوط أو أسهم يكتب عليها كلمات تسمى كلمات الربط.',
+                teacher: 'تزويد الطلاب بخريطة مصممة جاهزة لأهداف الدرس (أقسام الطائرة وأمنها وأمانة عليها).<br><br>إعطاء الطالب فرصة لتصميم خريطته الخاصة بنفسه.<br><br>من الممكن استخدام برامج Inspiration, Free mind لتصميم خريطته الخاصة.<br><br>من الممكن تصميم خريطة مفاهيم للدرس يلخص فيها الطالب مكتسباته من الدرس (تكون تقويم ختامي للدرس).',
+                learner: 'تنظيم المفاهيم في شكل يبرز العلاقة بينها، وحل تدريبات متنوعة عن المفهوم<br><br>تصميم خريطة كاملة للدرس يلخص فيها مكتسباته من الدرس وتكون بمثابة تقويم ذاتي للدرس.<br><br>بناءً على الخريطة التي تم تصميمها من قبل المعلم من خرائط (سبق الإشارة إليها في دور المعلم) يمكنه تصميم خريطته الخاصة، أو الاستعانة بالتطبيق لتطبيق الخريطة'
+            },
+            {
+                id: 's3',
+                title: 'فراير',
+                svg: '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="12" x2="21" y2="12"></line><line x1="12" y1="3" x2="12" y2="21"></line>',
+                desc: 'نموذج فراير في تدريس المفاهيم عبارة عن نموذج مقسم إلى أربعة أقسام في مركز هذا النموذج يكون المفهوم ، والأجزاء الأربعة هي :<br><br>( التعريف ، الخصائص ، الأمثلة ، اللا أمثلة ).',
+                teacher: 'توجيه الطلاب إلى كتابة أفكارهم في نموذج فراير فرديًا أو جماعيًا.<br><br>تشجيع الطلاب على الكتابة من خلال صياغة التعريف والخصائص والأمثلة مع الشرح والتفسير.<br><br>من الممكن أن يكون هذا النشاط ضمن التقويم الختامي للتأكد من مدى استيعاب الطالب لموضوع الدرس.<br><br>من الممكن أن يكون فرديًا أو جماعيًا، أو بالفصل بأكمله',
+                learner: 'تتيح للطالب الفرصة لتجميع، وتنظيم، والوقوف على أفكارهم. تتيح للطالب فرصة لتأمل نفسه وأفكاره والتفكير والمراجعة قبل الإجابة، ومن ثم التعلم والمشاركة، بالإضافة إلى تحقيق التواصل والاستعداد للحديث ودرس المسؤولية الفردية.'
+            },
+            {
+                id: 's4',
+                title: 'العصف الذهني',
+                svg: '<path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 12 3a4.65 4.65 0 0 0-4.5 8.5c.76.76 1.23 1.52 1.41 2.5"></path><line x1="12" y1="18" x2="12" y2="22"></line>',
+                desc: 'يتبع فيها الطلاب أسلوبًا منظمًا من أساليب التفكير الإبداعي، حيث تستثار فيه أذهانهم، لاستمطار الأفكار حول مشكلة محددة، بهدف توليد أكبر قدر ممكن من الأفكار لحلها، مع تأجيل تقييم الأفكار لمرحلة لاحقة',
+                teacher: 'تحفيز الطلاب على توليد الأفكار الإبداعية حول موضوع معين، ومناقشتهم في الأفكار المطروحة من أجل تقييمها وتصنيفها إلى أفكار أصلية ومفيدة قابلة للتطبيق.<br><br>يقترح العصف الشجري: (يزود المعلم الطلاب بشجرة العصف الخاصة بالمجموعات)',
+                learner: 'توليد أكبر عدد ممكن من الأفكار بشكل تلقائي وسريع وحر، حيث يمكن توضيحها مع احترام آراء الآخرين وتقديرها، والاستفادة من أفكارهم، مع تطويرها والبناء عليها.<br><br>تتطلب الاستراتيجية من الطلاب تمييز الحلول والأفكار الجيدة'
+            },
+            {
+                id: 's5',
+                title: 'الاستقصاء',
+                svg: '<circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><path d="M11 8v3l2 2"></path>',
+                desc: 'يتطلب في هذه الاستراتيجية أن يجمع الطلاب بيانات ومعلومات عن موضوع محدد ويحاولون الربط بينها لإيجاد العلاقة التي تربطها',
+                teacher: 'وكذلك يمكن للطالب الاستعانة بمقاطع الفيديو التي سبق إرسالها عبر تطبيق (أدمدو)، كما يمكن من الاستعانة بالملفات والروابط التي تم إرسالها للطلاب أو عبر مشاركة الملفات في قوقل درايف أوغيرها.<br><br>كما يمكن الجمع بين هذه الاستراتيجية والتدريس التعاوني، إذ يمكن استخدام نفس الوسائل كما يمكن الاستغناء بأحدهم عن الأخرى.',
+                learner: 'من خلال دخول الطلاب على المواقع السابق المشار إليها في دور المعلم والبحث عن الموضوع وكذلك يمكن للطلاب الاستعانة بمقاطع الفيديو التي سبق إرسالها، وتطبيق الاستقصاء على الملفات والروابط التي تم إرسالها عبر قوقل درايف للتطبيق'
+            },
+            {
+                id: 's6',
+                title: 'جدول التعلم',
+                svg: '<path d="M12 3v18"></path><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><path d="M3 9h18"></path><path d="M3 15h18"></path>',
+                desc: 'مخطط يساعد الطالب على الربط بين معرفته السابقة والمعرفة الجديدة وتقويم تعلمه',
+                teacher: 'اكتشاف خبرات الطالب السابقة والتعرف على المفاهيم القليلة الصحيحة وكذلك الخاطئة منها عن الموضوع.<br><br>ربط الخبرات السابقة بالخبرات الجديدة وتصحيح الأخطاء منها.<br><br>تقديم التغذية الراجعة المناسبة للطالب بحسب احتياجه من خلال جدول التعلم.<br><br>رسم الجداول للطلاب عند الحاجة إليه أو تزويد الطلاب بجدول معد مسبقًا.<br><br>يوضح المعلم للطلاب أهمية نموذج التعلم.<br><br>الاستفادة من الأعمدة الثلاثة كالتقويم الختامي للدرس، وخانة (ماذا بعد التعلم؟) لاسترجاع التفكير.',
+                learner: 'تعبئة أعمدة النموذج في كل مرحلة من مراحل الدرس الخاصة بها حسب توجيهات المعلم.<br><br>محاولة معالجة المعلومات لديه من خلال البحث والتقصي والاستفسار.<br><br>يمكن أن ينفذ بشكل فردي أو ضمن مجموعات صغيرة ضمن التعليم التعاوني.<br><br>من خلال جدول التعلم يستدل الطالب على الطرق التي سيزداد فيها من العلم في موضوع الدرس خلال خانة (ماذا بعد التعلم؟) .'
+            },
+            {
+                id: 's7',
+                title: 'فكر زاوج قارن',
+                svg: '<path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4c0-1.1.9-2 2-2h8a2 2 0 0 1 2 2v5Z"></path><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"></path>',
+                desc: 'استراتيجية مناقشة تعاونية تتكون من ثلاث مراحل تهدف إلى مساعدة الطلاب في معالجة المعلومات وتطوير مهارات التواصل والارتقاء بالتفكير.',
+                teacher: 'تقسيم الطلاب إلى مجموعات صغيرة، رباعية.<br><br>شرح خطوات تنفيذ الاستراتيجية لدى الطلاب.<br><br>طرح سؤال أو مسألة أو مشكلة تستثير تفكير الطلاب<br><br>متابعة الطلاب في أثناء الحل للتعرف على طريقة تفكيرهم.<br><br>مناقشة الطلاب وتزويدهم بالتغذية الراجعة المناسبة بعد تقديم حلولهم',
+                learner: 'يفكر كل طالب فرديًا في الإجابة عن السؤال).<br><br>تدوين الأفكار ذهنياً أو كتابياً لنموذج المعد أو ورقة بعدد الطلاب.<br><br>يتشارك كل طالب معاً في المجموعة مناقشة أفكارهم، الاتفاق على الأفكار والحلول.<br><br>المشاركة ومناقشة الأفكار والحلول وتوضيحها أمام بقية المجموعات.<br><br>عرض أفكار مجموعته على بقية الطلاب من خلال الحوار والنقاش.'
+            },
+            {
+                id: 's8',
+                title: 'الرؤوس المرقمة',
+                svg: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path><text x="14" y="22" font-size="10" fill="currentColor" stroke="none">1</text><text x="4" y="22" font-size="10" fill="currentColor" stroke="none">2</text>',
+                desc: 'تتيح للطلاب الفرصة للتحدث مع أقرانهم والوقوف على أفكارهم، تتيح للطالب فرصة التأمل مع نفسه و آراءه والتفكير والمراجعة قبل الإجابة ومن ثم التعاون والمشاركة في الأفكار والحل، وتحفز الطالب على الانتباه والاستعداد والجاهزية وتزيد من الاحساس بالمسؤولية الفردية',
+                teacher: 'تقسيم الطلاب إلى مجموعات مؤلفة من 4 أعضاء ويعطى كل عضو رقم من 1 إلى 4.<br><br>طرح سؤال أو مشكلة على جميع المجموعات.<br><br>التحقق من أن كل طالب أخذ فرصته في الممارسة والحل.<br><br>التأكد من وصول كل عضو إلى فهم واسع للمشكلة والحل.<br><br>تعيين رقم عشوائي للفهم ويقومون بالإجابة.<br><br>مناقشة بقية أفراد المجموعات والذين يحملون الرقم نفسه في الأفكار الأخرى للإجابة على السؤال',
+                learner: 'يميز الرقم الخاص به ويقرأ السؤال أو المسألة، ويشارك مع أعضاء مجموعته في تقديم الأفكار والحلول مع تقديم المساعدة لزملائه والاستفسار منهم عن الأفكار المطروحة والاتفاق مع مجموعته على الحل والتوصل له.<br><br>الناخب والمتحدث يقوم بطرح الإجابة المتفق عليها ومناقشتها مع المعلم والمجموعات الأخرى في حال تم اختياره لتمثيل المجموعة'
+            },
+            {
+                id: 's9',
+                title: 'تحديد أوجه الشبه والاختلاف',
+                svg: '<circle cx="8" cy="12" r="6"></circle><circle cx="16" cy="12" r="6"></circle>',
+                desc: 'تحسين فهم وقدرة الطلاب على استخدام المعرفة عن طريق إشراكهم في عمليات عقلية تتضمن تحديد أوجه الشبه والاختلاف بين العناصر المختلفة، ومن أكثر طرق تحديد أوجه الشبه والاختلاف طريقتي المقارنة والتصنيف',
+                teacher: 'تقديم أمثلة داعمة لمساعدة الطلاب على تحديد أوجه الشبه والاختلاف بين أقسام العناصر.<br><br>تحديد معيار للمقارنة.<br><br>توفير المخططات الرسومية لوصف العناصر ومقارناتها.<br><br>إتاحة الفرصة للطلاب لتطبيق ما تعلموه على عملية جديدة.<br><br>يطلب منهم بناء على السبورة رسم أسئلة على الطلاب.',
+                learner: 'تحديد أوجه الشبه والاختلاف بأنفسهم، أو وفقًا لتوجيه المعلم، وصياغة التعليمات في ضوء نتائج المقارنة.<br><br>تنظيم العناصر وتصنيفها في مجموعات، باستخدام معايير مناسبة بناءً على أوجه الشبه والاختلاف المكتشفة.<br><br>تحليل المعلومات واستخلاص الفروق والتشابهات بين العناصر أو المفاهيم المدروسة، مما يعزز فهمهم العميق للمفهوم (مثل أقسام العناصر أو العناصر الكيميائية، أو الموضوعات الدراسية الأخرى).<br><br>التطبيق العملي من خلال القيام بتدريبات متنوعة تدعم فهمهم، وقد تشمل هذه التدريبات إعداد مخططات، جداول مقارنة، أو رسومات توضيحية تعكس فهمهم للتشابهات والاختلافات'
+            },
+            {
+                id: 's10',
+                title: 'تحديد أوجه الشبه والاختلاف (حل المشكلات)',
+                svg: '<path d="M12 2v20"></path><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>',
+                desc: 'استراتيجية تمكن الطلاب من أن يتعلموا بأنفسهم فرديًا أو جماعيًا لحل مشكلة حقيقية تقدمها لهم',
+                teacher: 'ستحتاج إلى تقديم مشكلات واقعية تناسب الطلاب لمناقشتها معهم، وترك الطلاب يعملون متعاونين لحلها (اقتراح حلول مناسبة من الطلاب بعد فرض الفروض) ، وشجع على تطبيق التقويم الذاتي وتقويم الأقران',
+                learner: 'سيكون دور الطلاب جمع المعلومات حول المشكلة واتباع المنهج العلمي لحل المشكلة (تحديد المشكلة، تحليل المشكلة، استخدام ما تم جمعه من المعلومات، فرض الفروض، التأكد من صحة الفروض، اختيار الحل المناسب) والتعاون معاً لحلها'
+            },
+            {
+                id: 's11',
+                title: 'إتقان المهارة',
+                svg: '<circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path>',
+                desc: 'تساعد هذه الإستراتيجية على تكوين وبناء المفهوم، عن طريق التدريب والممارسة، للوصول إلى الإتقان القائم على المعنى، وفي هذه الإستراتيجية يحل الطالب المسائل عن طريق عمليات الاستدلال والاسترجاع التلقائي للحقائق',
+                teacher: 'استثارة دافعية الطلاب للتعلم ومراعاة أنماط التعلم المختلفة عند التدريب على حل المسائل.<br><br>التحقق من إتقان الطلاب لحل المسائل <br><br>تكليف الطالب بتدريبات ومهام أدائية من مصادر المعلم للأنشطة الصفية (كما في تنويع التعليم) تعطي الفرصة للطالب لممارسة الحل',
+                learner: 'حل المسائل عن طريق عمليات الاستدلال والاسترجاع التلقائي للحقائق <br><br>التدريب والممارسة حتى يكتسب مهارتي السرعة في الإنجاز والقدرة على التعامل مع حل المسائل بأشكال وصور مختلفة'
+            },
+            {
+                id: 's12',
+                title: 'المنظمات المتقدمة',
+                svg: '<line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line>',
+                desc: 'مواد تمهيدية تعطى للطالب في مقدمة المادة التعليمية وتقدم بمستوى عال من التجريد والعمومية والشمول وتبلغ أعلى حد من الوضوح والثبات  بهدف إلى تزويد المتعلم ببناء تصوري تتكامل فيه المعلومة الجديدة مع ما سبق تعلمه في نفس الموضوع ، ويمكن استخدامها في بداية الدرس',
+                teacher: 'تهيئة الطلاب للموضوع الجديد وجعله مألوفا لهم ، والتحقق من مدى إدراك الطلاب للمفاهيم السابقة والمرتبطة بالمفهوم الجديد بتوظيف التقويم التشخيصي',
+                learner: 'تفسير العلاقات التي تربط المفاهيم فيما بينها، وطبيعة العلاقة، وربط المعلومات ليكون التعلم ذو معنى لتنمية قدرة الاستدلال والاستقراء وإدراك العلاقات وربط المعلومات  بحيث يستطيع المتعلم إيجاد العلاقة بين هذه المفردات'
+            }
+        ];
+
+        const cardsContainer = document.getElementById('cardsContainer');
+        const viewedItems = new Set();
+        
+        // Modal Elements
+        const modal = document.getElementById('strategyModal');
+        const modalPanel = document.getElementById('modalPanel');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const modalBackdrop = document.getElementById('modalBackdrop');
+        
+        function init() {
+            renderCards();
+            updateProgress();
+            
+            // Event Listeners for closing modal
+            closeModalBtn.addEventListener('click', closeModal);
+            modalBackdrop.addEventListener('click', closeModal);
+            document.addEventListener('keydown', (e) => {
+                if(e.key === 'Escape' && !modal.classList.contains('hidden')) {
+                    closeModal();
+                }
+            });
+        }
+
+        function renderCards() {
+            strategiesData.forEach((strategy, index) => {
+                const card = document.createElement('div');
+                // Staggered animation delay
+                card.style.animationDelay = `${index * 0.05}s`;
+                card.className = `strategy-card opacity-0 animate-fade-in bg-white border border-gray-200 rounded-2xl p-5 cursor-pointer flex flex-col items-center justify-center text-center group relative overflow-hidden`;
+                card.id = `card-${strategy.id}`;
+                card.onclick = () => openModal(strategy);
+                
+                card.innerHTML = `
+                    <!-- Background decorative shape -->
+                    <div class="absolute -right-8 -top-8 w-24 h-24 bg-ain-bg rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500 z-0"></div>
+                    
+                    <!-- Checkmark Badge (Hidden initially) -->
+                    <div id="check-${strategy.id}" class="absolute top-3 left-3 bg-green-500 text-white p-1 rounded-full opacity-0 transform scale-0 transition-all duration-300 z-10 shadow-sm">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </div>
+
+                    <div class="relative z-10 text-ain-cyan group-hover:text-ain-purpleLight transition-colors duration-300 mb-4 bg-gray-50 p-4 rounded-full">
+                        <svg class="svg-icon-small" viewBox="0 0 24 24">
+                            ${strategy.svg}
+                        </svg>
+                    </div>
+                    
+                    <h3 class="relative z-10 text-lg font-bold text-gray-800 group-hover:text-ain-purpleDark transition-colors">${strategy.title}</h3>
+                `;
+                cardsContainer.appendChild(card);
+            });
+        }
+
+        function openModal(strategy) {
+            // Populate Data
+            document.getElementById('modalTitle').innerText = strategy.title;
+            document.getElementById('modalDesc').innerHTML = strategy.desc;
+            document.getElementById('modalTeacher').innerHTML = strategy.teacher;
+            document.getElementById('modalLearner').innerHTML = strategy.learner;
+            document.getElementById('modalIconContainer').innerHTML = `<svg class="svg-icon-large" viewBox="0 0 24 24">${strategy.svg}</svg>`;
+            
+            // Mark as viewed
+            markAsViewed(strategy.id);
+
+            // Show Modal with animation
+            modal.classList.remove('hidden');
+            // Small delay to allow display:block to apply before animating opacity/transform
+            setTimeout(() => {
+                modalPanel.classList.remove('opacity-0', 'scale-95');
+                modalPanel.classList.add('opacity-100', 'scale-100');
+            }, 10);
+        }
+
+        function closeModal() {
+            // Hide with animation
+            modalPanel.classList.remove('opacity-100', 'scale-100');
+            modalPanel.classList.add('opacity-0', 'scale-95');
+            
+            // Wait for transition to finish before hiding container
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        function markAsViewed(id) {
+            if (!viewedItems.has(id)) {
+                viewedItems.add(id);
+                
+                // Animate checkmark on card
+                const check = document.getElementById(`check-${id}`);
+                const card = document.getElementById(`card-${id}`);
+                if(check && card) {
+                    check.classList.remove('opacity-0', 'scale-0');
+                    check.classList.add('opacity-100', 'scale-100');
+                    card.classList.add('border-green-300', 'bg-green-50/30');
+                }
+                
+                updateProgress();
+            }
+
+            // Show badge in modal
+            const badge = document.getElementById('modalStatusBadge');
+            badge.classList.remove('hidden');
+        }
+
+        function updateProgress() {
+            const total = strategiesData.length; // 12
+            const viewed = viewedItems.size;
+            const percentage = (viewed / total) * 100;
+            
+            document.getElementById('progress-text').innerText = `${viewed} / ${total}`;
+            document.getElementById('progress-bar').style.width = `${percentage}%`;
+        }
+
+        // Initialize App
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
