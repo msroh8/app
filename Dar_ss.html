@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة الأداء المدرسي</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: #f0f4f8;
+            color: #333;
+        }
+        
+        .board-container {
+            background-color: #ffffff;
+            border: 2px solid #00695c;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            border-bottom: 2px solid #00695c;
+        }
+
+        .logo-area {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            font-size: 0.8rem;
+            color: #555;
+            text-align: left;
+            position: relative;
+        }
+
+        .logo-area img {
+            height: 50px;
+            margin-bottom: 5px;
+            cursor: default;
+            object-fit: contain;
+            transition: all 0.2s;
+        }
+        
+        .editing-mode .logo-area img {
+            cursor: pointer;
+            outline: 2px dashed #f57f17;
+            padding: 4px;
+            border-radius: 4px;
+        }
+
+        .editing-mode .logo-area img:hover {
+            background-color: rgba(245, 127, 23, 0.1);
+        }
+
+        .title-area h1 {
+            color: #00695c;
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin: 0;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        
+        #logoUploadContainer {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid #ccc;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            z-index: 50;
+            width: 280px;
+        }
+        
+        .editing-mode #logoUploadContainer.active {
+            display: block;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            background-color: #e0f2f1;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid #b2dfdb;
+            font-weight: 700;
+            font-size: 1.1rem;
+            align-items: center;
+        }
+
+        .school-level {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background-color: #00695c;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+
+        .radio-circle {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            border: 2px solid white;
+            display: inline-block;
+            transition: background-color 0.2s;
+        }
+        .radio-circle.active {
+            background-color: white;
+        }
+
+        .stats-grid {
+            display: flex;
+            justify-content: space-around;
+            padding: 1.5rem 1rem;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            border-bottom: 1px dashed #ccc;
+        }
+
+        .stat-circle-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            min-width: 90px;
+        }
+
+        .stat-circle-group .label {
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .circle-container {
+            position: relative;
+            width: 70px;
+            height: 70px;
+        }
+
+        .half-circle-top {
+            width: 100%;
+            height: 50%;
+            border: 2px solid #00695c;
+            border-bottom: none;
+            border-top-left-radius: 35px;
+            border-top-right-radius: 35px;
+            position: absolute;
+            top: 0;
+        }
+
+        .value-box {
+            position: absolute;
+            top: 30%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            border: 2px solid #333;
+            border-radius: 5px;
+            width: 50px;
+            height: 35px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .teachers-license {
+            display: flex;
+            align-items: center;
+            padding: 1.5rem 2rem;
+            border-bottom: 1px dashed #ccc;
+            gap: 20px;
+        }
+
+        .license-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            min-width: 250px;
+        }
+
+        .license-group {
+            display: flex;
+            gap: 40px;
+            position: relative;
+            flex-wrap: wrap;
+        }
+
+        .license-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .license-item .label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .arrow-right {
+            position: absolute;
+            top: 60%;
+            right: -30px;
+            width: 20px;
+            height: 2px;
+            background-color: #00695c;
+        }
+        .arrow-right::after {
+            content: '';
+            position: absolute;
+            right: 100%;
+            top: -4px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: transparent #00695c transparent transparent;
+        }
+
+        .middle-stats {
+            display: flex;
+            justify-content: space-between;
+            padding: 1.5rem 2rem;
+            border-bottom: 1px dashed #ccc;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .stat-box-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .stat-box-row .label {
+            font-weight: bold;
+        }
+
+        .square-val {
+            border: 2px solid #333;
+            padding: 5px 15px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            background-color: #f8f9fa;
+            min-width: 45px;
+            text-align: center;
+        }
+
+        .awards-section {
+            display: flex;
+            padding: 1.5rem 2rem;
+            border-bottom: 1px dashed #ccc;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .awards-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            min-width: 250px;
+        }
+
+        .awards-list {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .national-indicators {
+            background-color: #e0e0e0;
+            padding: 8px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #333;
+        }
+
+        .indicators-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            padding: 2rem;
+            gap: 2rem;
+            background-color: #f9f9f9;
+            position: relative;
+        }
+
+        .indicator-col {
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 900;
+            color: #00695c;
+        }
+
+        .section-subtitle {
+            font-size: 0.9rem;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .boxes-container {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .indicator-box {
+            border: 2px solid #00695c;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            background-color: white;
+            min-width: 80px;
+            flex: 1;
+        }
+
+        .indicator-box .label {
+            font-weight: bold;
+            font-size: 1rem;
+            margin-bottom: 5px;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 5px;
+        }
+
+        .indicator-box .value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            padding: 10px 0;
+        }
+
+        .diamond-container {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            align-items: center;
+            padding-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .diamond-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .diamond {
+            width: 60px;
+            height: 60px;
+            border: 2px solid #00695c;
+            transform: rotate(45deg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: white;
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .diamond-inner {
+            transform: rotate(-45deg);
+            position: absolute;
+            background: white;
+            border: 2px solid #333;
+            padding: 2px 10px;
+            bottom: -15px;
+            font-weight: bold;
+            z-index: 10;
+            min-width: 45px;
+            text-align: center;
+        }
+        
+        .diamond-label {
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .large-circle-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            right: -140px;
+            top: 0;
+            bottom: 0;
+        }
+
+        .large-circle {
+            width: 120px;
+            height: 120px;
+            border: 2px dotted #00695c;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background-color: white;
+            position: relative;
+        }
+
+        .large-circle .title {
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .large-circle .subtitle {
+            font-size: 0.8rem;
+            color: #666;
+        }
+        
+        .large-circle .value-box {
+            top: auto;
+            bottom: -15px;
+            width: 60px;
+            height: 30px;
+            border-radius: 20px;
+        }
+
+        #loginOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .login-box {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 350px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        .login-box input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        .login-box button {
+            background: #00695c;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        #adminControls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+
+        .admin-btn {
+            background: #333;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+            font-family: inherit;
+        }
+        
+        .save-btn {
+            background: #d32f2f;
+            display: none;
+        }
+
+        .editable {
+            cursor: pointer;
+            transition: all 0.2s;
+            min-height: 24px;
+            display: inline-block;
+        }
+        
+        .editing-mode .editable:hover {
+            background-color: #fff9c4;
+            outline: 2px dashed #fbc02d;
+            border-radius: 4px;
+        }
+        
+        .editing-mode .editable:focus {
+            background-color: #fff9c4;
+            outline: 2px solid #f57f17;
+            border-radius: 4px;
+        }
+
+        .footer-credits {
+            text-align: center;
+            padding: 1rem;
+            color: #666;
+            font-weight: 700;
+            font-size: 1rem;
+            margin-top: -1rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 1200px) {
+            .large-circle-container {
+                position: relative;
+                right: 0;
+                flex-direction: row;
+                margin-top: 2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-section {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            .logo-area {
+                align-items: center;
+                text-align: center;
+            }
+            .logo-area > div {
+                justify-content: center;
+            }
+            .title-area h1 {
+                font-size: 2rem;
+            }
+            .info-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            .school-level {
+                width: 100%;
+                justify-content: center;
+            }
+            .teachers-license, .middle-stats, .awards-section {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .license-title, .awards-title {
+                text-align: center;
+                margin-bottom: 10px;
+            }
+            .license-group {
+                justify-content: center;
+            }
+            .arrow-right {
+                display: none; /* إخفاء الأسهم في الجوال لترتيب أفضل */
+            }
+            .stat-box-row {
+                justify-content: space-between;
+                width: 100%;
+                border-bottom: 1px solid #eee;
+                padding-bottom: 10px;
+            }
+            .awards-list {
+                flex-direction: column;
+                width: 100%;
+            }
+            .indicators-grid {
+                grid-template-columns: 1fr;
+                padding: 1rem;
+            }
+            .section-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            .indicator-col {
+                gap: 1.5rem;
+            }
+            .boxes-container {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+            }
+            div[style*="display:flex; justify-content:space-between; margin-top:20px;"] {
+                flex-direction: column;
+                gap: 2rem;
+            }
+            #logoUploadContainer {
+                right: 50%;
+                transform: translateX(50%);
+            }
+        }
+    </style>
+</head>
+<body class="p-2 md:p-8">
+
+    <div class="max-w-6xl mx-auto board-container" id="board">
+        <!-- Header -->
+        <div class="header-section">
+            <div class="logo-area">
+                <div style="display:flex; align-items:center; gap:15px;">
+                    <div style="text-align:right;">
+                        <div class="font-bold text-sm">وزارة التعليم</div>
+                        <div class="text-xs">Ministry of Education</div>
+                    </div>
+                    <!-- شعار الوزارة من حسابك على جيت هب (مع صورة بديلة احتياطية) -->
+                    <img id="ministryLogo" src="https://msroh8.github.io/app/xx.jpg" onerror="this.onerror=null; this.src='https://upload.wikimedia.org/wikipedia/ar/thumb/f/f6/Ministry_of_Education_Saudi_Arabia.svg/1200px-Ministry_of_Education_Saudi_Arabia.svg.png';" alt="شعار الوزارة" onclick="toggleLogoUpload()" title="انقر لتغيير الشعار في وضع التعديل">
+                </div>
+                <!-- مربع تغيير الشعار -->
+                <div id="logoUploadContainer">
+                    <div class="text-sm font-bold mb-3 text-[#00695c] text-center border-b pb-2">إعدادات الشعار</div>
+                    
+                    <label class="block text-xs font-bold mb-1 text-gray-700">رابط صورة (URL):</label>
+                    <input type="text" id="logoUrlInput" placeholder="https://example.com/logo.png" class="w-full p-2 border rounded mb-3 text-sm text-left" dir="ltr">
+                    
+                    <div class="text-center text-xs text-gray-500 mb-3 relative">
+                        <span class="bg-white px-2 relative z-10">- أو ارفع من جهازك -</span>
+                        <div class="absolute w-full h-px bg-gray-300 top-1/2 left-0 -z-0"></div>
+                    </div>
+                    
+                    <input type="file" id="logoFileInput" accept="image/*" class="w-full text-sm mb-4 border p-1 rounded bg-gray-50">
+                    
+                    <button onclick="applyLogoChange()" class="w-full bg-[#00695c] text-white font-bold text-sm py-2 rounded hover:bg-[#004d40] transition">حفظ الشعار</button>
+                    <button onclick="toggleLogoUpload()" class="w-full mt-2 bg-gray-200 text-gray-700 text-sm py-2 rounded hover:bg-gray-300 transition">إلغاء</button>
+                </div>
+                
+                <div class="mt-3 text-sm font-bold leading-relaxed text-right">
+                    الإدارة العامة للتعليم بمحافظة الطائف<br>
+                    الشؤون التعليمية<br>
+                    لجنة الأداء التعليمي
+                </div>
+            </div>
+            
+            <div class="title-area text-center">
+                <h1>لوحة الأداء المدرسي</h1>
+            </div>
+            
+            <div class="hidden md:block" style="width: 250px;"></div>
+        </div>
+
+        <div class="info-row">
+            <div>اسم المدرسة : <span class="editable text-gray-800 border-b border-transparent hover:border-gray-400 px-1" id="schoolName" contenteditable="false">دار التوحيد المتوسطة</span></div>
+            
+            <div class="school-level">
+                <div class="cursor-pointer" style="display:flex; align-items:center; gap:5px;" onclick="selectLevel(this)">
+                    <span class="radio-circle"></span>
+                    <span>ابتدائي</span>
+                </div>
+                <div class="cursor-pointer" style="display:flex; align-items:center; gap:5px;" onclick="selectLevel(this)">
+                    <span class="radio-circle active"></span>
+                    <span>متوسط</span>
+                </div>
+                <div class="cursor-pointer" style="display:flex; align-items:center; gap:5px;" onclick="selectLevel(this)">
+                    <span class="radio-circle"></span>
+                    <span>ثانوي</span>
+                </div>
+            </div>
+
+            <div>مدير المدرسة : <span class="editable text-gray-800 border-b border-transparent hover:border-gray-400 px-1" id="principalName" contenteditable="false">عبدالله محمد البدراني</span></div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-circle-group">
+                <div class="label">عدد الطلاب</div>
+                <div class="circle-container">
+                    <div class="half-circle-top"></div>
+                    <div class="value-box editable ar-num" id="stat_students" contenteditable="false">١٨٣</div>
+                </div>
+            </div>
+            
+            <div class="stat-circle-group">
+                <div class="label">عدد المعلمين</div>
+                <div class="circle-container">
+                    <div class="half-circle-top"></div>
+                    <div class="value-box editable ar-num" id="stat_teachers" contenteditable="false">٣١</div>
+                </div>
+            </div>
+
+            <div class="stat-circle-group">
+                <div class="label">عدد الوكلاء</div>
+                <div class="circle-container">
+                    <div class="half-circle-top"></div>
+                    <div class="value-box editable ar-num" id="stat_deputies" contenteditable="false">٢</div>
+                </div>
+            </div>
+
+            <div class="stat-circle-group">
+                <div class="label" style="line-height:1.2;">الموجه الطلابي<br>ورائد النشاط</div>
+                <div class="circle-container" style="margin: 0 auto;">
+                    <div class="half-circle-top"></div>
+                    <div class="value-box editable ar-num" id="stat_counselors" contenteditable="false">٢</div>
+                </div>
+            </div>
+
+            <div class="stat-circle-group">
+                <div class="label">عدد الإداريين</div>
+                <div class="circle-container">
+                    <div class="half-circle-top"></div>
+                    <div class="value-box editable ar-num" id="stat_admins" contenteditable="false">٤</div>
+                </div>
+            </div>
+
+            <div class="stat-circle-group">
+                <div class="label">عدد المستخدمين</div>
+                <div class="circle-container">
+                    <div class="half-circle-top"></div>
+                    <div class="value-box editable ar-num" id="stat_users" contenteditable="false">١</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="teachers-license">
+            <div class="license-title">المعلمين الحاصلين على رخصة معلم :</div>
+            
+            <div class="license-group">
+                <div class="license-item">
+                    <div class="label">ممارس</div>
+                    <div class="circle-container">
+                        <div class="half-circle-top"></div>
+                        <div class="value-box editable ar-num" id="license_practitioner" contenteditable="false">١٩</div>
+                    </div>
+                    <div class="arrow-right"></div>
+                </div>
+                
+                <div class="license-item">
+                    <div class="label">متقدم</div>
+                    <div class="circle-container">
+                        <div class="half-circle-top"></div>
+                        <div class="value-box editable ar-num" id="license_advanced" contenteditable="false">٥</div>
+                    </div>
+                    <div class="arrow-right"></div>
+                </div>
+                
+                <div class="license-item">
+                    <div class="label">خبير</div>
+                    <div class="circle-container">
+                        <div class="half-circle-top"></div>
+                        <div class="value-box editable ar-num" id="license_expert" contenteditable="false">-</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="middle-stats">
+            <div class="stat-box-row">
+                <div class="label">طلاب التربية الخاصة</div>
+                <div class="square-val editable ar-num" id="special_ed_students" contenteditable="false">٢٤</div>
+            </div>
+            
+            <div class="stat-box-row">
+                <div class="label">الطلاب المتفوقين على مستوى الإدارة</div>
+                <div class="square-val editable ar-num" id="top_students_admin" contenteditable="false">١</div>
+            </div>
+            
+            <div class="stat-box-row">
+                <div class="label">الموهوبين المجتازين للمقياس</div>
+                <div class="square-val editable ar-num" id="gifted_students" contenteditable="false">١٢</div>
+            </div>
+        </div>
+
+        <div class="awards-section">
+            <div class="awards-title">الجوائز التي حصلت عليها المدرسة :</div>
+            <div class="awards-list">
+                <div class="stat-box-row">
+                    <div class="square-val editable ar-num" id="awards_local" contenteditable="false">٣٥</div>
+                    <div class="label">محلية.</div>
+                </div>
+                <div class="stat-box-row">
+                    <div class="square-val editable ar-num" id="awards_ministerial" contenteditable="false">١</div>
+                    <div class="label">وزارية.</div>
+                </div>
+                <div class="stat-box-row">
+                    <div class="square-val editable ar-num" id="awards_regional" contenteditable="false">-</div>
+                    <div class="label">إقليمية.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="national-indicators">
+            مؤشر الاختبارات الوطنية والدولية
+        </div>
+
+        <div class="indicators-grid">
+            <!-- العمود الأيمن -->
+            <div class="indicator-col">
+                <!-- مهاراتي -->
+                <div class="maharat-section">
+                    <div class="section-header">
+                        <div class="section-title">مهاراتي</div>
+                        <div class="section-subtitle">المرحلة الابتدائية - المتوسطة</div>
+                    </div>
+                    <div class="boxes-container">
+                        <div class="indicator-box">
+                            <div class="label">رياضيات</div>
+                            <div class="value editable ar-num" id="maharat_math" contenteditable="false">٪٥٩</div>
+                        </div>
+                        <div class="indicator-box">
+                            <div class="label">علوم</div>
+                            <div class="value editable ar-num" id="maharat_science" contenteditable="false">٪٦٣</div>
+                        </div>
+                        <div class="indicator-box">
+                            <div class="label">قراءة</div>
+                            <div class="value editable ar-num" id="maharat_reading" contenteditable="false">٪٦٢</div>
+                        </div>
+                        <div class="indicator-box">
+                            <div class="label">انجليزي</div>
+                            <div class="value editable ar-num" id="maharat_english" contenteditable="false">٪٣٤</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- نافس -->
+                <div class="nafas-section mt-4">
+                    <div class="section-header">
+                        <div class="section-title">نافس</div>
+                        <div class="section-subtitle">المرحلة الابتدائية - المتوسطة</div>
+                    </div>
+                    <div class="boxes-container" style="justify-content: flex-start;">
+                        <div class="indicator-box">
+                            <div class="label">رياضيات</div>
+                            <div class="value editable ar-num" id="nafas_math" contenteditable="false">٪٦٣.٠٦</div>
+                        </div>
+                        <div class="indicator-box">
+                            <div class="label">علوم</div>
+                            <div class="value editable ar-num" id="nafas_science" contenteditable="false">٪٦٠.٩٦</div>
+                        </div>
+                        <div class="indicator-box">
+                            <div class="label">قراءة</div>
+                            <div class="value editable ar-num" id="nafas_reading" contenteditable="false">٪٦٧</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- العمود الأيسر -->
+            <div class="indicator-col" style="position: relative;">
+                
+                <!-- PISA -->
+                <div class="pisa-section">
+                    <div class="section-header">
+                        <div class="section-title">PISA</div>
+                        <div class="section-subtitle">المرحلة المتوسطة - الثانوية</div>
+                    </div>
+                    <div class="diamond-container">
+                        <div class="diamond-item">
+                            <div class="diamond-label">رياضيات</div>
+                            <div class="diamond">
+                                <div class="diamond-inner editable ar-num" id="pisa_math" contenteditable="false">-</div>
+                            </div>
+                        </div>
+                        <div class="diamond-item">
+                            <div class="diamond-label">علوم</div>
+                            <div class="diamond">
+                                <div class="diamond-inner editable ar-num" id="pisa_science" contenteditable="false">-</div>
+                            </div>
+                        </div>
+                        <div class="diamond-item">
+                            <div class="diamond-label">قراءة</div>
+                            <div class="diamond">
+                                <div class="diamond-inner editable ar-num" id="pisa_reading" contenteditable="false">-</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TIMSS & PIRLS -->
+                <div style="display:flex; justify-content:space-between; margin-top:20px;">
+                    <!-- TIMSS -->
+                    <div class="timss-section" style="flex:1;">
+                        <div class="section-header">
+                            <div class="section-title">TIMSS</div>
+                            <div class="section-subtitle">المرحلة الابتدائية - المتوسطة</div>
+                        </div>
+                        <div class="diamond-container" style="justify-content:flex-start;">
+                            <div class="diamond-item">
+                                <div class="diamond-label">رياضيات</div>
+                                <div class="diamond">
+                                    <div class="diamond-inner editable ar-num" id="timss_math" contenteditable="false">-</div>
+                                </div>
+                            </div>
+                            <div class="diamond-item">
+                                <div class="diamond-label">علوم</div>
+                                <div class="diamond">
+                                    <div class="diamond-inner editable ar-num" id="timss_science" contenteditable="false">-</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PIRLS -->
+                    <div class="pirls-section" style="flex:1;">
+                        <div class="section-header">
+                            <div class="section-title">PIRLS</div>
+                            <div class="section-subtitle">المرحلة الابتدائية</div>
+                        </div>
+                        <div class="diamond-container" style="justify-content:flex-start;">
+                            <div class="diamond-item">
+                                <div class="diamond-label">قراءة</div>
+                                <div class="diamond">
+                                    <div class="diamond-inner editable ar-num" id="pirls_reading" contenteditable="false">-</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- الدوائر الكبيرة (التحصيلي والقدرات) -->
+                <div class="large-circle-container">
+                    <div class="large-circle">
+                        <div class="title">التحصيلي</div>
+                        <div class="subtitle">المرحلة الثانوية</div>
+                        <div class="value-box editable ar-num" id="tahseeli" contenteditable="false">-</div>
+                    </div>
+                    
+                    <div class="large-circle" style="border-color:#81c784;">
+                        <div class="title" style="color:#2e7d32;">القدرات</div>
+                        <div class="subtitle">المرحلة الثانوية</div>
+                        <div class="value-box editable ar-num" id="qudrat" contenteditable="false">-</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- الفوتر المطلوب -->
+    <div class="footer-credits">
+        تنفيذ وتصميم محمد مجممي
+    </div>
+
+    <!-- أزرار الإدارة -->
+    <div id="adminControls">
+        <button id="editBtn" class="admin-btn" onclick="showLogin()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
+            </svg>
+            تعديل اللوحة
+        </button>
+        <button id="saveBtn" class="admin-btn save-btn" onclick="saveChanges()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                <path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/>
+            </svg>
+            حفظ التغييرات
+        </button>
+    </div>
+
+    <!-- نافذة تسجيل الدخول -->
+    <div id="loginOverlay">
+        <div class="login-box">
+            <h2 class="text-xl font-bold mb-4 text-[#00695c]">صلاحية التعديل</h2>
+            <input type="text" id="username" placeholder="اسم المستخدم">
+            <input type="password" id="password" placeholder="كلمة المرور">
+            <button onclick="login()">تسجيل الدخول</button>
+            <button onclick="closeLogin()" style="background:#f5f5f5; color:#333; margin-top:10px; border:1px solid #ddd;">إلغاء</button>
+            <div id="loginError" class="text-red-600 mt-3 text-sm font-bold hidden">بيانات الدخول غير صحيحة!</div>
+        </div>
+    </div>
+
+    <script>
+        // تحويل الأرقام الإنجليزية إلى عربية
+        const arabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+        
+        function toArabicNumbers(str) {
+            return String(str).replace(/[0-9]/g, function(w) {
+                return arabicNumbers[+w];
+            });
+        }
+
+        // تطبيق التحويل على الأرقام عند الانتهاء من التعديل
+        document.querySelectorAll('.ar-num').forEach(el => {
+            el.addEventListener('blur', function() {
+                let hasPercent = this.innerText.includes('%') || this.innerText.includes('٪');
+                let text = this.innerText.replace(/%/g, '').replace(/٪/g, '').trim();
+                
+                let converted = toArabicNumbers(text);
+                if (hasPercent && converted !== '-' && converted !== '') {
+                    this.innerText = '٪' + converted;
+                } else if(converted === '') {
+                    this.innerText = '-';
+                } else {
+                    this.innerText = converted;
+                }
+            });
+        });
+
+        // دوال رفع وتغيير الشعار
+        function toggleLogoUpload() {
+            if (!isEditing) return;
+            const container = document.getElementById('logoUploadContainer');
+            container.classList.toggle('active');
+        }
+
+        function applyLogoChange() {
+            const logoImg = document.getElementById('ministryLogo');
+            const urlInput = document.getElementById('logoUrlInput').value;
+            const fileInput = document.getElementById('logoFileInput').files[0];
+
+            if (fileInput) {
+                // قراءة الملف المرفوع وتحويله
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    logoImg.src = e.target.result;
+                    localStorage.setItem('savedLogo', e.target.result);
+                }
+                reader.readAsDataURL(fileInput);
+            } else if (urlInput) {
+                // استخدام الرابط المباشر
+                logoImg.src = urlInput;
+                localStorage.setItem('savedLogo', urlInput);
+            }
+            
+            document.getElementById('logoUploadContainer').classList.remove('active');
+            showNotification('تم تحديث الشعار وحفظه في متصفحك');
+        }
+
+        // استرجاع الشعار المحفوظ عند تحميل الصفحة
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedLogo = localStorage.getItem('savedLogo');
+            if (savedLogo) {
+                document.getElementById('ministryLogo').src = savedLogo;
+            }
+        });
+
+        // وظائف الإدارة والتسجيل
+        let isEditing = false;
+
+        function showLogin() {
+            document.getElementById('loginOverlay').style.display = 'flex';
+            document.getElementById('loginError').classList.add('hidden');
+        }
+
+        function closeLogin() {
+            document.getElementById('loginOverlay').style.display = 'none';
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+        }
+
+        function login() {
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+
+            // اسم المستخدم وكلمة المرور الجديدة حسب طلبك
+            if (user === 'admin' && pass === 'Dar_2026_m') {
+                closeLogin();
+                enableEditing();
+            } else {
+                document.getElementById('loginError').classList.remove('hidden');
+            }
+        }
+
+        function enableEditing() {
+            isEditing = true;
+            document.getElementById('board').classList.add('editing-mode');
+            
+            // تفعيل التعديل للعناصر
+            const editables = document.querySelectorAll('.editable');
+            editables.forEach(el => {
+                el.setAttribute('contenteditable', 'true');
+            });
+
+            document.getElementById('editBtn').style.display = 'none';
+            document.getElementById('saveBtn').style.display = 'flex';
+            
+            showNotification('تم تفعيل وضع التعديل. انقر على الأرقام والنصوص لتعديلها. لتغيير الشعار اضغط عليه.');
+        }
+
+        function saveChanges() {
+            isEditing = false;
+            document.getElementById('board').classList.remove('editing-mode');
+            document.getElementById('logoUploadContainer').classList.remove('active');
+            
+            // إيقاف التعديل للعناصر
+            const editables = document.querySelectorAll('.editable');
+            editables.forEach(el => {
+                el.setAttribute('contenteditable', 'false');
+                el.dispatchEvent(new Event('blur')); // تنسيق الأرقام
+            });
+
+            document.getElementById('editBtn').style.display = 'flex';
+            document.getElementById('saveBtn').style.display = 'none';
+            
+            showNotification('تم حفظ التغييرات بنجاح!');
+        }
+        
+        // نظام الإشعارات المنبثقة
+        function showNotification(message) {
+            const notif = document.createElement('div');
+            notif.style.position = 'fixed';
+            notif.style.bottom = '80px';
+            notif.style.right = '20px';
+            notif.style.backgroundColor = '#388e3c';
+            notif.style.color = 'white';
+            notif.style.padding = '12px 24px';
+            notif.style.borderRadius = '8px';
+            notif.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
+            notif.style.zIndex = '9999';
+            notif.style.fontWeight = 'bold';
+            notif.innerText = message;
+            
+            document.body.appendChild(notif);
+            
+            setTimeout(() => {
+                notif.style.opacity = '0';
+                notif.style.transition = 'opacity 0.5s ease';
+                setTimeout(() => notif.remove(), 500);
+            }, 3000);
+        }
+
+        // منع سطر جديد عند الضغط على Enter في المربعات
+        document.querySelectorAll('.value-box, .square-val, .diamond-inner, .value').forEach(el => {
+            el.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    el.blur();
+                }
+            });
+        });
+        
+        // اختيار المرحلة الدراسية
+        function selectLevel(element) {
+            if(!isEditing) return;
+            
+            // إزالة التفعيل من الجميع
+            document.querySelectorAll('.radio-circle').forEach(r => r.classList.remove('active'));
+            
+            // تفعيل العنصر المضغوط
+            element.querySelector('.radio-circle').classList.add('active');
+        }
+    </script>
+</body>
+</html>
